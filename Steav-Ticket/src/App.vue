@@ -1,25 +1,26 @@
 <template>
-    <div class="app">
+  <div class="app">
     <header class="topbar">
       <div class="container">
         <div class="logo">Steav-Ticket</div>
+
         <nav class="nav">
-          <a>Home</a>
-          <a>Ticket</a>
-          <a>Explore</a>
-          <a>About Us</a>
+          <a href="/">Home</a>
+          <a href="/ticket">Ticket</a>
+          <a href="/explore">Explore</a>
+          <a href="/about">About Us</a>
         </nav>
+
         <div class="profile">Profile ▾</div>
       </div>
     </header>
-  </div>
-  <router-view />
 
+    <!-- PAGE CONTENT DISPLAYS HERE -->
+    <router-view />
+  </div>
 </template>
 
-<script setup lang="ts">
-// nothing needed here
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .topbar {
@@ -52,5 +53,4 @@
   margin-left: auto;
   color: #0b0b0b;
 }
-
 </style>
