@@ -1,23 +1,17 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-import { MongoClient } from 'mongodb';
-
-const client = new MongoClient('mongodb://localhost:27017');
+import { AppService } from './app.service';
+import { TicketsModule } from './tickets/tickets.module';
+import { RoutesModule } from './routes/routes.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  // providers: [AppService],
-  providers: [
-    {
-      provide: 'DATABASE',
-      useFactory: async () => {
-        await client.connect();
-        return client.db('bus-ticket');
-      },
-    },
+  imports: [
+    MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
+    TicketsModule,
+    RoutesModule,
   ],
-  exports: ['DATABASE'],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
