@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+
 // ===== Auth Pages =====
 import LoginPage from '@/auth/Login.vue'
 import SignupPage from '@/auth/SignUp.vue' // MUST MATCH FILE NAME
@@ -12,11 +13,22 @@ import ManageTicketPrice from '@/view/Admin-Panel/ManageTicketPrice.vue'
 import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
+// import Authenticator from '@/auth/Login.vue'
+
+
 
 const routes = [
   // ===== PUBLIC ROUTES =====
   { path: '/login', name: 'LoginPage', component: LoginPage },
   { path: '/signup', name: 'SignupPage', component: SignupPage },
+  // {
+  //   path: 'auth',
+  //   name: 'authitication',
+  //   component: Authenticator,
+  //   children: [
+
+  //   ]
+  // }
 
   // ===== ADMIN ROUTES =====
   {

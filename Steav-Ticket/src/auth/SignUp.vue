@@ -47,8 +47,8 @@
 
         <!-- Terms -->
         <div class="terms">
-          <input type="checkbox" v-model="agree" />
-          <span>I agree to the Terms of Service and Privacy Policy.</span>
+          <input type="checkbox" v-model="agree"/>
+          <span style="font-size: 10px;">I agree to the Terms of Service and Privacy Policy.</span>
         </div>
         <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
 
@@ -120,7 +120,7 @@ function submitForm() {
 .auth-container {
   width: 500px;
   background: white;
-  padding: 40px 50px;
+  padding: 25px 50px;
   border-radius: 12px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -139,21 +139,22 @@ h1 {
 
 .auth-form {
   text-align: left;
+  margin-top: 5px;
 }
 
 label {
   font-size: 13px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   display: block;
   font-weight: 600;
 }
 
 input {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   border: 2px solid #ff7895;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 14px;
 }
 
@@ -166,16 +167,15 @@ input {
   right: 12px;
   top: 12px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 12px;
 }
 
 .terms {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 15px;
-  font-size: 12px;
+  margin-bottom: 8px;
+  font-size: 8px;
 }
+
 
 .auth-btn {
   width: 100%;
@@ -191,7 +191,7 @@ input {
 
 .error {
   color: red;
-  font-size: 12px;
+  font-size: 10px;
   margin-top: -8px;
   margin-bottom: 10px;
 }

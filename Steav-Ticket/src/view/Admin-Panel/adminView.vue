@@ -1,4 +1,5 @@
 <template>
+  <HeadBar/>
   <div class="body">
     <aside class="sidebar">
       <h2 class="sidebar-title">Admin Panel</h2>
@@ -18,8 +19,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import HeadBar from '@/component/HeadBar.vue';
 export default {
+  components: {
+    HeadBar,
+  },
   data() {
     return {
       items: [
@@ -33,6 +38,7 @@ export default {
     }
   },
 }
+
 </script>
 
 <style scoped>

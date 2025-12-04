@@ -6,20 +6,20 @@
       <h1>Log In to Steav-Ticket</h1>
       <p class="subtitle">Quick & Simple way to Automate your payment</p>
 
-      <form class="auth-form">
+      <form class="auth-form" method="get">
         <!-- Email -->
         <label>Email Address</label>
-        <input type="email" placeholder="johndoe@example.com" />
+        <input type="email" placeholder="Enter your email" />
 
         <!-- Password -->
         <label>Password</label>
         <div class="password-box">
-          <input type="password" placeholder="************" />
+          <input type="password" placeholder="Enter your password" />
         </div>
 
         <!-- Options -->
         <div class="options">
-          <label><input type="checkbox" /> Remember Me</label>
+          <label><input type="checkbox"/>Remember Me</label>
           <a href="#" class="forgot">Forgot Password?</a>
         </div>
 
@@ -43,7 +43,7 @@
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #8bf2db, #ffde8a);
+  background: #ec2d57;
   display: flex;
   justify-content: center;
   align-items: center;
