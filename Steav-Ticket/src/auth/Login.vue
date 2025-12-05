@@ -19,7 +19,9 @@
 
         <!-- Options -->
         <div class="options">
-          <label><input type="checkbox"/>Remember Me</label>
+          <input type="checkbox"/>
+          <label>Remember Me</label>
+
           <a href="#" class="forgot">Forgot Password?</a>
         </div>
 

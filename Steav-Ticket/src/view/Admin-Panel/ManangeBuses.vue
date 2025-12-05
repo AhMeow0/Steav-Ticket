@@ -1,32 +1,43 @@
 <template>
   <div class="manage-buses-page">
+
     <!-- Form Section -->
-    <div class="form-box">
-      <h1>Manage Buses</h1>
+    <div class="manage-buses-page__form">
+      <h1 class="manage-buses-page__title">Manage Buses</h1>
 
-      <div class="form-grid">
-        <div>
-          <label>Bus Plate</label>
-          <input type="text" placeholder="AC - 123456" />
+      <div class="manage-buses-page__grid">
+
+        <div class="manage-buses-page__field">
+          <label class="manage-buses-page__label">Bus Plate</label>
+          <input
+            class="manage-buses-page__input"
+            type="text"
+            placeholder="AC - 123456"
+          />
         </div>
 
-        <div>
-          <label>Bus Type</label>
-          <select></select>
+        <div class="manage-buses-page__field">
+          <label class="manage-buses-page__label">Bus Type</label>
+          <select class="manage-buses-page__select"></select>
         </div>
 
-        <div>
-          <label>Capacity (Seats)</label>
-          <input type="number" placeholder="0" />
+        <div class="manage-buses-page__field">
+          <label class="manage-buses-page__label">Capacity (Seats)</label>
+          <input
+            class="manage-buses-page__input"
+            type="number"
+            placeholder="0"
+          />
         </div>
+
       </div>
 
-      <button class="save-btn">Save Buses</button>
+      <button class="manage-buses-page__button">Save Buses</button>
     </div>
 
     <!-- Table Section -->
-    <div class="table-box">
-      <h1>Assigned Buses</h1>
+    <div class="manage-buses-page__table">
+      <h1 class="manage-buses-page__title">Assigned Buses</h1>
 
       <table>
         <thead>
@@ -37,10 +48,9 @@
             <th>Capacity</th>
           </tr>
         </thead>
-        <tbody>
-        </tbody>
       </table>
     </div>
+
   </div>
 </template>
 
@@ -51,28 +61,42 @@
   border-radius: 10px;
 }
 
-.form-box,
-.table-box {
+/* Sections */
+.manage-buses-page__form,
+.manage-buses-page__table {
   background: #111827;
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
 }
 
-h1 {
-  font-weight: bold;
+/* Title */
+.manage-buses-page__title {
   font-size: 26px;
+  font-weight: bold;
   margin-bottom: 15px;
 }
 
-.form-grid {
+/* Grid Layout */
+.manage-buses-page__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
-input,
-select {
+/* Form Fields */
+.manage-buses-page__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-buses-page__label {
+  margin-bottom: 6px;
+}
+
+/* Inputs & Selects */
+.manage-buses-page__input,
+.manage-buses-page__select {
   width: 100%;
   padding: 8px;
   background: #111827;
@@ -81,7 +105,8 @@ select {
   border-radius: 5px;
 }
 
-.save-btn {
+/* Save Button */
+.manage-buses-page__button {
   margin-top: 20px;
   background: #4caf50;
   padding: 10px 20px;
@@ -91,6 +116,7 @@ select {
   color: white;
 }
 
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -100,7 +126,7 @@ table {
 th,
 td {
   padding: 12px;
-  border-bottom: 1px solid #111827;
-  text-align: left;
+  border-bottom: 1px solid #333;
+  text-align: center;
 }
 </style>

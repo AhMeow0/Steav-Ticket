@@ -1,39 +1,41 @@
 <template>
-  <div class="manage-booking-passager-page">
+  <div class="manage-booking-passenger-page">
     <!-- Form Section -->
     <div class="form-box">
       <h1>Manage Route & Schedules</h1>
 
       <div class="form-grid">
-        <!-- Route -->
         <div>
           <label>Routes</label>
           <select></select>
         </div>
+
         <div>
           <label>Date of Journey</label>
-          <input />
+          <input type="date" />
         </div>
+
         <div>
           <label>Time</label>
           <select></select>
         </div>
       </div>
 
-      <button class="save-btn">Apply filter</button>
+      <button class="save-btn">Apply Filter</button>
     </div>
 
+    <!-- Table Section -->
     <div class="table-box">
-      <h1>Assigned Booking & Passager</h1>
+      <h1>Assigned Booking & Passenger</h1>
 
       <table>
         <thead>
           <tr>
-            <th>Routes</th>
+            <th>Route</th>
             <th>Username</th>
             <th>Seats</th>
             <th>Date of Journey</th>
-            <th>Statue</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -45,7 +47,7 @@
 </template>
 
 <style scoped>
-.manage-booking-passager-page {
+.manage-booking-passenger-page {
   color: white;
   padding: 30px;
   border-radius: 10px;
@@ -96,11 +98,10 @@ table {
   border-collapse: collapse;
   margin-top: 10px;
 }
-
 th,
 td {
   padding: 12px;
-  border-bottom: 1px solid #111827;
-  text-align: left;
+  border-bottom: 1px solid #333;
+  text-align: center;
 }
 </style>

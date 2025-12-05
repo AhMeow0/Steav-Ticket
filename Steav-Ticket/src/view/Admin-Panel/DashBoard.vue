@@ -4,23 +4,24 @@
 
     <!-- Top Stats -->
     <div class="stats-box">
-      <div class="card">
-        <h3>Total Trips</h3>
-        <p>0</p>
+        <div class="stat-card stat-card--trips">
+          <h3>Total Trips</h3>
+          <p>0</p>
+        </div>
+        <div class="stat-card stat-card--books">
+          <h3>Total Book Seat</h3>
+          <p>0</p>
+        </div>
+        <div class="stat-card stat-card--Earns">
+          <h3>Total Earn</h3>
+          <p>$0</p>
+        </div>
       </div>
-      <div class="card">
-        <h3>Total Book Seat</h3>
-        <p>0</p>
-      </div>
-      <div class="card">
-        <h3>Total Earn</h3>
-        <p>$0</p>
-      </div>
-    </div>
 
-    <div class="filter-buttons">
+    <div class="filter">
       <select>
         <option>Daily</option>
+        <option>weekly</option>
       </select>
     </div>
 
@@ -47,20 +48,21 @@ h1 {
   margin-top: 20px;
 }
 
-.card {
+.stat-card {
   flex: 1;
   padding: 20px;
   background: #111827;
   border-radius: 12px;
   text-align: center;
+
 }
 
-.card h3 {
+.stat-card h3 {
   font-size: 18px;
   margin-bottom: 10px;
 }
 
-.card p {
+.stat-card p {
   font-size: 28px;
   font-weight: bold;
 }

@@ -1,78 +1,96 @@
 <template>
-  <div class="Manage-RouteSche-page">
-    <!-- Form Section -->
-    <div class="form-box">
-      <h1>Manage Route & Schedules</h1>
+  <div class="manage-route-page">
 
-      <div class="form-grid">
-        <!-- Route -->
-        <div>
-          <label>From</label>
-          <select></select>
+    <!-- Form Section -->
+    <div class="manage-route-page__form">
+      <h1 class="manage-route-page__title">Manage Route & Schedules</h1>
+
+      <div class="manage-route-page__grid">
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">From</label>
+          <select class="manage-route-page__select"></select>
         </div>
-        <div>
-          <label>To</label>
-          <select></select>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">To</label>
+          <select class="manage-route-page__select"></select>
         </div>
-        <div>
-          <label>Depart Time</label>
-          <select></select>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Depart Time</label>
+          <select class="manage-route-page__select"></select>
         </div>
-        <div>
-          <label>Day</label>
-          <input />
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Day</label>
+          <input class="manage-route-page__input" />
         </div>
+
       </div>
 
-      <button class="save-btn">Confirm</button>
+      <button class="manage-route-page__button">Confirm</button>
     </div>
 
     <!-- Table Section -->
-    <div class="table-box">
-      <h1>Assigned Route & Schedules</h1>
+    <div class="manage-route-page__table">
+      <h1 class="manage-route-page__title">Assigned Route & Schedules</h1>
+
       <table>
         <thead>
           <tr>
             <th>From</th>
             <th>To</th>
-            <th>Depart time</th>
+            <th>Depart Time</th>
             <th>Day</th>
           </tr>
         </thead>
       </table>
     </div>
+
   </div>
 </template>
 
 <style scoped>
-.manage-RouteSche-page {
+.manage-route-page {
   color: white;
   padding: 30px;
   border-radius: 10px;
 }
 
-.form-box,
-.table-box {
+.manage-route-page__form,
+.manage-route-page__table {
   background: #111827;
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
 }
 
-h1 {
+.manage-route-page__title {
   font-size: 26px;
-  margin-bottom: 15px;
   font-weight: bold;
+  margin-bottom: 15px;
 }
 
-.form-grid {
+/* Grid Layout */
+.manage-route-page__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
-input,
-select {
+.manage-route-page__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-route-page__label {
+  margin-bottom: 6px;
+}
+
+/* Inputs */
+.manage-route-page__input,
+.manage-route-page__select {
   width: 100%;
   padding: 8px;
   background: #111827;
@@ -81,7 +99,8 @@ select {
   border-radius: 5px;
 }
 
-.save-btn {
+/* Button */
+.manage-route-page__button {
   margin-top: 20px;
   background: #4caf50;
   padding: 10px 20px;
@@ -91,16 +110,17 @@ select {
   color: white;
 }
 
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
 }
 
-th,
-td {
+th {
   padding: 12px;
-  border-bottom: 1px solid #111827;
-  text-align: left;
+  border-bottom: 1px solid #333;
+  text-align: center;
 }
+
 </style>

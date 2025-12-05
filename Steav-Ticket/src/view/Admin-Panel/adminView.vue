@@ -1,17 +1,17 @@
 <template>
-  <HeadBar/>
   <div class="body">
+
     <aside class="sidebar">
-      <h2 class="sidebar-title">Admin Panel</h2>
+      <h1 class="sidebar-title">Admin Panel</h1>
 
       <ul class="menu">
         <li v-for="(item, index) in items" :key="index">
           <router-link class="nav-link" active-class="active" :to="item.to">
-            <span class="icon">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </router-link>
         </li>
       </ul>
+
     </aside>
 
     <div class="line"></div>
@@ -20,11 +20,7 @@
 </template>
 
 <script lang="ts">
-import HeadBar from '@/component/HeadBar.vue';
 export default {
-  components: {
-    HeadBar,
-  },
   data() {
     return {
       items: [
@@ -69,9 +65,11 @@ export default {
 }
 
 .sidebar-title {
-  font-size: 22px;
+  font-size: 26px;
   margin-bottom: 20px;
-  color: #4ade80; /* green */
+  margin-left: 10px;
+  color: #4CAF50;
+  font-weight: bold;
 }
 
 .menu {
@@ -80,7 +78,7 @@ export default {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
 .nav-link {
