@@ -6,20 +6,20 @@
           <img src="../../assets/img/avatar.png" alt="User Avatar" />
         </div>
         <!-- <p class="profile-status">{{ isEditing ? 'Editing Profile' : 'View Mode' }}</p> -->
-        <a href="#">{{ isEditing ? 'Cancel' : 'Edit' }}</a>
-        <h2 class="welcome-text">Welcome, {{ formData.firstName || 'Steav' }}</h2>
+        <a href="#">{{ 'Edit' }}</a>
+        <h2 class="welcome-text">Welcome, Steav</h2>
       </div>
 
       <nav class="menu">
-        <router-link to="/account/profile" class="menu-item" active-class="active">
+        <router-link to="/account/profile" class="menu-item">
           <span class="icon">👤</span>
           <span>Personal Information</span>
         </router-link>
-        <router-link to="/account/methodpay" class="menu-item" active-class="active">
+        <router-link to="/account/methodpay" class="menu-item">
           <span class="icon">💳</span>
           <span>Payments</span>
         </router-link>
-        <router-link to="/account/language" class="menu-item">
+        <router-link to="/account/language" class="menu-item" active-class="active">
           <span class="icon">Aa</span>
           <span>Language</span>
         </router-link>
@@ -46,101 +46,90 @@
     </div>
 
     <div class="content">
-      <h1 class="page-title">Personal Profile</h1>
+      <div class="help-section">
+        <h2 class="section-title">Troubleshoot</h2>
+        <p class="section-description">
+          Get help with common issues and troubleshoot unexpected behavior
+        </p>
+      </div>
 
-      <form class="profile-form" @submit.prevent="handleSubmit">
-        <div class="form-row">
-          <div class="form-group">
-            <label>First Name</label>
-            <input
-              v-model="formData.firstName"
-              type="text"
-              placeholder="Enter your First name"
-              :disabled="!isEditing"
-            />
-          </div>
-          <div class="form-group">
-            <label>Last Name</label>
-            <input
-              v-model="formData.lastName"
-              type="text"
-              placeholder="Enter your Last name"
-              :disabled="!isEditing"
-            />
-          </div>
-        </div>
+      <div class="help-section">
+        <h2 class="section-title">Work with Support</h2>
+        <p class="section-description">
+          Submit a bug report, get help catching big flips, and find your system information
+        </p>
+      </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Birth of date</label>
-            <input
-              v-model="formData.birthDate"
-              type="date"
-              placeholder="DD/MM/YYYY"
-              :disabled="!isEditing"
-            />
-          </div>
-          <div class="form-group gender-group">
-            <label class="radio-label">
-              <input v-model="formData.gender" type="radio" value="male" :disabled="!isEditing" />
-              <span>Male</span>
-            </label>
-            <label class="radio-label">
-              <input v-model="formData.gender" type="radio" value="female" :disabled="!isEditing" />
-              <span>Female</span>
-            </label>
-          </div>
-        </div>
+      <div class="help-section">
+        <h2 class="section-title">Contact Us</h2>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nationality</label>
-            <input
-              v-model="formData.nationality"
-              type="text"
-              placeholder="Nationality"
-              :disabled="!isEditing"
-            />
+        <form class="contact-form" @submit.prevent="handleSubmit">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input
+                v-model="formData.firstName"
+                type="text"
+                placeholder="Enter your First name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input
+                v-model="formData.lastName"
+                type="text"
+                placeholder="Enter your Last name"
+                required
+              />
+            </div>
           </div>
-          <div class="form-group">
-            <label>Phone Number</label>
-            <input
-              v-model="formData.phoneNumber"
-              type="tel"
-              placeholder="Phone Number"
-              :disabled="!isEditing"
-            />
-          </div>
-        </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Username</label>
-            <input
-              v-model="formData.username"
-              type="text"
-              placeholder="Enter Username"
-              :disabled="!isEditing"
-            />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input
+                v-model="formData.email"
+                type="email"
+                placeholder="Enter your Email address"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input
+                v-model="formData.phone"
+                type="tel"
+                placeholder="Enter your Phone Number"
+                required
+              />
+            </div>
           </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input
-              v-model="formData.email"
-              type="email"
-              placeholder="Enter email"
-              :disabled="!isEditing"
-            />
-          </div>
-        </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn btn-edit" @click="toggleEdit">
-            {{ isEditing ? 'Cancel' : 'Edit Profile' }}
-          </button>
-          <button type="submit" class="btn btn-continue" :disabled="!isEditing">Continue</button>
-        </div>
-      </form>
+          <div class="form-row">
+            <div class="form-group">
+              <label>How can we help you?</label>
+              <textarea
+                v-model="formData.message"
+                placeholder="Write down here ..."
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>What can we provide to you ?</label>
+              <textarea
+                v-model="formData.needs"
+                placeholder="Write down here"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">Submit</button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -150,35 +139,35 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const isEditing = ref(false)
 const showLogoutModal = ref(false)
 
 const formData = ref({
-  firstName: 'Steav',
+  firstName: '',
   lastName: '',
-  birthDate: '',
-  gender: 'male',
-  nationality: '',
-  phoneNumber: '',
-  username: '',
   email: '',
+  phone: '',
+  message: '',
+  needs: '',
 })
 
-const toggleEdit = () => {
-  isEditing.value = !isEditing.value
-}
-
 const handleSubmit = () => {
-  if (isEditing.value) {
-    console.log('Profile updated:', formData.value)
-    // Save the data (you can add API call here later)
-    isEditing.value = false
-    alert('Profile updated successfully!')
+  console.log('Form submitted:', formData.value)
+  alert('Thank you for contacting us! We will get back to you soon.')
+  // Reset form
+  formData.value = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    message: '',
+    needs: '',
   }
 }
 
 const handleLogout = () => {
+  // Clear any stored user data here
   localStorage.removeItem('user')
+  // Redirect to login page
   router.push('/login')
 }
 </script>
@@ -294,6 +283,28 @@ const handleLogout = () => {
   flex-direction: column;
 }
 
+.help-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #000;
+}
+
+.section-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.contact-form {
+  max-width: 900px;
+  margin-top: 30px;
+}
+
 .form-group label {
   font-size: 14px;
   font-weight: 500;
@@ -304,85 +315,45 @@ const handleLogout = () => {
 .form-group input[type='text'],
 .form-group input[type='email'],
 .form-group input[type='tel'],
-.form-group input[type='date'] {
+.form-group textarea {
   padding: 15px 20px;
   border: none;
   background-color: #f5f5f5;
-  border-radius: 25px;
+  border-radius: 10px;
   font-size: 14px;
   outline: none;
   transition: background-color 0.3s;
+  font-family: inherit;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   background-color: #ebebeb;
 }
 
-.form-group input:disabled {
-  background-color: #e8e8e8;
-  cursor: not-allowed;
-  opacity: 0.7;
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
-.gender-group {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 40px;
-  padding-top: 30px;
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.radio-label input[type='radio'] {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  accent-color: #ff6b9d;
-}
-
-.form-actions {
-  display: flex;
-  gap: 20px;
-  margin-top: 40px;
-}
-
-.btn {
-  padding: 15px 50px;
+.submit-btn {
+  background: linear-gradient(90deg, #ff6b9d 0%, #ff5e8f 100%);
+  color: white;
   border: none;
   border-radius: 25px;
+  padding: 15px 80px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  margin-top: 20px;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
 }
 
-.btn:hover:not(:disabled) {
+.submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-edit {
-  background-color: #ff6b9d;
-  color: white;
-}
-
-.btn-continue {
-  background-color: #ff6b9d;
-  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
 }
 
 /* Logout Modal */

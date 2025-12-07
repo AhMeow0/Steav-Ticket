@@ -15,7 +15,7 @@
           <span class="icon">👤</span>
           <span>Personal Information</span>
         </router-link>
-        <router-link to="/account/methodpay" class="menu-item" active-class="active">
+        <router-link to="/account/methodpay" class="menu-item">
           <span class="icon">💳</span>
           <span>Payments</span>
         </router-link>
@@ -23,7 +23,7 @@
           <span class="icon">Aa</span>
           <span>Language</span>
         </router-link>
-        <router-link to="/account/help" class="menu-item">
+        <router-link to="/account/help" class="menu-item" active-class="active">
           <span class="icon">❓</span>
           <span>Help</span>
         </router-link>
@@ -46,46 +46,18 @@
     </div>
 
     <div class="content">
-      <h1 class="page-title">Payment Method</h1>
+      <h1 class="page-title">Language Settings</h1>
 
-      <div class="payment-methods">
-        <div class="payment-option">
-          <div class="payment-left">
-            <div class="payment-icon bank">
-              <span>$</span>
-            </div>
-            <span class="payment-name">Bank Transfer</span>
-          </div>
-          <div class="payment-logos">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Aba_logo.svg/2560px-Aba_logo.svg.png"
-              alt="ABA"
-            />
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/ACLEDA_Bank_logo.svg/2560px-ACLEDA_Bank_logo.svg.png"
-              alt="ACLEDA"
-            />
-            <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKxEOo6gMTJl6TmE9xPqwC8m0U-wnEh_ZvUQ&s"
-              alt="Wing"
-            />
-          </div>
-        </div>
+      <div class="language-options">
+        <label class="language-option">
+          <input type="radio" name="language" value="khmer" v-model="selectedLanguage" />
+          <span class="language-name">Khmer</span>
+        </label>
 
-        <div class="payment-option">
-          <div class="payment-left">
-            <div class="payment-icon card">
-              <span>💳</span>
-            </div>
-            <span class="payment-name">Card Payment</span>
-          </div>
-          <div class="payment-logos">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
-              alt="Visa"
-            />
-          </div>
-        </div>
+        <label class="language-option">
+          <input type="radio" name="language" value="english" v-model="selectedLanguage" />
+          <span class="language-name">English</span>
+        </label>
       </div>
     </div>
   </div>
@@ -96,6 +68,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const selectedLanguage = ref('english')
 const showLogoutModal = ref(false)
 
 const handleLogout = () => {
@@ -215,72 +188,41 @@ const handleLogout = () => {
   flex-direction: column;
 }
 
-.payment-methods {
+.language-options {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 900px;
+  max-width: 600px;
 }
 
-.payment-option {
+.language-option {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 20px;
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 15px;
-  padding: 25px 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px 30px;
+  cursor: pointer;
   transition: all 0.3s;
 }
 
-.payment-option:hover {
+.language-option:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-.payment-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.language-option input[type='radio'] {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: #ff6b9d;
 }
 
-.payment-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.payment-icon.bank {
-  background-color: #000;
-  color: white;
-}
-
-.payment-icon.card {
-  background-color: #000;
-  color: white;
-}
-
-.payment-name {
+.language-name {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: #333;
-}
-
-.payment-logos {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.payment-logos img {
-  height: 30px;
-  width: auto;
-  object-fit: contain;
 }
 
 .modal-overlay {

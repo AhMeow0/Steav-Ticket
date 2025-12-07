@@ -6,7 +6,6 @@ import SignupPage from '@/auth/SignUp.vue' // MUST MATCH FILE NAME
 
 // ===== Admin Panel =====
 import AdminView from '@/view/Admin-Panel/adminView.vue'
-import UserView from '@/view/Account-User/userView.vue'
 import DashBoard from '@/view/Admin-Panel/DashBoard.vue'
 import ManagePromotionNew from '@/view/Admin-Panel/ManagePromotionNew.vue'
 import ManageTicketPrice from '@/view/Admin-Panel/ManageTicketPrice.vue'
@@ -18,8 +17,10 @@ import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
 import AccountView from '@/view/Account-User/AccountView.vue'
 import ProfilePage from '@/view/Account-User/ProfilePage.vue'
 import MethodPay from '@/view/Account-User/MethodPay.vue'
-import Payment from '@/view/Account-User/payment.vue'
-import SeatBooking from '@/view/Account-User/seatBooking.vue'
+import Language from '@/view/Account-User/Language.vue'
+import HelpPage from '@/view/Account-User/HelpPage.vue'
+
+
 
 const routes = [
   // ===== PUBLIC ROUTES =====
@@ -45,17 +46,6 @@ const routes = [
     ],
   },
 
-  // ===== USER ROUTES =====
-  {
-    path: '/user',
-    name: 'UserView',
-    component: UserView,
-    children: [
-      { path: 'payment', name: 'Payment', component: Payment },
-      { path: 'seat-booking', name: 'SeatBooking', component: SeatBooking },
-    ],
-  },
-
   // ===== ACCOUNT ROUTES =====
   {
     path: '/account',
@@ -64,6 +54,9 @@ const routes = [
     children: [
       { path: 'profile', name: 'ProfilePage', component: ProfilePage },
       { path: 'methodpay', name: 'MethodPay', component: MethodPay },
+      { path: 'language', name: 'Language', component: Language },
+      { path: 'help', name: 'HelpPage', component: HelpPage },
+      
     ],
   },
 ]
