@@ -1,25 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-
 // ===== Auth Pages =====
 import LoginPage from '@/auth/Login.vue'
 import SignupPage from '@/auth/SignUp.vue' // MUST MATCH FILE NAME
 
 // ===== Admin Panel =====
 import AdminView from '@/view/Admin-Panel/adminView.vue'
+import UserView from '@/view/Account-User/userView.vue'
 import DashBoard from '@/view/Admin-Panel/DashBoard.vue'
 import ManagePromotionNew from '@/view/Admin-Panel/ManagePromotionNew.vue'
 import ManageTicketPrice from '@/view/Admin-Panel/ManageTicketPrice.vue'
 import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
+import Payment from '@/view/Account-User/payment.vue'
+import SeatBooking from '@/view/Account-User/seatBooking.vue'
 // import Authenticator from '@/auth/Login.vue'
 
-// ===== Account Routes =====
-import AccountView from '@/view/Account-User/AccountView.vue'
-import ProfilePage from '@/view/Account-User/ProfilePage.vue'
-import MethodPay from '@/view/Account-User/MethodPay.vue'
-import path from 'path'
+
 
 const routes = [
   // ===== PUBLIC ROUTES =====
@@ -44,6 +42,7 @@ const routes = [
       { path: 'manage-bus', name: 'ManageBus', component: ManageBuses },
       { path: 'manage-promotion', name: 'ManagePromotionNew', component: ManagePromotionNew },
       { path: 'manage-ticket-price', name: 'ManageTicketPrice', component: ManageTicketPrice },
+
       {
         path: 'manage-booking-passager',
         name: 'ManageBookingPassager',
@@ -52,19 +51,6 @@ const routes = [
       { path: 'manage-route-schedules', name: 'ManageRouteSche', component: ManageRouteSche },
     ],
   },
-
-  // ===== ACCOUNT ROUTES =====
-  {
-    path: '/account',
-    name: 'AccountView',
-    component: AccountView,
-    children: [
-      { path: 'profile', name: 'ProfilePage', component: ProfilePage },
-      { path: 'methodpay', name: 'MethodPay', component: MethodPay },
-    ],
-  },
-
-
 ]
 
 const router = createRouter({
