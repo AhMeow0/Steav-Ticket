@@ -305,7 +305,7 @@ function goTo(page: string) {
     margin: 10px;
   }
   .top-bar {
-    padding: 20px;
+    padding: 21px;
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
