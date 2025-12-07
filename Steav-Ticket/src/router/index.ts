@@ -15,7 +15,11 @@ import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
 // import Authenticator from '@/auth/Login.vue'
 
-
+// ===== Account Routes =====
+import AccountView from '@/view/Account-User/AccountView.vue'
+import ProfilePage from '@/view/Account-User/ProfilePage.vue'
+import MethodPay from '@/view/Account-User/MethodPay.vue'
+import path from 'path'
 
 const routes = [
   // ===== PUBLIC ROUTES =====
@@ -33,7 +37,7 @@ const routes = [
   // ===== ADMIN ROUTES =====
   {
     path: '/admin',
-    name: 'AdminView',
+    name: 'adminView',
     component: AdminView,
     children: [
       { path: 'dashboard', name: 'Dashboard', component: DashBoard },
@@ -48,6 +52,19 @@ const routes = [
       { path: 'manage-route-schedules', name: 'ManageRouteSche', component: ManageRouteSche },
     ],
   },
+
+  // ===== ACCOUNT ROUTES =====
+  {
+    path: '/account',
+    name: 'AccountView',
+    component: AccountView,
+    children: [
+      { path: 'profile', name: 'ProfilePage', component: ProfilePage },
+      { path: 'methodpay', name: 'MethodPay', component: MethodPay },
+    ],
+  },
+
+
 ]
 
 const router = createRouter({
