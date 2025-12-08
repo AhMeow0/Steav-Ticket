@@ -1,11 +1,23 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
+// ============================================
+// 1. USER SIDE IMPORTS (The Clean UI Pages)
+// ============================================
+import UserHome from '@/view/User-Panel/UserHome.vue'
+import UserBooking from '@/component/UserBooking.vue'
+import UserExplore from '@/component/UserExplore.vue'
+import AboutUs from '@/component/AboutUs.vue'
 
-// ===== Auth Pages =====
+// ============================================
+// 2. AUTH IMPORTS
+// ============================================
+// FIX: Ensure you have created an 'auth' folder in 'src' and moved these files there!
 import LoginPage from '@/auth/Login.vue'
-import SignupPage from '@/auth/SignUp.vue' // MUST MATCH FILE NAME
+import SignupPage from '@/auth/SignUp.vue' // Fixed spelling from 'anuth'
 
-// ===== Admin Panel =====
+// ============================================
+// 3. ADMIN PANEL IMPORTS
+// ============================================
 import AdminView from '@/view/Admin-Panel/adminView.vue'
 import DashBoard from '@/view/Admin-Panel/DashBoard.vue'
 import ManagePromotionNew from '@/view/Admin-Panel/ManagePromotionNew.vue'
@@ -13,24 +25,53 @@ import ManageTicketPrice from '@/view/Admin-Panel/ManageTicketPrice.vue'
 import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
-// import Authenticator from '@/auth/Login.vue'
 
+const routes: Array<RouteRecordRaw> = [
+  // ============================================
+  //  USER ROUTES (Public)
+  // ============================================
+  {
+    path: '/',
+    redirect: '/homepage',
+  },
+  {
+    path: '/homepage',
+    name: 'UserHome',
+    component: UserHome,
+  },
+  {
+    path: '/booking',
+    name: 'UserBooking',
+    component: UserBooking,
+  },
+  {
+    path: '/explore',
+    name: 'UserExplore',
+    component: UserExplore,
+  },
+  {
+    path: '/aboutus',
+    name: 'AboutUs',
+    component: AboutUs,
+  },
 
+  // ============================================
+  //  AUTH ROUTES
+  // ============================================
+  {
+    path: '/login',
+    name: 'LoginPage',
+    component: LoginPage,
+  },
+  {
+    path: '/signup',
+    name: 'SignupPage',
+    component: SignupPage,
+  },
 
-const routes = [
-  // ===== PUBLIC ROUTES =====
-  { path: '/login', name: 'LoginPage', component: LoginPage },
-  { path: '/signup', name: 'SignupPage', component: SignupPage },
-  // {
-  //   path: 'auth',
-  //   name: 'authitication',
-  //   component: Authenticator,
-  //   children: [
-
-  //   ]
-  // }
-
-  // ===== ADMIN ROUTES =====
+  // ============================================
+  //  ADMIN ROUTES (Protected)
+  // ============================================
   {
     path: '/admin',
     name: 'AdminView',
@@ -51,8 +92,10 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory('/'),
   routes,
+  // This class makes the active link (like "Home" or "Explore") turn Pink automatically
+  linkActiveClass: 'active-link',
 })
 
 export default router
