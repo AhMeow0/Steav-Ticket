@@ -19,19 +19,30 @@
           <span class="icon">💳</span>
           <span>Payments</span>
         </router-link>
-        <button class="menu-item">
+        <router-link to="/account/language" class="menu-item">
           <span class="icon">Aa</span>
           <span>Language</span>
-        </button>
-        <button class="menu-item">
+        </router-link>
+        <router-link to="/account/help" class="menu-item">
           <span class="icon">❓</span>
           <span>Help</span>
-        </button>
-        <button class="menu-item logout">
+        </router-link>
+        <button class="menu-item logout" @click="showLogoutModal = true">
           <span class="icon">↩</span>
           <span>Log out</span>
         </button>
       </nav>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div v-if="showLogoutModal" class="modal-overlay" @click="showLogoutModal = false">
+      <div class="modal-content" @click.stop>
+        <h3 class="modal-title">Log out of your account?</h3>
+        <div class="modal-buttons">
+          <button class="modal-btn cancel-btn" @click="showLogoutModal = false">Cancel</button>
+          <button class="modal-btn logout-btn" @click="handleLogout">Log out</button>
+        </div>
+      </div>
     </div>
 
     <div class="content">
@@ -136,8 +147,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const isEditing = ref(false)
+const showLogoutModal = ref(false)
 
 const formData = ref({
   firstName: 'Steav',
@@ -161,6 +175,11 @@ const handleSubmit = () => {
     isEditing.value = false
     alert('Profile updated successfully!')
   }
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('user')
+  router.push('/login')
 }
 </script>
 
@@ -364,5 +383,71 @@ const handleSubmit = () => {
 .btn-continue {
   background-color: #ff6b9d;
   color: white;
+}
+
+/* Logout Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  padding: 30px 40px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background-color: #e8e8e8;
+}
+
+.logout-btn {
+  background: linear-gradient(90deg, #ff6b9d 0%, #ff5e8f 100%);
+  color: white;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
 }
 </style>

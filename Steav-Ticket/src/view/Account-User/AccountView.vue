@@ -12,10 +12,13 @@ export default {
       items: [
         { label: 'ProfilePage', to: '/account/profile' },
         { label: 'MethodPay', to: '/account/methodpay' },
+        { label: 'Language', to: '/account/language' },
+        { label: 'Help', to: '/account/help' },
     ],
     }
   },
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

@@ -26,6 +26,7 @@ import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
 
+<<<<<<< HEAD
 const routes: Array<RouteRecordRaw> = [
   // ============================================
   //  USER ROUTES (Public)
@@ -54,6 +55,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'AboutUs', 
     component: AboutUs
   },
+=======
+// ===== Account/User Routes =====
+import AccountView from '@/view/Account-User/AccountView.vue'
+import ProfilePage from '@/view/Account-User/ProfilePage.vue'
+import MethodPay from '@/view/Account-User/MethodPay.vue'
+import Language from '@/view/Account-User/Language.vue'
+import HelpPage from '@/view/Account-User/HelpPage.vue'
+
+
+>>>>>>> b13c4250bea7258d590938cc7c5eae348ed0c60f
 
   // ============================================
   //  AUTH ROUTES
@@ -89,6 +100,23 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'manage-route-schedules', name: 'ManageRouteSche', component: ManageRouteSche },
     ],
   },
+<<<<<<< HEAD
+=======
+
+  // ===== ACCOUNT ROUTES =====
+  {
+    path: '/account',
+    name: 'AccountView',
+    component: AccountView,
+    children: [
+      { path: 'profile', name: 'ProfilePage', component: ProfilePage },
+      { path: 'methodpay', name: 'MethodPay', component: MethodPay },
+      { path: 'language', name: 'Language', component: Language },
+      { path: 'help', name: 'HelpPage', component: HelpPage },
+      
+    ],
+  },
+>>>>>>> b13c4250bea7258d590938cc7c5eae348ed0c60f
 ]
 
 const router = createRouter({

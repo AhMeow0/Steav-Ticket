@@ -11,6 +11,7 @@ const currentView = ref('user');
 </script>
 
 <template>
+<<<<<<< HEAD
   <div class="app-container">
     <nav class="navbar">
       <div class="logo">Steav-Ticket</div>
@@ -24,6 +25,9 @@ const currentView = ref('user');
 
     <component :is="currentView === 'user' ? UserHome : ManageRouteSche" />
   </div>
+=======
+  <router-view />
+>>>>>>> b13c4250bea7258d590938cc7c5eae348ed0c60f
 </template>
 
 <style>
