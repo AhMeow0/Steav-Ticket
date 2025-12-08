@@ -12,7 +12,7 @@ import AboutUs from '@/component/AboutUs.vue'
 // 2. AUTH IMPORTS
 // ============================================
 // FIX: Ensure you have created an 'auth' folder in 'src' and moved these files there!
-import LoginPage from '@/auth/Login.vue'   
+import LoginPage from '@/auth/Login.vue'
 import SignupPage from '@/auth/SignUp.vue' // Fixed spelling from 'anuth'
 
 // ============================================
@@ -26,58 +26,56 @@ import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
 import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
 
-<<<<<<< HEAD
-const routes: Array<RouteRecordRaw> = [
-  // ============================================
-  //  USER ROUTES (Public)
-  // ============================================
-  { 
-    path: '/', 
-    redirect: '/homepage' 
-  },
-  { 
-    path: '/homepage', 
-    name: 'UserHome', 
-    component: UserHome 
-  },
-  { 
-    path: '/booking', 
-    name: 'UserBooking', 
-    component: UserBooking 
-  },
-  { 
-    path: '/explore', 
-    name: 'UserExplore', 
-    component: UserExplore 
-  },
-  { 
-    path: '/aboutus', 
-    name: 'AboutUs', 
-    component: AboutUs
-  },
-=======
-// ===== Account/User Routes =====
+// ============================================
+// 4. ACCOUNT/USER ROUTES IMPORTS
+// ============================================
 import AccountView from '@/view/Account-User/AccountView.vue'
 import ProfilePage from '@/view/Account-User/ProfilePage.vue'
 import MethodPay from '@/view/Account-User/MethodPay.vue'
 import Language from '@/view/Account-User/Language.vue'
 import HelpPage from '@/view/Account-User/HelpPage.vue'
 
-
->>>>>>> b13c4250bea7258d590938cc7c5eae348ed0c60f
+const routes: Array<RouteRecordRaw> = [
+  // ============================================
+  //  USER ROUTES (Public)
+  // ============================================
+  {
+    path: '/',
+    redirect: '/homepage',
+  },
+  {
+    path: '/homepage',
+    name: 'UserHome',
+    component: UserHome,
+  },
+  {
+    path: '/booking',
+    name: 'UserBooking',
+    component: UserBooking,
+  },
+  {
+    path: '/explore',
+    name: 'UserExplore',
+    component: UserExplore,
+  },
+  {
+    path: '/aboutus',
+    name: 'AboutUs',
+    component: AboutUs,
+  },
 
   // ============================================
   //  AUTH ROUTES
   // ============================================
-  { 
-    path: '/login', 
-    name: 'LoginPage', 
-    component: LoginPage 
+  {
+    path: '/login',
+    name: 'LoginPage',
+    component: LoginPage,
   },
-  { 
-    path: '/signup', 
-    name: 'SignupPage', 
-    component: SignupPage 
+  {
+    path: '/signup',
+    name: 'SignupPage',
+    component: SignupPage,
   },
 
   // ============================================
@@ -100,10 +98,10 @@ import HelpPage from '@/view/Account-User/HelpPage.vue'
       { path: 'manage-route-schedules', name: 'ManageRouteSche', component: ManageRouteSche },
     ],
   },
-<<<<<<< HEAD
-=======
 
-  // ===== ACCOUNT ROUTES =====
+  // ============================================
+  //  ACCOUNT ROUTES
+  // ============================================
   {
     path: '/account',
     name: 'AccountView',
@@ -113,17 +111,15 @@ import HelpPage from '@/view/Account-User/HelpPage.vue'
       { path: 'methodpay', name: 'MethodPay', component: MethodPay },
       { path: 'language', name: 'Language', component: Language },
       { path: 'help', name: 'HelpPage', component: HelpPage },
-      
     ],
   },
->>>>>>> b13c4250bea7258d590938cc7c5eae348ed0c60f
 ]
 
 const router = createRouter({
   history: createWebHistory('/'),
   routes,
   // This class makes the active link (like "Home" or "Explore") turn Pink automatically
-  linkActiveClass: 'active-link' 
+  linkActiveClass: 'active-link',
 })
 
 export default router
