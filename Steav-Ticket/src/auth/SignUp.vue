@@ -47,13 +47,19 @@
 
         <!-- Terms -->
         <div class="terms">
-          <input type="checkbox" v-model="agree"/>
-          <span style="font-size: 10px;">I agree to the Terms of Service and Privacy Policy.</span>
+          <input type="checkbox" v-model="agree" />
+          <span style="font-size: 10px">I agree to the Terms of Service and Privacy Policy.</span>
         </div>
         <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
 
-        <!-- Button -->
+        <!-- Sign Up button -->
         <button class="auth-btn" type="submit">Sign Up</button>
+
+        <!-- Switch to Login -->
+        <p class="switch">
+          Already have an account?
+          <router-link to="/login" class="link">Log In</router-link>
+        </p>
       </form>
     </div>
   </div>
@@ -83,6 +89,11 @@ function validateEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
+// ⭐ SIMPLE STRONG PASSWORD: must be 8+ characters
+function isStrongPassword(value: string) {
+  return value.length >= 8
+}
+
 function submitForm() {
   errors.value = {
     username: '',
@@ -92,26 +103,40 @@ function submitForm() {
     agree: '',
   }
 
-  if (!username.value) errors.value.username = 'Username is required'
-  if (!email.value || !validateEmail(email.value)) errors.value.email = 'Valid email is required'
-  if (!password.value) errors.value.password = 'Password is required'
-  if (confirmPassword.value !== password.value)
+  if (!username.value) {
+    errors.value.username = 'Username is required'
+  }
+
+  if (!email.value || !validateEmail(email.value)) {
+    errors.value.email = 'Valid email is required'
+  }
+
+  if (!password.value) {
+    errors.value.password = 'Password is required'
+  } else if (!isStrongPassword(password.value)) {
+    errors.value.password = 'Password must be at least 8 characters long'
+  }
+
+  if (confirmPassword.value !== password.value) {
     errors.value.confirmPassword = 'Passwords do not match'
-  if (!agree.value) errors.value.agree = 'You must agree to continue'
+  }
+
+  if (!agree.value) {
+    errors.value.agree = 'You must agree to continue'
+  }
 
   const hasErrors = Object.values(errors.value).some((e) => e !== '')
 
   if (!hasErrors) {
-    alert('Form submitted successfully!')
+    alert('Account created successfully!')
   }
 }
 </script>
 
 <style scoped>
-/* SAME CSS YOU ALREADY HAVE, only adds toggle button */
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #8bb1ff, #ffcf7c);
+  background: #ed486c;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -172,10 +197,10 @@ input {
 
 .terms {
   display: flex;
+  align-items: center;
   margin-bottom: 8px;
   font-size: 8px;
 }
-
 
 .auth-btn {
   width: 100%;
@@ -189,10 +214,23 @@ input {
   font-weight: 600;
 }
 
+.switch {
+  text-align: center;
+  margin-top: 12px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.link {
+  color: #ff4672;
+  text-decoration: none;
+  font-weight: 600;
+}
+
 .error {
   color: red;
   font-size: 10px;
-  margin-top: -8px;
+  margin-top: -4px;
   margin-bottom: 10px;
 }
 </style>

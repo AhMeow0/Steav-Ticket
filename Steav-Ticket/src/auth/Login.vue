@@ -6,27 +6,36 @@
       <h1>Log In to Steav-Ticket</h1>
       <p class="subtitle">Quick & Simple way to Automate your payment</p>
 
-      <form class="auth-form" method="get">
+      <form class="auth-form">
         <!-- Email -->
         <label>Email Address</label>
-        <input type="email" placeholder="Enter your email" />
+        <input v-model="email" type="email" placeholder="Enter your email" />
+        <p v-if="errors.email" class="error">{{ errors.email }}</p>
 
         <!-- Password -->
         <label>Password</label>
-        <div class="password-box">
-          <input type="password" placeholder="Enter your password" />
-        </div>
+        <input v-model="password" type="password" placeholder="Enter your password" />
+        <p v-if="errors.password" class="error">{{ errors.password }}</p>
 
         <!-- Options -->
         <div class="options">
-          <input type="checkbox"/>
-          <label>Remember Me</label>
+          <div>
+            <input type="checkbox" />
+            <label>Remember Me</label>
+          </div>
 
-          <a href="#" class="forgot">Forgot Password?</a>
+          <!-- NEW: Go to Forgot Password page -->
+          <router-link to="/forgot-password" class="forgot">Forgot Password?</router-link>
         </div>
 
         <!-- Login button -->
-        <button class="auth-btn">Log In</button>
+        <button class="auth-btn" @click.prevent="login">Log In</button>
+
+        <!-- Switch to Signup -->
+        <p class="switch">
+          Don't have an account?
+          <router-link to="/signup" class="link">Sign Up</router-link>
+        </p>
 
         <p class="or">OR USE</p>
 
@@ -40,12 +49,43 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// form fields
+const email = ref('')
+const password = ref('')
+
+// error messages
+const errors = ref({
+  email: '',
+  password: '',
+})
+
+function login() {
+  // clear errors
+  errors.value.email = ''
+  errors.value.password = ''
+
+  // validate
+  if (!email.value) errors.value.email = 'Email is required'
+  if (!password.value) errors.value.password = 'Password is required'
+
+  // stop here if errors
+  if (errors.value.email || errors.value.password) return
+
+  // Phase 1: fake login → navigate to user home
+  router.push('/user/home')
+}
+</script>
 
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: #ec2d57;
+  background: #ed486c;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -88,16 +128,26 @@ input {
   margin-bottom: 15px;
 }
 
+.error {
+  color: red;
+  font-size: 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
 .options {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
   margin-top: -5px;
   margin-bottom: 15px;
+  align-items: center;
 }
 
 .forgot {
   color: #ff4672;
+  font-weight: 600;
+  cursor: pointer;
   text-decoration: none;
 }
 
@@ -112,8 +162,17 @@ input {
   cursor: pointer;
 }
 
-.auth-btn:hover {
-  background: #ff335c;
+.switch {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.link {
+  color: #ff4672;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .or {

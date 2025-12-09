@@ -64,9 +64,12 @@ const routes: Array<RouteRecordRaw> = [
     component: AboutUs,
   },
 
-  // ============================================
-  //  AUTH ROUTES
-  // ============================================
+  // AUTH ROUTES
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/auth/ForgotPassword.vue'),
+  },
   {
     path: '/login',
     name: 'LoginPage',
