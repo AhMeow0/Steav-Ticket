@@ -78,7 +78,7 @@ function login() {
   if (errors.value.email || errors.value.password) return
 
   // Phase 1: fake login → navigate to user home
-  router.push('/user/home')
+  router.push('/homepage')
 }
 </script>
 
