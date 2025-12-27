@@ -8,7 +8,13 @@
       <div class="about-card">
         <div class="about-logo-section">
           <div class="logo-circle">
-            <span class="logo-placeholder">Steav-Ticket</span>
+            <div class="logo-circle">
+              <img
+                src="../../src/assets/img/profile_image.png"
+                alt="Steav Ticket Logo"
+                class="logo-image"
+              />
+            </div>
           </div>
         </div>
 
@@ -65,13 +71,19 @@ import HeadBar from './HeadBar.vue'
 .logo-circle {
   width: 200px;
   height: 200px;
-  background-color: #fff;
+  background-color: #fff; /* optional fallback */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* 🔑 keep image inside circle */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  /* If you have an image, remove background-color and use an <img> tag inside */
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 🔑 fills circle nicely */
 }
 
 .logo-placeholder {
