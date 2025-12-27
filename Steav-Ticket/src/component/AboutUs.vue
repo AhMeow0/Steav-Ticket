@@ -7,35 +7,45 @@
 
       <div class="about-card">
         <div class="about-logo-section">
-           <div class="logo-circle">
-             <span class="logo-placeholder">Steav-Ticket</span>
-           </div>
+          <div class="logo-circle">
+            <span class="logo-placeholder">Steav-Ticket</span>
+          </div>
         </div>
 
         <div class="about-text-section">
           <p class="intro-text">
-            Welcome to <strong>Steav-Ticket</strong>, where your journey begins with ease.
-            We are dedicated to making bus travel simple, affordable, and enjoyable for everyone.
+            Welcome to <strong>Steav-Ticket</strong>, where your journey begins with ease. We are
+            dedicated to making bus travel simple, affordable, and enjoyable for everyone.
           </p>
           <p>
-            Our seamless platform connects you to reliable routes and operators, 
-            offering a wide selection of destinations at competitive prices. 
-            With a user-friendly design and secure booking, Steav-Ticket takes the hassle out of your travel plans.
+            Our seamless platform connects you to reliable routes and operators, offering a wide
+            selection of destinations at competitive prices. With a user-friendly design and secure
+            booking, Steav-Ticket takes the hassle out of your travel plans.
           </p>
         </div>
       </div>
     </div>
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import HeadBar from './HeadBar.vue';
+import Footer from './Footer.vue'
+import HeadBar from './HeadBar.vue'
 </script>
 
 <style scoped>
-.page-wrapper { background-color: #fff; min-height: 100vh; }
-.content-area { padding-top: 2rem; }
-.page-title { color: #E91E63; margin-bottom: 2rem; }
+.page-wrapper {
+  background-color: #fff;
+  min-height: 100vh;
+}
+.content-area {
+  padding-top: 2rem;
+}
+.page-title {
+  color: #e91e63;
+  margin-bottom: 2rem;
+}
 
 .about-card {
   display: flex;
@@ -60,11 +70,15 @@ import HeadBar from './HeadBar.vue';
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   /* If you have an image, remove background-color and use an <img> tag inside */
 }
 
-.logo-placeholder { font-weight: bold; color: #E91E63; font-size: 1.2rem; }
+.logo-placeholder {
+  font-weight: bold;
+  color: #e91e63;
+  font-size: 1.2rem;
+}
 
 .about-text-section {
   flex: 2;

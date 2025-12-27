@@ -13,9 +13,7 @@
       </nav>
 
       <div class="auth-action">
-        <button class="login-btn">
-          Login/Sign up <span class="icon">🎫</span>
-        </button>
+        <button class="login-btn">Login/Sign up <span class="icon">🎫</span></button>
       </div>
     </div>
   </header>
@@ -29,7 +27,7 @@
   background-color: white;
   padding: 1.2rem 0;
   font-family: 'Poppins', sans-serif;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Subtle shadow for depth */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); /* Subtle shadow for depth */
 }
 
 .container {
@@ -66,16 +64,16 @@
 
 /* Active State (Pink color for active page) */
 .active-link {
-  color: #F54E75 !important; 
+  color: #f54e75 !important;
 }
 
 .nav-links a:hover {
-  color: #F54E75;
+  color: #f54e75;
 }
 
 .login-btn {
-  background-color: #FDE8EF; /* Light pink background */
-  color: #F54E75; /* Darker pink text */
+  background-color: #fde8ef; /* Light pink background */
+  color: #f54e75; /* Darker pink text */
   border: none;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
