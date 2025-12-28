@@ -70,21 +70,20 @@
   margin-bottom: 20px;
 }
 
-/* Title */
+
 .manage-buses-page__title {
   font-size: 26px;
   font-weight: bold;
   margin-bottom: 15px;
 }
 
-/* Grid Layout */
 .manage-buses-page__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
-/* Form Fields */
+
 .manage-buses-page__field {
   display: flex;
   flex-direction: column;
@@ -94,29 +93,29 @@
   margin-bottom: 6px;
 }
 
-/* Inputs & Selects */
 .manage-buses-page__input,
 .manage-buses-page__select {
-  width: 100%;
-  padding: 8px;
+  width: 90%;
+  padding: 18px;
   background: #111827;
   border: 1px solid #424242;
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
-/* Save Button */
+
 .manage-buses-page__button {
   margin-top: 20px;
   background: #4caf50;
-  padding: 10px 20px;
+  padding: 15px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
   color: white;
 }
 
-/* Table */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -126,7 +125,6 @@ table {
 th,
 td {
   padding: 12px;
-  border-bottom: 1px solid #333;
   text-align: center;
 }
 </style>

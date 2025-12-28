@@ -93,13 +93,14 @@
 /* Inputs */
 input,
 select {
-  width: 100%;
-  padding: 8px;
+  width: 90%;
+  padding: 18px;
   background: #111827;
   border: 1px solid #424242;
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
   margin-top: 5px;
+  font-size: 14px;
 }
 
 .content-input {
@@ -112,11 +113,12 @@ select {
 .save-btn {
   margin-top: 20px;
   background: #4caf50;
-  padding: 10px 20px;
+  padding: 15px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
   color: white;
+
 }
 
 /* Table */

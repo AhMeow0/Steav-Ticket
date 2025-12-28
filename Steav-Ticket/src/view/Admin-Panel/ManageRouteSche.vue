@@ -92,18 +92,19 @@
 .manage-route-page__input,
 .manage-route-page__select {
   width: 100%;
-  padding: 8px;
+  padding: 18px;
   background: #111827;
   border: 1px solid #424242;
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
-/* Button */
+
 .manage-route-page__button {
   margin-top: 20px;
   background: #4caf50;
-  padding: 10px 20px;
+  padding: 15px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;

@@ -5,17 +5,17 @@
       <h1>Manage Route & Schedules</h1>
 
       <div class="form-grid">
-        <div>
+        <div class="form-field">
           <label>Routes</label>
           <select></select>
         </div>
 
-        <div>
+        <div class="form-field">
           <label>Date of Journey</label>
           <input type="date" />
         </div>
 
-        <div>
+        <div class="form-field">
           <label>Time</label>
           <select></select>
         </div>
@@ -45,9 +45,8 @@
     </div>
   </div>
 </template>
-
 <style scoped>
-.manage-booking-passenger-page {
+  .manage-booking-passenger-page {
   color: white;
   padding: 30px;
   border-radius: 10px;
@@ -69,39 +68,57 @@ h1 {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #e5e7eb;
 }
 
 input,
 select {
-  width: 100%;
-  padding: 8px;
+  width: 85%;
+  height: 60px;
+  padding: 0 18px;
   background: #111827;
-  border: 1px solid #424242;
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
+  border: 1px solid #424242;
+  outline: none;
+  font-size: 14px;
 }
+
 
 .save-btn {
   margin-top: 20px;
   background: #4caf50;
-  padding: 10px 20px;
+  padding: 15px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
   color: white;
+
 }
 
+/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
 }
+
 th,
 td {
   padding: 12px;
-  border-bottom: 1px solid #333;
   text-align: center;
 }
+
 </style>

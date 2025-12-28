@@ -1,7 +1,7 @@
 <template>
   <div class="manage-ticket-price-page">
 
-    <!-- Form Section -->
+
     <div class="manage-ticket-price__form">
       <h1 class="manage-ticket-price__title">Manage Route & Schedules</h1>
 
@@ -27,7 +27,6 @@
       <button class="manage-ticket-price__button">Confirm Price</button>
     </div>
 
-    <!-- Table Section -->
     <div class="manage-ticket-price__table">
       <h1 class="manage-ticket-price__title">Assigned Ticket Price</h1>
 
@@ -52,7 +51,7 @@
   border-radius: 10px;
 }
 
-/* Card sections */
+
 .manage-ticket-price__form,
 .manage-ticket-price__table {
   background: #111827;
@@ -61,21 +60,21 @@
   margin-bottom: 20px;
 }
 
-/* Headings */
+
 .manage-ticket-price__title {
   font-size: 26px;
   margin-bottom: 15px;
   font-weight: bold;
 }
 
-/* Grid */
+
 .manage-ticket-price__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 30px;
 }
 
-/* Individual form fields */
+
 .manage-ticket-price__field {
   display: flex;
   flex-direction: column;
@@ -85,29 +84,29 @@
   margin-bottom: 6px;
 }
 
-/* Inputs */
 .manage-ticket-price__input,
 .manage-ticket-price__select {
-  width: 100%;
-  padding: 8px;
+  width: 90%;
+  padding: 18px;
   background: #111827;
   border: 1px solid #424242;
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 /* Button */
 .manage-ticket-price__button {
   margin-top: 20px;
   background: #4caf50;
-  padding: 10px 20px;
+  padding: 15px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
   color: white;
 }
 
-/* Table */
+
 table {
   width: 100%;
   border-collapse: collapse;
