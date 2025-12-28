@@ -9,10 +9,16 @@ export class TicketsService {
   constructor(@InjectModel(Ticket.name) private ticketModel: Model<Ticket>) {}
 
   // Create a ticket
-  async create(createTicketDto: CreateTicketDto): Promise<Ticket> {
-    const createdTicket = new this.ticketModel(createTicketDto);
+  async create(createTicketDto: CreateTicketDto, userId: string): Promise<Ticket> {
+    const createdTicket = new this.ticketModel({ ...createTicketDto, userId: userId, });
     return createdTicket.save();
   }
+
+  // Get tickets only for a specific user
+  async findMyTickets(userId: string): Promise<Ticket[]> {
+    return this.ticketModel.find({ userId: userId }).exec();
+  }
+
 
   // Get all tickets
   async findAll(): Promise<Ticket[]> {

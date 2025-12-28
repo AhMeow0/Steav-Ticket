@@ -55,30 +55,56 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// form fields
 const email = ref('')
 const password = ref('')
+const errors = ref({ email: '', password: '', general: '' }) // Added 'general' for login errors
 
-// error messages
-const errors = ref({
-  email: '',
-  password: '',
-})
+async function login() {
+  // 1. Reset Errors
+  errors.value = { email: '', password: '', general: '' }
 
-function login() {
-  // clear errors
-  errors.value.email = ''
-  errors.value.password = ''
-
-  // validate
+  // 2. Validate Input
   if (!email.value) errors.value.email = 'Email is required'
   if (!password.value) errors.value.password = 'Password is required'
-
-  // stop here if errors
   if (errors.value.email || errors.value.password) return
 
-  // Phase 1: fake login → navigate to user home
-  router.push('/homepage')
+  try {
+    // 3. The Real Backend Call (CONNECTING DOTS!)
+    // Note: If you added 'api' prefix in Step 1, use 'http://localhost:3000/api/auth/login'
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    // 4. Handle Success or Failure
+    if (!response.ok) {
+      throw new Error('Invalid email or password');
+    }
+
+    const data = await response.json();
+
+    // 5. SAVE THE TOKEN (Crucial Step!)
+    localStorage.setItem('access_token', data.access_token);
+
+    // 6. Redirect to Home
+    alert('Login Successful!');
+    router.push('/homepage');
+
+  } catch (err: any) {
+    alert('Login Failed: ' + err.message);
+  }
+}
+
+function logout() {
+  // 1. Throw away the key
+  localStorage.removeItem('access_token');
+
+  // 2. Kick them out to the Login page
+  window.location.href = '/login';
 }
 </script>
 
