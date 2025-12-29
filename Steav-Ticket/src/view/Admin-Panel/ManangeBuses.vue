@@ -13,12 +13,21 @@
             class="manage-buses-page__input"
             type="text"
             placeholder="AC - 123456"
+            v-model="busPlate"
           />
         </div>
 
         <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Type</label>
-          <select class="manage-buses-page__select"></select>
+          <select
+            class="manage-buses-page__select"
+            v-model="busType"
+          >
+            <option value="">Select type</option>
+            <option value="VIP">VIP</option>
+            <option value="Bus">Standard</option>
+            <option value="Sleeper">Sleeper</option>
+          </select>
         </div>
 
         <div class="manage-buses-page__field">
@@ -27,12 +36,18 @@
             class="manage-buses-page__input"
             type="number"
             placeholder="0"
+            v-model.number="capacity"
           />
         </div>
 
       </div>
 
-      <button class="manage-buses-page__button">Save Buses</button>
+      <button
+        class="manage-buses-page__button"
+        @click="saveBus"
+      >
+        Save Buses
+      </button>
     </div>
 
     <!-- Table Section -->
@@ -43,16 +58,90 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Bus Plates</th>
+            <th>Bus Plate</th>
             <th>Bus Type</th>
             <th>Capacity</th>
           </tr>
         </thead>
+
+        <tbody>
+            <tr v-for="(bus, index) in buses" :key="bus._id">
+              <td>{{ index + 1 }}</td>
+              <td>{{ bus.busPlate }}</td>
+              <td>{{ bus.busType }}</td>
+              <td>{{ bus.capacity }}</td>
+              <td>
+                <button
+                  class="delete-btn"
+                  @click="deleteBus(bus._id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
       </table>
     </div>
 
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const API_URL = 'http://localhost:3000/buses'
+
+
+const busPlate = ref('')
+const busType = ref('')
+const capacity = ref(0)
+
+
+const buses = ref([])
+
+
+const fetchBuses = async () => {
+  const res = await fetch(API_URL)
+  buses.value = await res.json()
+}
+
+const saveBus = async () => {
+  if (!busPlate.value || !busType.value) {
+    alert('Please fill all fields')
+    return
+  }
+
+  await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      busPlate: busPlate.value,
+      busType: busType.value,
+      capacity: capacity.value,
+    }),
+  })
+
+  busPlate.value = ''
+  busType.value = ''
+  capacity.value = 0
+
+
+  fetchBuses()
+}
+const deleteBus = async (id) => {
+  if (!confirm('Are you sure you want to delete this bus?')) {
+    return
+  }
+
+  await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  })
+
+  fetchBuses()
+}
+
+
+onMounted(fetchBuses)
+</script>
 
 <style scoped>
 .manage-buses-page {
@@ -70,7 +159,6 @@
   margin-bottom: 20px;
 }
 
-
 .manage-buses-page__title {
   font-size: 26px;
   font-weight: bold;
@@ -82,7 +170,6 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
-
 
 .manage-buses-page__field {
   display: flex;
@@ -104,7 +191,6 @@
   font-size: 14px;
 }
 
-
 .manage-buses-page__button {
   margin-top: 20px;
   background: #4caf50;
@@ -114,7 +200,6 @@
   cursor: pointer;
   color: white;
 }
-
 
 table {
   width: 100%;
@@ -127,4 +212,17 @@ td {
   padding: 12px;
   text-align: center;
 }
+.delete-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  opacity: 0.8;
+}
+
 </style>
