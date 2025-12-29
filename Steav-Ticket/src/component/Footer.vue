@@ -15,7 +15,7 @@
         <h3>Quick Links</h3>
         <ul class="links">
           <li><router-link to="/homepage">Home</router-link></li>
-          <li><router-link to="/booking">Booking</router-link></li>
+          <li><router-link to="/booking">Ticket</router-link></li>
           <li><router-link to="/explore">Explore</router-link></li>
         </ul>
       </div>
