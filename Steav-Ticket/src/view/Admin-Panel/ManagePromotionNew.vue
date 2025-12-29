@@ -86,7 +86,6 @@ import { ref, onMounted } from 'vue'
 
 const API_URL = 'http://localhost:3000/promotions'
 
-
 const title = ref('')
 const type = ref('')
 const active = ref('')
