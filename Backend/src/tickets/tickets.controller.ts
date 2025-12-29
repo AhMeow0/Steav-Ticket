@@ -14,7 +14,15 @@ export class TicketsController {
     @Body() createTicketDto: CreateTicketDto,
     @Req() req,
   ) {
-    return this.ticketsService.create(createTicketDto);
+    const userId = req.user.sub;
+    return this.ticketsService.create(createTicketDto, userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('my-tickets')
+  async findMyTickets(@Req() req) {
+    const userId = req.user.sub;
+    return this.ticketsService.findMyTickets(userId);
   }
 
   @Get()

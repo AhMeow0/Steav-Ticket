@@ -6,6 +6,9 @@ export type TicketDocument = HydratedDocument<Ticket>;
 @Schema()
 export class Ticket {
   @Prop({ required: true })
+  userId: string;
+
+  @Prop({ required: true })
   passengerName: string;
 
   @Prop({ required: true })
