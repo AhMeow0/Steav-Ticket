@@ -13,14 +13,64 @@
       </nav>
 
       <div class="auth-action">
-        <button class="login-btn">Login/Sign up <span class="icon">🎫</span></button>
+        <div v-if="user" class="user-profile">
+          <span class="welcome-text">Hi, {{ user.name || user.email }}</span>
+          <img src="../assets/img/avatar.png" alt="User" class="avatar" />
+          <button @click="logout" class="logout-btn">Logout</button>
+        </div>
+
+        <router-link v-else to="/login" class="login-btn">
+          Login/Sign up <span class="icon">🎫</span>
+        </router-link>
       </div>
     </div>
   </header>
 </template>
 
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const user = ref<any>(null) // Store user info here
+
+onMounted(async () => {
+  // 1. Check if we have a key (token) in our pocket
+  const token = localStorage.getItem('access_token')
+
+  if (token) {
+    try {
+      // 2. Ask Backend: "Who owns this token?"
+      // Note: If you used 'api' prefix in main.ts, add /api here!
+      const response = await fetch('http://localhost:3000/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Show the ID card
+        },
+      })
+
+      if (response.ok) {
+        user.value = await response.json() // Save the user data to show in UI
+      } else {
+        // Token might be expired -> Throw it away
+        localStorage.removeItem('access_token')
+      }
+    } catch (error) {
+      console.error('Not logged in')
+    }
+  }
+})
+
+function logout() {
+  // 1. Destroy the token
+  localStorage.removeItem('access_token')
+  // 2. Reset the UI
+  user.value = null
+  // 3. Go to Login page
+  router.push('/login')
+}
+</script>
+
 <style scoped>
-/* Google Font Import (put this in index.html ideally, but works here for now) */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 .head-bar {
@@ -66,11 +116,45 @@
 .active-link {
   color: #f54e75 !important;
 }
-
 .nav-links a:hover {
   color: #f54e75;
 }
 
+/* User Profile Styles */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.welcome-text {
+  font-weight: 600;
+  color: #333;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #f54e75;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #f54e75;
+  color: #f54e75;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.logout-btn:hover {
+  background: #f54e75;
+  color: white;
+}
+
+/* Login Button Styles */
 .login-btn {
   background-color: #fde8ef; /* Light pink background */
   color: #f54e75; /* Darker pink text */
@@ -82,6 +166,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none; /* Because it's a router-link now */
   transition: background 0.3s;
 }
 
