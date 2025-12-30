@@ -4,9 +4,11 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 // 1. USER SIDE IMPORTS (The Clean UI Pages)
 // ============================================
 import UserHome from '@/view/User-Panel/UserHome.vue'
-import UserBooking from '@/component/UserBooking.vue'
+import UserTicket from '@/component/TicketBooking.vue'
+import Bookseat from '@/component/UserBookseat.vue'
 import UserExplore from '@/component/UserExplore.vue'
 import AboutUs from '@/component/AboutUs.vue'
+import SeatSelect from '@/component/SeatSelect.vue'
 
 // ============================================
 // 2. AUTH IMPORTS
@@ -44,14 +46,31 @@ const routes: Array<RouteRecordRaw> = [
     redirect: '/homepage',
   },
   {
+    path: '/checkout',
+    name: 'checkout',
+    component: () => import('@/component/Checkout.vue'),
+  },
+
+  {
+    path: '/seat-select',
+    name: 'seat-select',
+    component: SeatSelect,
+  },
+
+  {
     path: '/homepage',
     name: 'UserHome',
     component: UserHome,
   },
   {
     path: '/booking',
-    name: 'UserBooking',
-    component: UserBooking,
+    name: 'UserTicket',
+    component: UserTicket,
+  },
+  {
+    path: '/bookseat',
+    name: 'UserBookseat',
+    component: Bookseat,
   },
   {
     path: '/explore',
@@ -75,6 +94,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'LoginPage',
     component: LoginPage,
   },
+
   {
     path: '/signup',
     name: 'SignupPage',
