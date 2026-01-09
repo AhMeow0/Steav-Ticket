@@ -25,7 +25,7 @@
           >
             <option value="">Select type</option>
             <option value="VIP">VIP</option>
-            <option value="Bus">Standard</option>
+            <option value="Bus">Bus</option>
             <option value="Sleeper">Sleeper</option>
           </select>
         </div>

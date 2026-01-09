@@ -1,46 +1,51 @@
 <template>
-  <div class="manage-booking-page">
+  <div class="manage-schedule-page">
 
-    <!-- Filter Section -->
+    <!-- Form Section -->
     <div class="form-box">
-      <h1>Manage Bookings</h1>
+      <h1>Manage Schedules</h1>
 
       <div class="form-grid">
         <div class="form-field">
           <label>Route</label>
-          <select>
-            <option>Select Route</option>
-          </select>
+          <select></select>
         </div>
 
         <div class="form-field">
-          <label>Date of Journey</label>
+          <label>Bus</label>
+          <select></select>
+        </div>
+
+        <div class="form-field">
+          <label>Date</label>
           <input type="date" />
         </div>
 
         <div class="form-field">
-          <label>Schedule (Time)</label>
-          <select>
-            <option>Select Time</option>
-          </select>
+          <label>Time</label>
+          <select></select>
+        </div>
+
+        <div class="form-field">
+          <label>Price</label>
+          <input type="number" placeholder="Enter price" />
         </div>
       </div>
 
-      <button class="save-btn">Apply Filter</button>
+      <button class="save-btn">Create Schedule</button>
     </div>
 
-    <!-- Booking Table -->
+    <!-- Schedule List Section -->
     <div class="table-box">
-      <h1>Booking List</h1>
+      <h1>Schedule List</h1>
 
       <table>
         <thead>
           <tr>
-            <th>Passenger</th>
             <th>Route</th>
+            <th>Bus</th>
             <th>Date</th>
             <th>Time</th>
-            <th>Seat</th>
             <th>Price</th>
             <th>Status</th>
             <th>Action</th>
@@ -57,12 +62,13 @@
 
 
 <style scoped>
-  .manage-booking-passenger-page {
+.manage-schedule-page {
   color: white;
   padding: 30px;
   border-radius: 10px;
 }
 
+/* FORM + TABLE BOX */
 .form-box,
 .table-box {
   background: #111827;
@@ -77,9 +83,10 @@ h1 {
   font-weight: bold;
 }
 
+/* GRID */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
@@ -89,25 +96,23 @@ h1 {
 }
 
 label {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-size: 14px;
-  color: #e5e7eb;
 }
 
+/* INPUTS */
 input,
 select {
-  width: 85%;
-  height: 60px;
-  padding: 0 18px;
+  width: 100%;
+  padding: 18px;
   background: #111827;
+  border: 1px solid #424242;
   color: white;
   border-radius: 8px;
-  border: 1px solid #424242;
-  outline: none;
   font-size: 14px;
 }
 
-
+/* BUTTON */
 .save-btn {
   margin-top: 20px;
   background: #4caf50;
@@ -116,7 +121,6 @@ select {
   border: none;
   cursor: pointer;
   color: white;
-
 }
 
 /* TABLE */
@@ -129,7 +133,28 @@ table {
 th,
 td {
   padding: 12px;
+  border-bottom: 1px solid #333;
   text-align: center;
+}
+
+/* ACTION BUTTONS */
+.edit-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 </style>
