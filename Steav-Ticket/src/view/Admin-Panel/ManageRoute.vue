@@ -9,16 +9,16 @@
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">From</label>
-          <input class="manage-route-page__input" type="text" placeholder="Enter from">
+          <input class="manage-route-page__input" type="text" placeholder="Enter from" v-model="from">
         </div>
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">To</label>
-          <input class="manage-route-page__input" type="text" placeholder="Enter to">
+          <input class="manage-route-page__input" type="text" placeholder="Enter to" v-model="to">
         </div>
       </div>
 
-      <button class="manage-route-page__button">Create Route</button>
+      <button class="manage-route-page__button" @click="createRoute">Create Route</button>
     </div>
 
     <!-- Table Section -->
@@ -34,6 +34,10 @@
         </thead>
 
         <tbody>
+          <tr v-for="route in routes" :key = "route._id">
+            <td>{{ route.startLocation }}</td>
+            <td>{{ route.endLocation }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -41,6 +45,51 @@
   </div>
 </template>
 
+<script lang="ts">
+  import axios from 'axios';
+  import { defineComponent } from 'vue';
+
+  interface Route{
+    _id: string;
+    startLocation : string;
+    endLocation: string;
+  }
+
+  export default defineComponent({
+    name:'ManageRoute',
+    data(){
+      return {
+        from: '' as string, 
+        to: '' as string,
+        routes: [] as Route[]
+      };
+    },
+    mounted(){
+      this.fetchRoutes();
+    },
+    methods: {
+      async fetchRoutes(): Promise<void> {
+        try{
+          const response = await axios.get<Route[]>('http://localhost:3000/routes');
+          this.routes = response.data;
+        }
+        catch(error){
+          console.error;
+        }
+      },
+      async createRoute(): Promise<void> {
+        try{
+          await axios.post('http://localhost:3000/routes', {
+            startLocation: this.from,
+            endLocation:this.to
+          })
+        }catch(error){
+          console.error('Failed to create route: ', error);
+        }
+      }
+    },
+  });
+</script>
 
 <style scoped>
 .manage-route-page {

@@ -33,10 +33,13 @@ export class RoutesController {
   update(@Param('id') id: string, @Body() UpdateRouteDto,){
     return this.routesService.update(id, UpdateRouteDto)
   }
+
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string){
     return this.routesService.remove(id);
   }
+  
 }
+

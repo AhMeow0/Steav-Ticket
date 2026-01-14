@@ -1,30 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Types } from 'mongoose';
 
 export type TicketDocument = HydratedDocument<Ticket>;
 
 @Schema()
-export class Ticket {
-  @Prop({ required: true })
+export class Ticket{
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true})
   userId: string;
 
-  @Prop({ required: true })
-  passengerName: string;
+  @Prop({type: Types.ObjectId, ref: 'Schedule',required: true})
+  scheduleId: string;
 
   @Prop({ required: true })
   seatNumber: number;
 
-  @Prop({ required: true })
-  price: number;
-
-  @Prop({ required: true })
-  destination: string;
-
-  @Prop({ required: true })
-  departureTime: string;
-
   @Prop({ default: 'BOOKED' })
   status: string;
+
+  @Prop({ required: true })
+  final_price: number;
 }
 
 export const TicketSchema = SchemaFactory.createForClass(Ticket);

@@ -1,6 +1,6 @@
 import { IsString,IsNotEmpty,IsEnum,IsNumber,Min,IsDateString,} from 'class-validator';
 
-export class CreatePromotionDto {
+export class UpdatePromotionDto {
 
   @IsString()
   @IsNotEmpty()
