@@ -1,31 +1,36 @@
 <template>
   <div class="manage-route-page">
-
     <!-- Form Section -->
     <div class="manage-route-page__form">
       <h1 class="manage-route-page__title">Manage Routes</h1>
 
       <div class="manage-route-page__grid">
-
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">From</label>
-          <input class="manage-route-page__input" type="text" placeholder="Enter from" v-model="from">
+          <input
+            class="manage-route-page__input"
+            type="text"
+            placeholder="Enter from"
+            v-model="from"
+          />
         </div>
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">To</label>
-          <input class="manage-route-page__input" type="text" placeholder="Enter to" v-model="to">
+          <input class="manage-route-page__input" type="text" placeholder="Enter to" v-model="to" />
         </div>
       </div>
 
-      <button class="manage-route-page__button" @click="createRoute">{{ editId ? 'Update Route': 'Create Route' }}</button>
+      <button class="manage-route-page__button" @click="createRoute">
+        {{ editId ? 'Update Route' : 'Create Route' }}
+      </button>
     </div>
 
     <!-- Table Section -->
     <div class="manage-route-page__table">
       <h1 class="manage-route-page__title">Route List</h1>
 
-      <table class = "route-table">
+      <table class="route-table">
         <thead>
           <tr>
             <th>From</th>
@@ -35,10 +40,10 @@
         </thead>
 
         <tbody>
-          <tr v-for="route in routes" :key = "route._id">
+          <tr v-for="route in routes" :key="route._id">
             <td>{{ route.origin }}</td>
             <td>{{ route.destination }}</td>
-            <td class = "action">
+            <td class="action">
               <button class="btn edit" @click="updateRoute(route)">edit</button>
               <button class="btn delete" @click="deleteRoute(route._id)">delete</button>
             </td>
@@ -46,89 +51,85 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </template>
 
 <script lang="ts">
-  import axios from 'axios';
-  import { defineComponent } from 'vue';
+import axios from 'axios'
+import { defineComponent } from 'vue'
 
-  interface Route{
-    _id: string;
-    origin : string;
-    destination: string;
-  }
+interface Route {
+  _id: string
+  origin: string
+  destination: string
+}
 
-  export default defineComponent({
-    name:'ManageRoute',
-    data(){
-      return {
-        from: '' as string, 
-        to: '' as string,
-        routes: [] as Route[],
-        editId: null as string | null
-      };
-    },
-    mounted(){
-      this.fetchRoutes();
-    },
-    methods: {
-      async fetchRoutes(): Promise<void> {
-        try{
-          const response = await axios.get<Route[]>('http://localhost:3000/api/routes');
-          this.routes = response.data;
-        }
-        catch(error){
-          console.error;
-        }
-      },
-      async createRoute(): Promise<void> {
-        try{
-          if(this.editId){
-            await axios.put(`http://localhost:3000/api/routes/${this.editId}`,{
-              origin: this.from,
-              destination: this.to
-            });
-            this.resetForm();
-            this.fetchRoutes();
-          }
-          else{
-            await axios.post('http://localhost:3000/api/routes', {
-              origin: this.from,
-              destination:this.to
-            });
-            this.resetForm();
-            this.fetchRoutes();
-          }
-        }catch(error){
-          console.error('Failed to create route: ', error);
-        }
-      },
-      async updateRoute(route: Route){
-        this.from = route.origin;
-        this.to = route.destination;
-        this.editId = route._id;
-      },
-      async deleteRoute(id: string): Promise<void>{
-        if(!confirm('delete this route? ')){
-          return
-        }
-        try{
-          await axios.delete(`http://localhost:3000/api/routes/${id}`);
-          this.fetchRoutes();
-        }catch(error){
-          console.error('Fail to delete route: ', error);
-        }
-      },
-      resetForm(){
-        this.from = ''
-        this.to = ''
-        this.editId = null
+export default defineComponent({
+  name: 'ManageRoute',
+  data() {
+    return {
+      from: '' as string,
+      to: '' as string,
+      routes: [] as Route[],
+      editId: null as string | null,
+    }
+  },
+  mounted() {
+    this.fetchRoutes()
+  },
+  methods: {
+    async fetchRoutes(): Promise<void> {
+      try {
+        const response = await axios.get<Route[]>('http://localhost:3000/api/routes')
+        this.routes = response.data
+      } catch (error) {
+        console.error('Failed to fetch routes: ', error)
       }
-
     },
-  });
+    async createRoute(): Promise<void> {
+      try {
+        if (this.editId) {
+          await axios.put(`http://localhost:3000/api/routes/${this.editId}`, {
+            origin: this.from,
+            destination: this.to,
+          })
+          this.resetForm()
+          this.fetchRoutes()
+        } else {
+          await axios.post('http://localhost:3000/api/routes', {
+            origin: this.from,
+            destination: this.to,
+          })
+          this.resetForm()
+          this.fetchRoutes()
+        }
+      } catch (error) {
+        console.error('Failed to create route: ', error)
+      }
+    },
+    async updateRoute(route: Route) {
+      this.from = route.origin
+      this.to = route.destination
+      this.editId = route._id
+    },
+    async deleteRoute(id: string): Promise<void> {
+      if (!confirm('delete this route? ')) {
+        return
+      }
+      try {
+        await axios.delete(`http://localhost:3000/api/routes/${id}`)
+        this.fetchRoutes()
+      } catch (error) {
+        console.error('Fail to delete route: ', error)
+      }
+    },
+    resetForm() {
+      this.from = ''
+      this.to = ''
+      this.editId = null
+    },
+  },
+})
 </script>
 
 <style scoped>
@@ -169,7 +170,7 @@
 }
 
 /* Inputs */
-.manage-route-page__input{
+.manage-route-page__input {
   width: 100%;
   padding: 18px;
   background: #111827;
@@ -243,5 +244,4 @@
   background: red;
   color: white;
 }
-
 </style>

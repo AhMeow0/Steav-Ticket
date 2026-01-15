@@ -55,6 +55,8 @@
         <!-- Sign Up button -->
         <button class="auth-btn" type="submit">Sign Up</button>
 
+        <p v-if="errors.general" class="error">{{ errors.general }}</p>
+
         <!-- Switch to Login -->
         <p class="switch">
           Already have an account?
@@ -67,6 +69,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const username = ref('')
 const email = ref('')
@@ -83,6 +88,7 @@ const errors = ref({
   password: '',
   confirmPassword: '',
   agree: '',
+  general: '',
 })
 
 function validateEmail(value: string) {
@@ -94,13 +100,14 @@ function isStrongPassword(value: string) {
   return value.length >= 8
 }
 
-function submitForm() {
+async function submitForm() {
   errors.value = {
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
     agree: '',
+    general: '',
   }
 
   if (!username.value) {
@@ -127,8 +134,29 @@ function submitForm() {
 
   const hasErrors = Object.values(errors.value).some((e) => e !== '')
 
-  if (!hasErrors) {
-    alert('Account created successfully!')
+  if (hasErrors) return
+
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: username.value,
+        email: email.value,
+        password: password.value,
+        role: 'user',
+      }),
+    })
+
+    if (!response.ok) {
+      const message = await response.text().catch(() => '')
+      throw new Error(message || 'Sign up failed')
+    }
+
+    alert('Account created successfully! Please log in.')
+    router.push('/login')
+  } catch (err: any) {
+    errors.value.general = err?.message || 'Sign up failed'
   }
 }
 </script>

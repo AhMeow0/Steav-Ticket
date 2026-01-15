@@ -72,7 +72,7 @@ const selectedLanguage = ref('english')
 const showLogoutModal = ref(false)
 
 const handleLogout = () => {
-  localStorage.removeItem('user')
+  localStorage.removeItem('access_token')
   router.push('/login')
 }
 </script>

@@ -166,7 +166,7 @@ const handleSubmit = () => {
 
 const handleLogout = () => {
   // Clear any stored user data here
-  localStorage.removeItem('user')
+  localStorage.removeItem('access_token')
   // Redirect to login page
   router.push('/login')
 }
