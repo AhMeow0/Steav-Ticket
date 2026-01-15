@@ -14,10 +14,8 @@
 
       <div class="auth-action">
         <div v-if="user" class="user-profile">
-          <router-link to="/account/profile" class="profile-link">
-            <span class="welcome-text">Hi, {{ user.name || user.email }}</span>
-            <img src="../assets/img/avatar.png" alt="User" class="avatar" />
-          </router-link>
+          <span class="welcome-text">Hi, {{ user.name || user.email }}</span>
+          <img src="../assets/img/avatar.png" alt="User" class="avatar" />
           <button @click="logout" class="logout-btn">Logout</button>
         </div>
 
@@ -44,7 +42,7 @@ onMounted(async () => {
     try {
       // 2. Ask Backend: "Who owns this token?"
       // Note: If you used 'api' prefix in main.ts, add /api here!
-      const response = await fetch('http://localhost:3000/api/auth/profile', {
+      const response = await fetch('http://localhost:3000/auth/profile', {
         headers: {
           Authorization: `Bearer ${token}`, // Show the ID card
         },
@@ -127,13 +125,6 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 15px;
-}
-
-.profile-link {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  text-decoration: none;
 }
 
 .welcome-text {

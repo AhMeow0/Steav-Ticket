@@ -6,15 +6,11 @@
           <img src="../../assets/img/avatar.png" alt="User Avatar" />
         </div>
         <!-- <p class="profile-status">{{ isEditing ? 'Editing Profile' : 'View Mode' }}</p> -->
-        <a href="#" @click.prevent="toggleEdit">{{ isEditing ? 'Cancel' : 'Edit' }}</a>
+        <a href="#">{{ isEditing ? 'Cancel' : 'Edit' }}</a>
         <h2 class="welcome-text">Welcome, {{ formData.firstName || 'Steav' }}</h2>
       </div>
 
       <nav class="menu">
-        <router-link to="/homepage" class="menu-item" active-class="active">
-          <span class="icon">🏠</span>
-          <span>Back to Home</span>
-        </router-link>
         <router-link to="/account/profile" class="menu-item" active-class="active">
           <span class="icon">👤</span>
           <span>Personal Information</span>
@@ -150,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -168,41 +164,6 @@ const formData = ref({
   email: '',
 })
 
-onMounted(async () => {
-  const token = localStorage.getItem('access_token')
-  if (!token) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    const response = await fetch('http://localhost:3000/api/auth/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
-      return
-    }
-
-    const profile = await response.json()
-
-    // backend profile is JWT payload: { sub, name, email, role, iat, exp }
-    if (profile?.name) {
-      formData.value.firstName = String(profile.name)
-      formData.value.username = String(profile.name)
-    }
-    if (profile?.email) {
-      formData.value.email = String(profile.email)
-    }
-  } catch (e) {
-    console.error('Failed to load profile', e)
-  }
-})
-
 const toggleEdit = () => {
   isEditing.value = !isEditing.value
 }
@@ -217,7 +178,7 @@ const handleSubmit = () => {
 }
 
 const handleLogout = () => {
-  localStorage.removeItem('access_token')
+  localStorage.removeItem('user')
   router.push('/login')
 }
 </script>

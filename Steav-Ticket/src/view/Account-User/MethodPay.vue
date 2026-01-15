@@ -99,7 +99,7 @@ const router = useRouter()
 const showLogoutModal = ref(false)
 
 const handleLogout = () => {
-  localStorage.removeItem('access_token')
+  localStorage.removeItem('user')
   router.push('/login')
 }
 </script>
