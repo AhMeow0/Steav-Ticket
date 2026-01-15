@@ -8,7 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { BusModule } from './buses/buses.module';
 import { PromotionModule } from './promotions/promotions.modules';
-import { ScheduleModule } from './schedule/schedule.module';
+
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
@@ -17,8 +17,7 @@ import { ScheduleModule } from './schedule/schedule.module';
     UsersModule,
     AuthModule,
     BusModule,
-    PromotionModule,
-    ScheduleModule
+    PromotionModule
   ],
   controllers: [AppController],
   providers: [AppService],

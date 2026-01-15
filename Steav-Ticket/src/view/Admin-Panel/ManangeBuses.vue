@@ -23,7 +23,7 @@
             class="manage-buses-page__select"
             v-model="busType"
           >
-            <option disabled value="">Select type</option>
+            <option value="">Select type</option>
             <option value="VIP">VIP</option>
             <option value="Bus">Bus</option>
             <option value="Sleeper">Sleeper</option>
@@ -44,9 +44,9 @@
 
       <button
         class="manage-buses-page__button"
-        @click="createBus"
+        @click="saveBus"
       >
-        {{editId ? 'Update bus':'Save Bus'}}
+        Save Buses
       </button>
     </div>
 
@@ -61,7 +61,6 @@
             <th>Bus Plate</th>
             <th>Bus Type</th>
             <th>Capacity</th>
-            <th>Action</th>
           </tr>
         </thead>
 
@@ -71,13 +70,11 @@
               <td>{{ bus.busPlate }}</td>
               <td>{{ bus.busType }}</td>
               <td>{{ bus.capacity }}</td>
-              <td class = "action">
-                <button class="edit-btn" @click="updateBus(bus)">edit</button>
+              <td>
                 <button
                   class="delete-btn"
                   @click="deleteBus(bus._id)">Delete</button>
               </td>
-              
             </tr>
           </tbody>
       </table>
@@ -86,87 +83,64 @@
   </div>
 </template>
 
-<script lang = 'ts'>
-import axios from 'axios';
-import { defineComponent } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue'
 
-interface Bus{
-  _id: string;
-  busPlate: string;
-  capacity: number;
-  busType: string;
+const API_URL = 'http://localhost:3000/buses'
+
+
+const busPlate = ref('')
+const busType = ref('')
+const capacity = ref(0)
+
+
+const buses = ref([])
+
+
+const fetchBuses = async () => {
+  const res = await fetch(API_URL)
+  buses.value = await res.json()
 }
 
-export default defineComponent({
-  name: 'ManageBus',
-  data(){
-    return{
-      busPlate: '' as string,
-      capacity: 0,
-      busType: '' as string,
-      buses: [] as Bus[],
-      editId: null as string | null
-    }
-  },
-  mounted(){
-    this.fetchBus();
-  },
-  methods: {
-    async fetchBus(): Promise<void>{
-      try{
-        const response = await axios.get<Bus[]>('http://localhost:3000/api/buses');
-        this.buses = response.data;
-      }catch(error){
-        console.error;
-      }
-    },
-    async createBus(): Promise<void>{
-      try{
-        if(this.editId){
-          await axios.put(`http://localhost:3000/api/buses/${this.editId}`,{
-            busPlate: this.busPlate,
-            busType: this.busType,
-            capacity: this.capacity,
-          });
-          this.resetForm();
-          this.fetchBus();
-        }
-        else{
-          await axios.post('http://localhost:3000/api/buses',{
-            busPlate: this.busPlate,
-            busType: this.busType,
-            capacity: this.capacity,
-          });
-          this.resetForm();
-          this.fetchBus();
-        }
-      }catch(error){
-        console.error('failed to create bus');
-      }
-    },
-    async updateBus(bus: Bus){
-      this.busPlate = bus.busPlate;
-      this.busType = bus.busType;
-      this.capacity = bus.capacity;
-      this.editId = bus._id;
-    },
-    async deleteBus(id: string): Promise<void>{
-      if(!confirm('delete this bus?')){return}
-      try{
-        await axios.delete(`http://localhost:3000/api/buses/${id}`)
-        this.fetchBus();
-      }catch(error){
-        console.error('failed to delete bus');
-      }
-    },
-    resetForm(){
-      this.busPlate = '';
-      this.capacity = 0;
-      this.busType = '';
-      this.editId = null;
-    }
+const saveBus = async () => {
+  if (!busPlate.value || !busType.value) {
+    alert('Please fill all fields')
+    return
   }
-})
+
+  await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      busPlate: busPlate.value,
+      busType: busType.value,
+      capacity: capacity.value,
+    }),
+  })
+
+  busPlate.value = ''
+  busType.value = ''
+  capacity.value = 0
+
+
+  fetchBuses()
+}
+const deleteBus = async (id) => {
+  if (!confirm('Are you sure you want to delete this bus?')) {
+    return
+  }
+
+  await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  })
+
+  fetchBuses()
+}
+
+
+onMounted(fetchBuses)
 </script>
 
 <style scoped>
@@ -238,23 +212,17 @@ td {
   padding: 12px;
   text-align: center;
 }
-
 .delete-btn {
   background: #e53935;
   color: white;
   border: none;
-  padding: 9px 18px;
+  padding: 8px 14px;
   border-radius: 5px;
   cursor: pointer;
 }
-.edit-btn{
-  background: blue;
-  color: white;
-  border: none;
-  padding: 9px 18px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-right: 8px;
+
+.delete-btn:hover {
+  opacity: 0.8;
 }
 
 </style>

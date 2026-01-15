@@ -1,29 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model,Types  } from 'mongoose';
-import { Bus, BusDocument } from './schema/bus.schema';
+import { Model } from 'mongoose';
+import { bus, RouteDocument } from './schema/bus.schema';
 import { CreateBusDto } from './dto/create-bus.dto';
-import { UpdateBusDto } from './dto/update-bus.dto';
 
 @Injectable()
 export class BusService {
   constructor(
-    @InjectModel(Bus.name)
-    private busModel: Model<BusDocument>,
+    @InjectModel(bus.name)
+    private busModel: Model<RouteDocument>,
   ) {}
 
-  async create(createBusDto: CreateBusDto): Promise<Bus> {
-    const newBus = new this.busModel({
-      ...createBusDto,
-    });
+  async create(createBusDto: CreateBusDto): Promise<bus> {
+    const newBus = new this.busModel(createBusDto);
     return newBus.save();
   }
 
-  async findAll(): Promise<Bus[]> {
+  async findAll(): Promise<bus[]> {
     return this.busModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Bus> {
+  async findOne(id: string): Promise<bus> {
     const foundBus = await this.busModel.findById(id).exec();
 
     if (!foundBus) {
@@ -33,21 +30,13 @@ export class BusService {
     return foundBus;
   }
 
-  async update(id: string, updateBusDto: UpdateBusDto): Promise<Bus>{
-    const update = await this.busModel.findByIdAndUpdate(id,
-      updateBusDto,
-      {new: true});
-    if (!update) {
-      throw new NotFoundException(`Bus with id ${id} not found`);
-    }
-    return update;
-  }
-
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<bus> {
     const deletedBus = await this.busModel.findByIdAndDelete(id).exec();
 
     if (!deletedBus) {
       throw new NotFoundException(`Bus with id ${id} not found`);
     }
+
+    return deletedBus;
   }
 }

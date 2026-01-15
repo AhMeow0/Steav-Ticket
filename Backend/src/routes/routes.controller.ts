@@ -10,8 +10,8 @@ import { UpdateRouteDto } from './dto/update-route.dto.js';
 export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
 
-  //@UseGuards(AuthGuard, RolesGuard)
-  //@Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   async create(@Body() createRouteDto: CreateRouteDto) {
     return this.routesService.create(createRouteDto);
@@ -27,15 +27,15 @@ export class RoutesController {
     return this.routesService.findOne(id);
   }
 
-  //@UseGuards(AuthGuard, RolesGuard)
-  //@Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
   @Put(':id')
   update(@Param('id') id: string, @Body() UpdateRouteDto,){
     return this.routesService.update(id, UpdateRouteDto)
   }
 
-  //@UseGuards(AuthGuard, RolesGuard)
-  //@Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string){
     return this.routesService.remove(id);
