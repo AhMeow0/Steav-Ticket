@@ -1,16 +1,13 @@
 <template>
-  <div class="manage-booking-page">
-
-    <!-- Filter Section -->
+  <div class="manage-booking-passenger-page">
+    <!-- Form Section -->
     <div class="form-box">
-      <h1>Manage Bookings</h1>
+      <h1>Manage Route & Schedules</h1>
 
       <div class="form-grid">
         <div class="form-field">
-          <label>Route</label>
-          <select>
-            <option>Select Route</option>
-          </select>
+          <label>Routes</label>
+          <select></select>
         </div>
 
         <div class="form-field">
@@ -19,43 +16,35 @@
         </div>
 
         <div class="form-field">
-          <label>Schedule (Time)</label>
-          <select>
-            <option>Select Time</option>
-          </select>
+          <label>Time</label>
+          <select></select>
         </div>
       </div>
 
       <button class="save-btn">Apply Filter</button>
     </div>
 
-    <!-- Booking Table -->
+    <!-- Table Section -->
     <div class="table-box">
-      <h1>Booking List</h1>
+      <h1>Assigned Booking & Passenger</h1>
 
       <table>
         <thead>
           <tr>
-            <th>Passenger</th>
             <th>Route</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Seat</th>
-            <th>Price</th>
+            <th>Username</th>
+            <th>Seats</th>
+            <th>Date of Journey</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
 
-        <tbody>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
-
   </div>
 </template>
-
-
 <style scoped>
   .manage-booking-passenger-page {
   color: white;
