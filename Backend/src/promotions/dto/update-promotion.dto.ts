@@ -1,4 +1,5 @@
 import { IsString,IsNotEmpty,IsEnum,IsNumber,Min,IsDateString,} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdatePromotionDto {
 
@@ -9,6 +10,7 @@ export class UpdatePromotionDto {
   @IsEnum(['PERCENT', 'FIXED'])
   discountType: 'PERCENT' | 'FIXED';
 
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   discountValue: number;
@@ -18,4 +20,5 @@ export class UpdatePromotionDto {
 
   @IsDateString()
   endDate: string;
+    
 }

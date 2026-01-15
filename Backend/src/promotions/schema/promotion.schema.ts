@@ -8,16 +8,16 @@ export class Promotion extends Document {
   code: string;
 
   @Prop({enum: ['PERCENT', 'FIXED'], required: true})
-  discount_type: string;
+  discountType: string;
 
   @Prop({ required: true })
-  discount_value: number;
+  discountValue: number;
 
   @Prop({ required: true})
-  start_date: Date;
+  startDate: Date;
 
   @Prop({ required: true })
-  end_date: Date;
+  endDate: Date;
 
   @Prop({ enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' })
   status: 'ACTIVE' | 'INACTIVE';

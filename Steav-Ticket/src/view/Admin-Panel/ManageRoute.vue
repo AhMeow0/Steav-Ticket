@@ -18,25 +18,30 @@
         </div>
       </div>
 
-      <button class="manage-route-page__button" @click="createRoute">Create Route</button>
+      <button class="manage-route-page__button" @click="createRoute">{{ editId ? 'Update Route': 'Create Route' }}</button>
     </div>
 
     <!-- Table Section -->
     <div class="manage-route-page__table">
       <h1 class="manage-route-page__title">Route List</h1>
 
-      <table>
+      <table class = "route-table">
         <thead>
           <tr>
             <th>From</th>
             <th>To</th>
+            <th>Action</th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-for="route in routes" :key = "route._id">
-            <td>{{ route.startLocation }}</td>
-            <td>{{ route.endLocation }}</td>
+            <td>{{ route.origin }}</td>
+            <td>{{ route.destination }}</td>
+            <td class = "action">
+              <button class="btn edit" @click="updateRoute(route)">edit</button>
+              <button class="btn delete" @click="deleteRoute(route._id)">delete</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -51,8 +56,8 @@
 
   interface Route{
     _id: string;
-    startLocation : string;
-    endLocation: string;
+    origin : string;
+    destination: string;
   }
 
   export default defineComponent({
@@ -61,7 +66,8 @@
       return {
         from: '' as string, 
         to: '' as string,
-        routes: [] as Route[]
+        routes: [] as Route[],
+        editId: null as string | null
       };
     },
     mounted(){
@@ -70,7 +76,7 @@
     methods: {
       async fetchRoutes(): Promise<void> {
         try{
-          const response = await axios.get<Route[]>('http://localhost:3000/routes');
+          const response = await axios.get<Route[]>('http://localhost:3000/api/routes');
           this.routes = response.data;
         }
         catch(error){
@@ -79,14 +85,48 @@
       },
       async createRoute(): Promise<void> {
         try{
-          await axios.post('http://localhost:3000/routes', {
-            startLocation: this.from,
-            endLocation:this.to
-          })
+          if(this.editId){
+            await axios.put(`http://localhost:3000/api/routes/${this.editId}`,{
+              origin: this.from,
+              destination: this.to
+            });
+            this.resetForm();
+            this.fetchRoutes();
+          }
+          else{
+            await axios.post('http://localhost:3000/api/routes', {
+              origin: this.from,
+              destination:this.to
+            });
+            this.resetForm();
+            this.fetchRoutes();
+          }
         }catch(error){
           console.error('Failed to create route: ', error);
         }
+      },
+      async updateRoute(route: Route){
+        this.from = route.origin;
+        this.to = route.destination;
+        this.editId = route._id;
+      },
+      async deleteRoute(id: string): Promise<void>{
+        if(!confirm('delete this route? ')){
+          return
+        }
+        try{
+          await axios.delete(`http://localhost:3000/api/routes/${id}`);
+          this.fetchRoutes();
+        }catch(error){
+          console.error('Fail to delete route: ', error);
+        }
+      },
+      resetForm(){
+        this.from = ''
+        this.to = ''
+        this.editId = null
       }
+
     },
   });
 </script>
@@ -149,17 +189,59 @@
   color: white;
 }
 
-/* Table */
-table {
+/* Route Table */
+.route-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 20px;
+  border-collapse: separate;
+  border-spacing: 0 12px; /* space between rows */
 }
 
-th {
-  padding: 12px;
-  border-bottom: 1px solid #333;
-  text-align: center;
+.route-table thead th {
+  text-align: left;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.route-table tbody tr {
+  border-radius: 8px;
+}
+
+.route-table td {
+  padding: 16px 20px;
+  font-size: 15px;
+  color: #f9fafb;
+}
+
+.route-table td:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.route-table td:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.btn.edit {
+  background: blue;
+  color: white;
+}
+
+.btn.delete {
+  background: red;
+  color: white;
 }
 
 </style>

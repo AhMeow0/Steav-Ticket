@@ -8,7 +8,7 @@ import { UseGuards } from '@nestjs/common';
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
-  @UseGuards(AuthGuard)
+  //@UseGuards(AuthGuard)
   @Post()
   async protectedCreate(
     @Body() createTicketDto: CreateTicketDto,
@@ -18,7 +18,7 @@ export class TicketsController {
     return this.ticketsService.create(createTicketDto, userId);
   }
 
-  @UseGuards(AuthGuard)
+  //@UseGuards(AuthGuard)
   @Get('my-tickets')
   async findMyTickets(@Req() req) {
     const userId = req.user.sub;

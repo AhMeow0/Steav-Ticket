@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 import { Route } from "../../routes/schema/route.schema";
-import { bus } from "../../buses/schema/bus.schema"
+import { Bus } from "../../buses/schema/bus.schema"
 import { Promotion } from "../../promotions/schema/promotion.schema";
 
 @Schema()
@@ -9,7 +9,7 @@ export class schedule{
     @Prop({type: Types.ObjectId, ref: 'Route', required: true})
     routeId: string
 
-    @Prop({type: Types.ObjectId, ref: 'bus', required: true})
+    @Prop({type: Types.ObjectId, ref: 'Bus', required: true})
     busId: string
 
     @Prop({type: Types.ObjectId, ref: 'Promotion', required: true})
