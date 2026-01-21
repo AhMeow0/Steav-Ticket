@@ -1,6 +1,14 @@
 {
+  "private": true,
+  "scripts": {
+    "clean": "npm -C Backend run clean && npm -C Steav-Ticket run clean",
+    "clean:deps": "rm -rf Backend/node_modules Steav-Ticket/node_modules",
+    "clean:all": "npm run clean && npm run clean:deps",
+    "install:all": "npm -C Backend install && npm -C Steav-Ticket install"
+  },
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3"
   }
 }
+

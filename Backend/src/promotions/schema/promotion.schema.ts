@@ -3,7 +3,6 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Promotion extends Document {
-
   @Prop({ required: true })
   title: string;
 

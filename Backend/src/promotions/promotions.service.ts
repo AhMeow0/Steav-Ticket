@@ -8,7 +8,7 @@ import { CreatePromotionDto } from './dto/create-promotion.dto';
 export class PromotionService {
   constructor(
     @InjectModel(Promotion.name)
-    private promotionModel: Model<Promotion>
+    private promotionModel: Model<Promotion>,
   ) {}
 
   create(dto: CreatePromotionDto) {

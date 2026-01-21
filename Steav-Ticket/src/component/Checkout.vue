@@ -147,6 +147,8 @@ import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
 
+defineOptions({ name: 'SteavCheckout' })
+
 const route = useRoute()
 const router = useRouter()
 

@@ -44,6 +44,10 @@
   </footer>
 </template>
 
+<script setup lang="ts">
+defineOptions({ name: 'SteavFooter' })
+</script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 

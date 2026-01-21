@@ -30,9 +30,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 
 const router = useRouter()
-const user = ref<any>(null) // Store user info here
+
+type UserProfile = {
+  name?: string
+  email?: string
+}
+
+const user = ref<UserProfile | null>(null) // Store user info here
 
 onMounted(async () => {
   // 1. Check if we have a key (token) in our pocket
@@ -41,21 +48,20 @@ onMounted(async () => {
   if (token) {
     try {
       // 2. Ask Backend: "Who owns this token?"
-      // Note: If you used 'api' prefix in main.ts, add /api here!
-      const response = await fetch('http://localhost:3000/auth/profile', {
+      const response = await fetch(apiUrl('/auth/profile'), {
         headers: {
           Authorization: `Bearer ${token}`, // Show the ID card
         },
       })
 
       if (response.ok) {
-        user.value = await response.json() // Save the user data to show in UI
+        user.value = (await response.json()) as UserProfile // Save the user data to show in UI
       } else {
         // Token might be expired -> Throw it away
         localStorage.removeItem('access_token')
       }
     } catch (error) {
-      console.error('Not logged in')
+      console.error('Not logged in', error)
     }
   }
 })

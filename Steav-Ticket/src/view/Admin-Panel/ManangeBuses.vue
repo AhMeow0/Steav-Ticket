@@ -1,12 +1,10 @@
 <template>
   <div class="manage-buses-page">
-
     <!-- Form Section -->
     <div class="manage-buses-page__form">
       <h1 class="manage-buses-page__title">Manage Buses</h1>
 
       <div class="manage-buses-page__grid">
-
         <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Plate</label>
           <input
@@ -19,10 +17,7 @@
 
         <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Type</label>
-          <select
-            class="manage-buses-page__select"
-            v-model="busType"
-          >
+          <select class="manage-buses-page__select" v-model="busType">
             <option value="">Select type</option>
             <option value="VIP">VIP</option>
             <option value="Bus">Standard</option>
@@ -39,15 +34,9 @@
             v-model.number="capacity"
           />
         </div>
-
       </div>
 
-      <button
-        class="manage-buses-page__button"
-        @click="saveBus"
-      >
-        Save Buses
-      </button>
+      <button class="manage-buses-page__button" @click="saveBus">Save Buses</button>
     </div>
 
     <!-- Table Section -->
@@ -65,41 +54,43 @@
         </thead>
 
         <tbody>
-            <tr v-for="(bus, index) in buses" :key="bus._id">
-              <td>{{ index + 1 }}</td>
-              <td>{{ bus.busPlate }}</td>
-              <td>{{ bus.busType }}</td>
-              <td>{{ bus.capacity }}</td>
-              <td>
-                <button
-                  class="delete-btn"
-                  @click="deleteBus(bus._id)">Delete</button>
-              </td>
-            </tr>
-          </tbody>
+          <tr v-for="(bus, index) in buses" :key="bus._id">
+            <td>{{ index + 1 }}</td>
+            <td>{{ bus.busPlate }}</td>
+            <td>{{ bus.busType }}</td>
+            <td>{{ bus.capacity }}</td>
+            <td>
+              <button class="delete-btn" @click="deleteBus(bus._id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
-
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { apiUrl } from '@/lib/api'
 
-const API_URL = 'http://localhost:3000/buses'
+type Bus = {
+  _id: string
+  busPlate: string
+  busType: string
+  capacity: number
+}
 
+const API_URL = apiUrl('/buses')
 
 const busPlate = ref('')
 const busType = ref('')
 const capacity = ref(0)
 
-
-const buses = ref([])
-
+const buses = ref<Bus[]>([])
 
 const fetchBuses = async () => {
   const res = await fetch(API_URL)
-  buses.value = await res.json()
+  buses.value = (await res.json()) as Bus[]
 }
 
 const saveBus = async () => {
@@ -124,10 +115,9 @@ const saveBus = async () => {
   busType.value = ''
   capacity.value = 0
 
-
   fetchBuses()
 }
-const deleteBus = async (id) => {
+const deleteBus = async (id: string) => {
   if (!confirm('Are you sure you want to delete this bus?')) {
     return
   }
@@ -138,7 +128,6 @@ const deleteBus = async (id) => {
 
   fetchBuses()
 }
-
 
 onMounted(fetchBuses)
 </script>
@@ -224,5 +213,4 @@ td {
 .delete-btn:hover {
   opacity: 0.8;
 }
-
 </style>

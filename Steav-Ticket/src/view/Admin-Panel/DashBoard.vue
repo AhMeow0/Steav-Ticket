@@ -6,37 +6,182 @@
     <div class="stats-box">
       <div class="stat-card stat-card--trips">
         <h3>Total Trips</h3>
-        <p>0</p>
+        <p>{{ loading ? '...' : stats.totalTrips }}</p>
       </div>
 
       <div class="stat-card stat-card--books">
         <h3>Total Book Seat</h3>
-        <p>0</p>
+        <p>{{ loading ? '...' : stats.totalBookings }}</p>
       </div>
 
       <div class="stat-card stat-card--earns">
         <h3>Total Earn</h3>
-        <p>$0</p>
+        <p>{{ loading ? '...' : `$${stats.totalEarn}` }}</p>
       </div>
     </div>
 
     <!-- Filter -->
     <div class="filter">
-      <select>
-        <option>Daily</option>
-        <option>Weekly</option>
+      <select v-model="period" @change="fetchStats">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="all">All</option>
       </select>
     </div>
 
     <!-- Chart -->
-    <div class="chart-placeholder">
-      Chart Area
-    </div>
+    <section class="chart-card">
+      <div class="chart-title">Earnings Trend</div>
+
+      <div v-if="loading" class="chart-placeholder">Loading...</div>
+      <div v-else-if="series.length === 0" class="chart-placeholder">No data</div>
+      <div v-else class="chart-wrap">
+        <svg
+          class="chart"
+          :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
+          role="img"
+          aria-label="Earnings chart"
+        >
+          <polyline :points="earnPolyline" fill="none" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <div class="xlabels">
+          <span v-for="(t, idx) in xLabels" :key="idx">{{ t }}</span>
+        </div>
+      </div>
+    </section>
   </main>
 </template>
 
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { apiUrl } from '@/lib/api'
+
+type DashboardStats = {
+  period: 'daily' | 'weekly' | 'all'
+  totalTrips: number
+  totalBookings: number
+  totalEarn: number
+  series?: DashboardSeriesPoint[]
+}
+
+type DashboardSeriesPoint = {
+  key: string
+  label: string
+  bookings: number
+  earn: number
+}
+
+const period = ref<DashboardStats['period']>('all')
+const loading = ref(false)
+
+const series = ref<DashboardSeriesPoint[]>([])
+
+const chartWidth = 720
+const chartHeight = 220
+
+const earnPolyline = ref('')
+const xLabels = ref<string[]>([])
+
+const stats = ref<DashboardStats>({
+  period: 'all',
+  totalTrips: 0,
+  totalBookings: 0,
+  totalEarn: 0,
+})
+
+async function fetchStats() {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('You must be logged in as Admin!')
+    return
+  }
+
+  loading.value = true
+  try {
+    const url = apiUrl(`/admin/dashboard?period=${encodeURIComponent(period.value)}`)
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        alert('Unauthorized: please log in again (token invalid/expired).')
+        return
+      }
+      if (response.status === 403) {
+        alert('Forbidden: your account is not admin.')
+        return
+      }
+
+      alert('Failed to load dashboard')
+      return
+    }
+
+    const data = (await response.json()) as DashboardStats
+    stats.value = {
+      period: data.period,
+      totalTrips: Number(data.totalTrips ?? 0),
+      totalBookings: Number(data.totalBookings ?? 0),
+      totalEarn: Number(data.totalEarn ?? 0),
+    }
+
+    series.value = Array.isArray(data.series) ? data.series : []
+    recomputeChart()
+  } catch (err) {
+    console.error(err)
+    alert('Network Error')
+  } finally {
+    loading.value = false
+  }
+}
+
+function recomputeChart() {
+  const src = series.value
+  if (src.length === 0) {
+    earnPolyline.value = ''
+    xLabels.value = []
+    return
+  }
+
+  const values = src.map((p) => Number(p.earn || 0))
+  const max = Math.max(...values, 0)
+  const min = Math.min(...values, 0)
+  const range = Math.max(max - min, 1)
+
+  const paddingX = 12
+  const paddingY = 14
+  const w = chartWidth - paddingX * 2
+  const h = chartHeight - paddingY * 2
+  const step = src.length === 1 ? 0 : w / (src.length - 1)
+
+  const pts: string[] = []
+  for (let i = 0; i < src.length; i += 1) {
+    const x = paddingX + step * i
+    const v = values[i] ?? 0
+    const y = paddingY + (1 - (v - min) / range) * h
+    pts.push(`${x.toFixed(2)},${y.toFixed(2)}`)
+  }
+  earnPolyline.value = pts.join(' ')
+
+  const want = 6
+  if (src.length <= want) {
+    xLabels.value = src.map((p) => p.label)
+    return
+  }
+
+  const stride = Math.max(1, Math.floor((src.length - 1) / (want - 1)))
+  xLabels.value = src.map((p, idx) => (idx % stride === 0 || idx === src.length - 1 ? p.label : ''))
+}
+
+onMounted(() => {
+  void fetchStats()
+})
+</script>
+
 <style scoped>
-  .dashboard-main {
+.dashboard-main {
   flex-grow: 1;
   padding: 25px;
   color: white;
@@ -47,7 +192,6 @@ h1 {
   font-size: 26px;
   margin-bottom: 20px;
 }
-
 
 .stats-box {
   display: flex;
@@ -75,7 +219,6 @@ h1 {
   font-weight: bold;
 }
 
-
 .filter {
   margin-bottom: 20px;
   display: flex;
@@ -92,10 +235,22 @@ h1 {
   padding: 0 10px;
 }
 
-.chart-placeholder {
-  height: 300px;
+.chart-card {
+  padding: 16px;
   background: #111827;
   border-radius: 12px;
+  border: 1px solid #424242;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #e5e7eb;
+  margin-bottom: 12px;
+}
+
+.chart-placeholder {
+  height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -103,4 +258,26 @@ h1 {
   color: #9ca3af;
 }
 
+.chart-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart {
+  width: 100%;
+  height: 220px;
+  color: #e5e7eb;
+}
+
+.xlabels {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.xlabels span {
+  text-align: center;
+}
 </style>
