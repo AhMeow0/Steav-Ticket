@@ -94,15 +94,22 @@ const fetchBuses = async () => {
 }
 
 const saveBus = async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('You must be logged in as Admin!')
+    return
+  }
+
   if (!busPlate.value || !busType.value) {
     alert('Please fill all fields')
     return
   }
 
-  await fetch(API_URL, {
+  const res = await fetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       busPlate: busPlate.value,
@@ -110,6 +117,29 @@ const saveBus = async () => {
       capacity: capacity.value,
     }),
   })
+
+  if (!res.ok) {
+    let message = 'Unknown error'
+    try {
+      const err = await res.json()
+      message = err?.message ?? message
+    } catch {
+      // ignore JSON parse errors
+    }
+
+    if (res.status === 401) {
+      alert('Unauthorized: please log in again (token invalid/expired).')
+      return
+    }
+
+    if (res.status === 403) {
+      alert('Forbidden: your account is not admin.')
+      return
+    }
+
+    alert('Failed: ' + message)
+    return
+  }
 
   busPlate.value = ''
   busType.value = ''
@@ -122,9 +152,31 @@ const deleteBus = async (id: string) => {
     return
   }
 
-  await fetch(`${API_URL}/${id}`, {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('You must be logged in as Admin!')
+    return
+  }
+
+  const res = await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   })
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      alert('Unauthorized: please log in again (token invalid/expired).')
+      return
+    }
+    if (res.status === 403) {
+      alert('Forbidden: your account is not admin.')
+      return
+    }
+    alert('Failed to delete bus')
+    return
+  }
 
   fetchBuses()
 }

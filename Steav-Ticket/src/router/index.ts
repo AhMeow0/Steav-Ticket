@@ -37,6 +37,27 @@ import MethodPay from '@/view/Account-User/MethodPay.vue'
 import Language from '@/view/Account-User/Language.vue'
 import HelpPage from '@/view/Account-User/HelpPage.vue'
 
+type JwtPayload = {
+  sub: string
+  email: string
+  role?: string
+}
+
+function parseJwt(token: string): JwtPayload | null {
+  try {
+    const parts = token.split('.')
+    if (parts.length < 2) return null
+    const base64Url = parts[1]
+    if (!base64Url) return null
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const json = atob(padded)
+    return JSON.parse(json) as JwtPayload
+  } catch {
+    return null
+  }
+}
+
 const routes: Array<RouteRecordRaw> = [
   // ============================================
   //  USER ROUTES (Public)
@@ -108,6 +129,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/admin',
     name: 'AdminView',
     component: AdminView,
+    meta: { requiresAdmin: true },
     children: [
       { path: 'dashboard', name: 'Dashboard', component: DashBoard },
       { path: 'manage-bus', name: 'ManageBus', component: ManageBuses },
@@ -143,6 +165,21 @@ const router = createRouter({
   routes,
   // This class makes the active link (like "Home" or "Explore") turn Pink automatically
   linkActiveClass: 'active-link',
+})
+
+router.beforeEach((to) => {
+  const needsAdmin = to.matched.some((r) => Boolean(r.meta?.requiresAdmin))
+  if (!needsAdmin) return true
+
+  const token = localStorage.getItem('access_token')
+  if (!token) return { name: 'LoginPage' }
+
+  const payload = parseJwt(token)
+  if (!payload?.role || payload.role !== 'admin') {
+    return { name: 'UserHome' }
+  }
+
+  return true
 })
 
 export default router

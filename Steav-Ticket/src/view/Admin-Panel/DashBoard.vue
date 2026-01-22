@@ -30,25 +30,66 @@
     </div>
 
     <!-- Chart -->
-    <section class="chart-card">
-      <div class="chart-title">Earnings Trend</div>
+    <div class="charts-grid">
+      <section class="chart-card">
+        <div class="chart-title">Earnings Trend</div>
 
-      <div v-if="loading" class="chart-placeholder">Loading...</div>
-      <div v-else-if="series.length === 0" class="chart-placeholder">No data</div>
-      <div v-else class="chart-wrap">
-        <svg
-          class="chart"
-          :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
-          role="img"
-          aria-label="Earnings chart"
-        >
-          <polyline :points="earnPolyline" fill="none" stroke="currentColor" stroke-width="2" />
-        </svg>
-        <div class="xlabels">
-          <span v-for="(t, idx) in xLabels" :key="idx">{{ t }}</span>
+        <div v-if="loading" class="chart-placeholder">Loading...</div>
+        <div v-else-if="series.length === 0" class="chart-placeholder">No data</div>
+        <div v-else class="chart-wrap">
+          <svg
+            class="chart"
+            :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
+            role="img"
+            aria-label="Earnings chart"
+          >
+            <polyline :points="earnPolyline" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+          <div class="xlabels">
+            <span v-for="(t, idx) in xLabels" :key="idx">{{ t }}</span>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section class="chart-card">
+        <div class="chart-title">Booking Status</div>
+
+        <div v-if="loading" class="chart-placeholder">Loading...</div>
+        <div v-else-if="statusBreakdown.length === 0" class="chart-placeholder">No data</div>
+        <div v-else class="donut-wrap">
+          <svg class="donut" :viewBox="`0 0 120 120`" role="img" aria-label="Booking status donut">
+            <g transform="translate(60, 60) rotate(-90)">
+              <circle :r="donutRadius" cx="0" cy="0" class="donut-track" />
+              <circle
+                v-for="seg in donutSegments"
+                :key="seg.status"
+                :r="donutRadius"
+                cx="0"
+                cy="0"
+                class="donut-seg"
+                :style="{
+                  stroke: seg.color,
+                  strokeDasharray: `${seg.len} ${donutCircumference - seg.len}`,
+                  strokeDashoffset: `${-seg.offset}`,
+                }"
+              />
+            </g>
+            <text x="60" y="58" text-anchor="middle" class="donut-center-value">
+              {{ donutTotal }}
+            </text>
+            <text x="60" y="74" text-anchor="middle" class="donut-center-label">bookings</text>
+          </svg>
+
+          <div class="donut-legend">
+            <div v-for="row in statusBreakdown" :key="row.status" class="legend-row">
+              <span class="legend-dot" :style="{ background: statusColor(row.status) }" />
+              <span class="legend-text">{{ row.status }}</span>
+              <span class="legend-count">{{ row.count }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 </template>
 
@@ -62,6 +103,7 @@ type DashboardStats = {
   totalBookings: number
   totalEarn: number
   series?: DashboardSeriesPoint[]
+  statusBreakdown?: DashboardStatusPoint[]
 }
 
 type DashboardSeriesPoint = {
@@ -71,16 +113,29 @@ type DashboardSeriesPoint = {
   earn: number
 }
 
+type DashboardStatusPoint = {
+  status: string
+  count: number
+}
+
 const period = ref<DashboardStats['period']>('all')
 const loading = ref(false)
 
 const series = ref<DashboardSeriesPoint[]>([])
+const statusBreakdown = ref<DashboardStatusPoint[]>([])
 
 const chartWidth = 720
 const chartHeight = 220
 
 const earnPolyline = ref('')
 const xLabels = ref<string[]>([])
+
+const donutRadius = 42
+const donutCircumference = 2 * Math.PI * donutRadius
+const donutTotal = ref(0)
+
+type DonutSeg = { status: string; color: string; len: number; offset: number }
+const donutSegments = ref<DonutSeg[]>([])
 
 const stats = ref<DashboardStats>({
   period: 'all',
@@ -128,13 +183,50 @@ async function fetchStats() {
     }
 
     series.value = Array.isArray(data.series) ? data.series : []
+    statusBreakdown.value = Array.isArray(data.statusBreakdown) ? data.statusBreakdown : []
     recomputeChart()
+    recomputeDonut()
   } catch (err) {
     console.error(err)
     alert('Network Error')
   } finally {
     loading.value = false
   }
+}
+
+function statusColor(status: string): string {
+  // reuse existing admin colors already used in this project
+  if (status === 'CONFIRMED') return '#10b981'
+  if (status === 'CANCELLED') return '#ef4444'
+  if (status === 'BOOKED') return '#3b82f6'
+  return '#9ca3af'
+}
+
+function recomputeDonut() {
+  const rows = statusBreakdown.value
+  const total = rows.reduce((sum, r) => sum + Number(r.count || 0), 0)
+  donutTotal.value = total
+
+  if (total <= 0) {
+    donutSegments.value = []
+    return
+  }
+
+  let offset = 0
+  donutSegments.value = rows
+    .map((r) => {
+      const count = Number(r.count || 0)
+      const len = (count / total) * donutCircumference
+      const seg = {
+        status: r.status,
+        color: statusColor(r.status),
+        len,
+        offset,
+      }
+      offset += len
+      return seg
+    })
+    .filter((s) => s.len > 0)
 }
 
 function recomputeChart() {
@@ -235,6 +327,12 @@ h1 {
   padding: 0 10px;
 }
 
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
 .chart-card {
   padding: 16px;
   background: #111827;
@@ -279,5 +377,76 @@ h1 {
 
 .xlabels span {
   text-align: center;
+}
+
+.donut-wrap {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.donut {
+  width: 120px;
+  height: 120px;
+  color: #e5e7eb;
+}
+
+.donut-track {
+  fill: none;
+  stroke: #374151;
+  stroke-width: 12;
+}
+
+.donut-seg {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: butt;
+}
+
+.donut-center-value {
+  font-size: 18px;
+  font-weight: bold;
+  fill: #e5e7eb;
+}
+
+.donut-center-label {
+  font-size: 12px;
+  fill: #9ca3af;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-row {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.legend-text {
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+.legend-count {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+@media (max-width: 980px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

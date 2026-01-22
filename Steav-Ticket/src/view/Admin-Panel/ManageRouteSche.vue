@@ -347,6 +347,10 @@ async function deleteSchedule(id: string) {
   if (!confirm('Are you sure?')) return
 
   const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('You must be logged in as Admin!')
+    return
+  }
   await fetch(apiUrl(`/routes/${id}`), {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },

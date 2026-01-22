@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { Ticket } from '../tickets/schemas/ticket.schema';
 import { Route } from '../routes/schema/route.schema';
 import { User } from '../users/entities/user.entity';
@@ -273,7 +273,13 @@ export class AdminService {
       .lean<TicketLean[]>()
       .exec();
 
-    const userIds = Array.from(new Set(tickets.map((t) => String(t.userId))));
+    const userIds = Array.from(
+      new Set(
+        tickets
+          .map((t) => (t.userId ? String(t.userId) : ''))
+          .filter((id) => id && id !== 'undefined' && isValidObjectId(id)),
+      ),
+    );
 
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
