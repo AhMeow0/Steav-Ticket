@@ -25,9 +25,9 @@ export default {
     return {
       items: [
         { label: 'Dashboard', to: '/admin/dashboard' },
-        { label: 'Manage Routes', to: '/admin/manage-route-schedules' },
-        { label: 'Manage Schedules', to: '/admin/manage-ticket-price' },
-        { label: 'Manage Booking', to: '/admin/manage-booking-passager' },
+        { label: 'Manage Routes & Schedules', to: '/admin/manage-route-schedules' },
+        { label: 'Manage Ticket Price', to: '/admin/manage-ticket-price' },
+        { label: 'Manage Booking & Passager', to: '/admin/manage-booking-passager' },
         { label: 'Manage Promotion & News', to: '/admin/manage-promotion' },
         { label: 'Manage Buses', to: '/admin/manage-bus' },
       ],
