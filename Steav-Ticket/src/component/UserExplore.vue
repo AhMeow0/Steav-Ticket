@@ -48,11 +48,11 @@
         <!-- kep -->
 
         <section class="section">
-          <h2 class="section-title">KEP</h2>
+          <h2 class="section-title">Preah Sihanouk</h2>
 
           <div class="grid">
             <router-link
-              v-for="place in phnomPenh"
+              v-for="place in preahSihanouk"
               :key="place.slug"
               class="card"
               :to="`/place/${place.slug}`"
@@ -76,13 +76,13 @@
 import HeadBar from './HeadBar.vue'
 import Footer from './Footer.vue'
 
-// ✅ local images
+//  local images
 import angkorWat from '../assets/explore/siem_reab/angkor_wat.png'
 import pubStreet from '../assets/explore/siem_reab/pub_street.png'
-import museumAngkor from '../assets/explore/siem_reab/pub_street.png'
-import nationalMuseum from '../assets/explore/siem_reab/angkor_wat.png'
-import watPhnom from '../assets/explore/siem_reab/pub_street.png'
-import royalPalace from '../assets/explore/siem_reab/pub_street.png'
+import museumAngkor from '../assets/explore/angkor-museum.png'
+import nationalMuseum from '../assets/explore/national-museum.png'
+import watPhnom from '../assets/explore/Wat-Phnom.png'
+import royalPalace from '../assets/explore/royal-palace.png'
 
 // import museumAngkor from '@/assets/explore/siemreap/museum-angkor.jpg'
 
@@ -109,6 +109,21 @@ const phnomPenh: Place[] = [
   { title: 'Wat Phnom', slug: 'wat-phnom', location: 'Phnom Penh', image: watPhnom },
   { title: 'Royal Palace', slug: 'royal-palace', location: 'Phnom Penh', image: royalPalace },
 ]
+const preahSihanouk: Place[] = [
+  {
+    title: 'Koh Rong',
+    slug: 'koh-rong',
+    location: 'Preah Sihanouk',
+    image: '/src/assets/explore/kohRong.png',
+  },
+  {
+    title: 'Otres Beach',
+    slug: 'otres-beach',
+    location: 'Preah Sihanouk',
+    image: '/src/assets/explore/otres.png',
+  },
+]
+
 </script>
 
 <style scoped>

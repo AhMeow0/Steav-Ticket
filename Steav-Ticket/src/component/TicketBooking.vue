@@ -129,7 +129,7 @@ const tickets = ref<Ticket[]>([])
 const loadTickets = () => {
   const raw = JSON.parse(localStorage.getItem('tickets') || '[]')
 
-  // ✅ ensure bookingDate exists even for old saved tickets
+  //  ensure bookingDate exists even for old saved tickets
   tickets.value = raw.map((t: any) => ({
     ...t,
     bookingDate: t.bookingDate || new Date().toISOString(),

@@ -8,74 +8,165 @@
 
       <div class="search-container container">
         <div class="search-form-card">
+
           <!-- FROM -->
           <div class="input-group">
             <label>From</label>
-            <select v-model="from">
-              <option disabled value="">Select Starting Point</option>
-              <option v-for="city in fromOptions" :key="city" :value="city">
+
+            <div class="input-wrapper" @click.stop="openFrom = true">
+              <span class="icon">📍</span>
+              <input
+                v-model="from"
+                placeholder="Select Origin"
+                readonly
+              />
+            </div>
+
+            <div v-if="openFrom" class="dropdown">
+
+              <p class="dropdown-title">From</p>
+              <div
+                v-for="city in fromOptions"
+                :key="city"
+                class="dropdown-item"
+                @click="selectFrom(city)"
+              >
                 {{ city }}
-              </option>
-            </select>
+              </div>
+            </div>
           </div>
 
           <!-- TO -->
           <div class="input-group">
             <label>To</label>
-            <select v-model="to" :disabled="!from">
-              <option disabled value="">
-                {{ from ? 'Select Destination' : 'Select From first' }}
-              </option>
+            <div
+              class="input-wrapper"
+              :class="{ disabled: !from }"
+              @click.stop="from && (openTo = true)"
+            >
+              <span class="icon">🏁</span>
+              <input
+                v-model="to"
+                placeholder="Select Destination"
+                readonly
+                :disabled="!from"
+              />
+            </div>
 
-              <option v-for="city in toOptionsFiltered" :key="city" :value="city">
+            <div v-if="openTo" class="dropdown">
+              <div
+                v-for="city in toOptionsFiltered"
+                :key="city"
+                class="dropdown-item"
+                @click="selectTo(city)"
+              >
                 {{ city }}
-              </option>
-            </select>
+              </div>
+            </div>
           </div>
 
-          <!-- DATE JOURNEY -->
+          <!-- JOURNEY DATE -->
           <div class="input-group">
-            <label>Date of Journey</label>
-            <!-- ✅ must be after today -->
-            <input type="date" v-model="journeyDate" :min="minJourneyDate" />
+            <label>Journey Date</label>
+            <div class="input-wrapper">
+              <span class="icon">📅</span>
+              <input type="date" v-model="journeyDate" :min="minJourneyDate" />
+            </div>
           </div>
 
-          <!-- DATE RETURN -->
+          <!-- RETURN DATE -->
           <div class="input-group">
-            <label>Date of Return</label>
-            <!-- ✅ cannot be before journey date (and also after today) -->
-            <input type="date" v-model="returnDate" :min="minReturnDate" />
+            <label>Return Date (Optional)</label>
+            <div class="input-wrapper">
+              <span class="icon">🔙</span>
+              <input type="date" v-model="returnDate" :min="minReturnDate" />
+            </div>
           </div>
+
         </div>
 
-        <button class="search-main-btn" @click="goToBooking">Search Bus</button>
+        <button class="search-main-btn" @click="goToBooking">
+          Search Bus
+        </button>
       </div>
     </section>
 
-    <!-- POPULAR SECTION -->
-    <main class="container popular-section">
-      <h3>Popular</h3>
-      <div class="destination-grid">
-        <div v-for="(item, index) in popularDestinations" :key="index" class="dest-card">
-          <img :src="item.image" :alt="item.title" class="dest-img" />
-          <div class="dest-info">
-            <h4>{{ item.title }}</h4>
-            <span>📍 {{ item.location }}</span>
-          </div>
-        </div>
+  <section class="container popular-section">
+  <h3>Popular</h3>
+
+  <div class="destination-grid">
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/siem_reab/angkor.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>Angkor Wat</h4>
+        <span> Siem Reap</span>
       </div>
-    </main>
+    </div>
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/royal-palace.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>Royal Palace</h4>
+        <span>Phnom Penh</span>
+      </div>
+    </div>
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/national-museum.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>National Museum</h4>
+        <span>Siem Reap</span>
+      </div>
+    </div>
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>Koh Rong</h4>
+        <span> Sihanoukville</span>
+      </div>
+    </div>
+    <div class="dest-card">
+      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>Koh Rong</h4>
+        <span> Sihanoukville</span>
+      </div>
+    </div>
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/kulen.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>kulen</h4>
+        <span> Siem Reap</span>
+      </div>
+    </div>
+
+    <div class="dest-card">
+      <img src="/src/assets/explore/walkstreet.png" class="dest-img" />
+      <div class="dest-info">
+        <h4>Walk street</h4>
+        <span>Phnom Penh</span>
+      </div>
+    </div>
+
+
+
+  </div>
+</section>
+
 
     <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
-import Angkor from '@/assets/explore/siem_reab/angkor_wat.png'
+import Angkor from '@/assets/explore/siem_reab/angkor.png'
 
 const router = useRouter()
 
@@ -85,77 +176,83 @@ const to = ref('')
 const journeyDate = ref('')
 const returnDate = ref('')
 
-// ✅ background image
+// dropdown state
+const openFrom = ref(false)
+const openTo = ref(false)
+
+// background image
 const heroStyle = computed(() => ({
   backgroundImage: `url(${Angkor})`,
 }))
 
-// ✅ city lists
-const fromOptions = ['Phnom Penh', 'Siem Reab', 'Battambang', 'Sihanuk villige', 'Poi pet']
-const toOptions = ['Phnom Penh', 'Siem Reab', 'Battambang', 'Sihanuk villige']
+// city lists
+const fromOptions = [
+  'Phnom Penh',
+  'Siem Reap',
+  'Battambang',
+  'Sihanoukville',
+]
 
-// ✅ filtered To: remove same value as From
-const toOptionsFiltered = computed(() => {
-  return toOptions.filter((city) => city !== from.value)
-})
+const toOptions = [
+  'Phnom Penh',
+  'Siem Reap',
+  'Battambang',
+  'Sihanoukville',
+]
 
-// ✅ if user selects From = same as To, clear To automatically
+
+// filtered To
+const toOptionsFiltered = computed(() =>
+  toOptions.filter((city) => city !== from.value)
+)
+
+// select handlers
+const selectFrom = (city: string) => {
+  from.value = city
+  openFrom.value = false
+}
+
+const selectTo = (city: string) => {
+  to.value = city
+  openTo.value = false
+}
+
+// auto clear To
 watch(from, (newFrom) => {
   if (to.value === newFrom) to.value = ''
 })
 
-// ---------- ✅ DATE RULES ----------
-
-// convert Date => yyyy-mm-dd (for input min)
+// date helpers
 const toISODate = (d: Date) => {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return `${y}-${m}-${day}`
 }
 
-// ✅ today (local) + 1 day => tomorrow (so strictly after today)
 const minJourneyDate = computed(() => {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
-  return toISODate(tomorrow)
+  today.setDate(today.getDate() + 1)
+  return toISODate(today)
 })
 
-// ✅ return date must be >= journeyDate (if journey selected) else >= tomorrow
-const minReturnDate = computed(() => {
-  if (journeyDate.value) return journeyDate.value
-  return minJourneyDate.value
-})
+const minReturnDate = computed(() =>
+  journeyDate.value ? journeyDate.value : minJourneyDate.value
+)
 
-// ✅ if user picks invalid journey date, clear it
-watch(journeyDate, (newVal) => {
-  if (!newVal) return
-  if (newVal < minJourneyDate.value) {
-    alert('Date of Journey must be after today.')
-    journeyDate.value = ''
-  }
+// close dropdown on outside click
+const closeDropdowns = () => {
+  openFrom.value = false
+  openTo.value = false
+}
 
-  // if returnDate exists but is before journeyDate, clear returnDate
-  if (returnDate.value && returnDate.value < newVal) {
-    returnDate.value = ''
-  }
-})
-
-// ✅ validate return date too
-watch(returnDate, (newVal) => {
-  if (!newVal) return
-  if (newVal < minReturnDate.value) {
-    alert('Date of Return must be on/after Journey date.')
-    returnDate.value = ''
-  }
-})
+onMounted(() => window.addEventListener('click', closeDropdowns))
+onBeforeUnmount(() => window.removeEventListener('click', closeDropdowns))
 
 // navigation
 const goToBooking = () => {
   if (!from.value || !to.value || !journeyDate.value) {
-    alert('Please fill From, To and Date of Journey')
+    alert('Please fill From, To and Journey Date')
     return
   }
 
@@ -170,36 +267,28 @@ const goToBooking = () => {
   })
 }
 
-// dummy popular data
-const popularDestinations = ref([
-  { title: 'Angkor Wat', location: 'Siem Reap', image: Angkor },
-  { title: 'National Museum', location: 'Phnom Penh', image: Angkor },
-  { title: 'Royal Palace', location: 'Phnom Penh', image: 'https://via.placeholder.com/300x200' },
-  { title: 'Koh Rong', location: 'Sihanoukville', image: 'https://via.placeholder.com/300x200' },
-])
+// dummy popular
+// const popularDestinations = ref([
+//   { title: 'Angkor Wat', location: 'Siem Reap', image: Angkor },
+//   { title: 'Royal Palace', location: 'Phnom Penh', image: Angkor },
+// ])
 </script>
 
 <style scoped>
 .hero-section {
   position: relative;
-  text-align: center;
   margin-bottom: 4rem;
 }
 
-.container {
-  padding: 20px;
-}
-
 .bus-image-placeholder {
-  height: 300px;
+  height: 450px;
   background-size: cover;
   background-position: center;
-  background-color: #e0e0e0;
 }
 
 .search-container {
   position: relative;
-  top: -50px;
+  top: -75px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -207,63 +296,98 @@ const popularDestinations = ref([
 
 .search-form-card {
   background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
   display: flex;
-  gap: 1rem;
+  gap: 20px;
   width: 100%;
-  max-width: 900px;
+  max-width: 1500px;
 }
 
 .input-group {
   flex: 1;
+  position: relative;
+}
+
+.input-wrapper {
+  height: 70px;
+  background: #f4f5f7;
+  border-radius: 16px;
   display: flex;
-  flex-direction: column;
-  text-align: left;
+  align-items: center;
+  padding: 0 15px;
+  cursor: pointer;
 }
 
-.input-group label {
-  font-size: 0.8rem;
-  color: #777;
-  margin-bottom: 0.3rem;
-}
-
-.input-group input,
-.input-group select {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  border-radius: 4px;
-  background: white;
-}
-
-.input-group select:disabled {
-  background: #f3f3f3;
+.input-wrapper.disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.search-main-btn {
-  background-color: #e91e63;
-  color: white;
+.input-wrapper input {
+  width: 100%;
   border: none;
-  padding: 1rem 3rem;
-  border-radius: 30px;
+  background: transparent;
   font-size: 1.1rem;
   font-weight: bold;
+  outline: none;
+}
+
+.icon {
+  margin-right: 10px;
+  font-size: 1.4rem;
+}
+
+.dropdown {
+  position: absolute;
+  top: 105%;
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 10px 0;
+  z-index: 50;
+}
+
+.dropdown-title {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #999;
+  padding: 8px 20px;
+}
+
+.dropdown-item {
+  padding: 12px 20px;
   cursor: pointer;
-  margin-top: -1.5rem;
-  z-index: 2;
+}
+
+.dropdown-item:hover {
+  background: #fdecef;
+}
+
+.search-main-btn {
+  margin-top: -20px;
+  padding: 1rem 6rem;
+  border-radius: 30px;
+  background: #e91e63;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
 }
 
 .popular-section h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 18px;
+  margin-bottom: 1rem;
 }
 
 .destination-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* smaller cards */
+  gap: 30px;
+  margin: 10px;
 }
 
 .dest-card {
@@ -275,16 +399,21 @@ const popularDestinations = ref([
 
 .dest-img {
   width: 100%;
-  height: 180px;
+  height: 140px;
   object-fit: cover;
 }
 
 .dest-info {
-  padding: 1rem;
+  padding: 0.7rem;
+}
+
+.dest-info h4 {
+  font-size: 0.95rem;
+  margin-bottom: 4px;
 }
 
 .dest-info span {
-  color: #777;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
+
 </style>
