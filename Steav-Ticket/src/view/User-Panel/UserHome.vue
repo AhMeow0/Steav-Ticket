@@ -90,7 +90,7 @@
       </div>
     </section>
 
-  <section class = "container promotion-section"> 
+  <section class = "container promotion-section">
     <h3>Promoiton</h3>
      <img src="/src/assets/explore/promotion/promotion1.png" class="dest-img" />
   </section>
