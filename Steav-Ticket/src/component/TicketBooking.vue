@@ -121,7 +121,7 @@ type Ticket = {
   price: number
   total: number
   status: 'ACTIVE' | 'COMPLETED'
-  bookingDate: string // we will ensure it exists
+  bookingDate: string
 }
 
 const tickets = ref<Ticket[]>([])
@@ -145,7 +145,7 @@ const code = (city: string) => {
   const map: Record<string, string> = {
     'Phnom Penh': 'PP',
     'Siem Reab': 'SR',
-    Battambang: 'BB',
+    'Battambang': 'BB',
     'Sihanuk villige': 'SHV',
     'Poi pet': 'PP',
   }
@@ -184,7 +184,7 @@ const qrUrl = (data: string) =>
 }
 
 .content-area {
-  background-color: #e0ddde;
+  background-color: white;
   padding-top: 5rem;
   padding-bottom: 5rem;
   padding-left: 3rem;
@@ -213,7 +213,7 @@ const qrUrl = (data: string) =>
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   padding: 20px 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 4px 10px rgba(0, 0, 0, 0.05);
   border-left: 5px solid #e91e63;
 }
 

@@ -88,78 +88,28 @@
           Search Bus
         </button>
       </div>
+    
     </section>
+    <section class = "container promotion-section"> 
+      <img src="/src/assets/explore/promotion/promotion2.png" class="dest-img" /> 
+    </section>
+    <section class="container popular-section">
+      <h3>Popular</h3>
 
-  <section class = "container promotion-section"> 
-    <h3>Promoiton</h3>
-     <img src="/src/assets/explore/promotion/promotion1.png" class="dest-img" />
-  </section>
-
-  <section class="container popular-section">
-  <h3>Popular</h3>
-
-  <div class="destination-grid">
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/siem_reab/angkor.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Angkor Wat</h4>
-        <span> Siem Reap</span>
+      <div class="destination-grid">
+        <div
+          v-for="place in popularPlaces"
+          :key="place.slug"
+          class="dest-card"
+          @click="router.push({path: `/place/${place.slug}`,query: { from: 'home' }})">
+          <img :src="place.image" class="dest-img" />
+          <div class="dest-info">
+            <h4>{{ place.title }}</h4>
+            <span>{{ place.location }}</span>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/royal-palace.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Royal Palace</h4>
-        <span>Phnom Penh</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/national-museum.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>National Museum</h4>
-        <span>Siem Reap</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Koh Rong</h4>
-        <span> Sihanoukville</span>
-      </div>
-    </div>
-    <div class="dest-card">
-      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Koh Rong</h4>
-        <span> Sihanoukville</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/kulen.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>kulen</h4>
-        <span> Siem Reap</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/walkstreet.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Walk street</h4>
-        <span>Phnom Penh</span>
-      </div>
-    </div>
-
-
-
-  </div>
-</section>
-
+    </section>
 
     <Footer />
   </div>
@@ -171,9 +121,10 @@ import { useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
 import Angkor from '@/assets/explore/siem_reab/angkor.png'
+import { storeToRefs } from 'pinia'
+import { usePlaceStore, type Place } from '@/stores/placeDetail'
 
 const router = useRouter()
-
 // form data
 const from = ref('')
 const to = ref('')
@@ -250,6 +201,21 @@ const closeDropdowns = () => {
   openTo.value = false
 }
 
+const placeStore = usePlaceStore()
+const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
+const popularPlaces = computed(() =>
+  [
+    siemReap.value.find(p => p.slug === 'angkor-wat'),
+    phnomPenh.value.find(p => p.slug === 'royal-palace'),
+    phnomPenh.value.find(p => p.slug === 'national-museum'),
+    preahSihanouk.value.find(p => p.slug === 'koh-rong'),
+    preahSihanouk.value.find(p => p.slug === 'serendipity-beach'),
+    siemReap.value.find(p => p.slug === 'taplom'),
+    siemReap.value.find(p => p.slug === 'angkor-thom'),
+  ].filter((p): p is Place => Boolean(p))
+)
+
+
 onMounted(() => window.addEventListener('click', closeDropdowns))
 onBeforeUnmount(() => window.removeEventListener('click', closeDropdowns))
 
@@ -285,7 +251,7 @@ const goToBooking = () => {
 }
 
 .bus-image-placeholder {
-  height: 450px;
+  height:500px;
   background-size: cover;
   background-position: center;
 }
@@ -383,28 +349,39 @@ const goToBooking = () => {
 }
 
 .popular-section h3 {
-  font-size: 18px;
-  margin-bottom: 1rem;
+  font-size: 20px;
+  padding-left: 50px;
+  margin-bottom: 20px;
 }
 
 .destination-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* smaller cards */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* smaller cards */
   gap: 30px;
   margin: 10px;
+  padding-bottom: 30px;
+  padding-left: 50px;
+  padding-right: 50px;
 }
 
 .dest-card {
-  background: white;
-  border-radius: 8px;
+  background: #fff;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
+
 
 .dest-img {
   width: 100%;
   height: 140px;
   object-fit: cover;
+  transition: transform 0.35s ease;
 }
 
 .dest-info {
@@ -420,35 +397,58 @@ const goToBooking = () => {
   font-size: 0.8rem;
 }
 
+.dest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+
 .promotion-section {
   margin: 3rem auto;
   text-align: center;
 }
 
-.promotion-section h3 {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 1.2rem;
-  color: #111;
+.promotion-section {
+  margin-top: -80px; 
 }
 
 .promotion-section img {
   width: 100%;
-  max-width: 1200px;
-  height: auto;
+  max-width: 1600px;
+  height: 350px;
   border-radius: 20px;
   object-fit: cover;
-
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15);
-
-
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.dropdown {
+  animation: dropdownFade 0.25s ease forwards;
+}
 
-.promotion-section img:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.search-main-btn {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.search-main-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 20px rgba(233, 30, 99, 0.45);
+}
+
+.search-main-btn:active {
+  transform: scale(0.95);
 }
 
 @media (max-width: 768px) {

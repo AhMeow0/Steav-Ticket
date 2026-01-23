@@ -9,7 +9,7 @@ import Bookseat from '@/component/UserBookseat.vue'
 import UserExplore from '@/component/UserExplore.vue'
 import AboutUs from '@/component/AboutUs.vue'
 import SeatSelect from '@/component/SeatSelect.vue'
-
+import PlaceDetail from '@/component/placeDetail.vue'
 // ============================================
 // 2. AUTH IMPORTS
 // ============================================
@@ -36,6 +36,7 @@ import ProfilePage from '@/view/Account-User/ProfilePage.vue'
 import MethodPay from '@/view/Account-User/MethodPay.vue'
 import Language from '@/view/Account-User/Language.vue'
 import HelpPage from '@/view/Account-User/HelpPage.vue'
+
 
 const routes: Array<RouteRecordRaw> = [
   // ============================================
@@ -136,7 +137,14 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'help', name: 'HelpPage', component: HelpPage },
     ],
   },
+  {
+    path: '/place/:slug',
+    name: 'PlaceDetail',
+    component: PlaceDetail,
+  },
+
 ]
+
 
 const router = createRouter({
   history: createWebHistory('/'),

@@ -73,140 +73,15 @@
 </template>
 
 <script setup lang="ts">
-import HeadBar from './HeadBar.vue'
-import Footer from './Footer.vue'
+import { usePlaceStore } from '@/stores/placeDetail'
+import { storeToRefs } from 'pinia'
+import HeadBar from '@/component/HeadBar.vue'
+import Footer from '@/component/Footer.vue'
 
-//  local images
-import angkorWat from '../assets/explore/siem_reab/angkor_wat.png'
-import pubStreet from '../assets/explore/siem_reab/pub_street.png'
-import museumAngkor from '../assets/explore/angkor-museum.png'
-import nationalMuseum from '../assets/explore/national-museum.png'
-import watPhnom from '../assets/explore/Wat-Phnom.png'
-import royalPalace from '../assets/explore/royal-palace.png'
-import centralMarket from '../assets/explore/central-macket.png'
-import kohPenh from '../assets/explore/koh-pech.png'
-import kohTaKiev from '../assets/explore/koh-ta-kiev.png'
-import ochheauteal from '../assets/explore/ochheauteal.png'
-import taplom from '../assets/explore/taplom.png'
-import serendipity from '../assets/explore/serendipity.png'
-import sokha from '../assets/explore/sokha-beach.png'
-import toulsreang from '../assets/explore/toulsreang.png'
-import kohrong from '../assets/explore/kohRong.png'
-import angkorThom from '../assets/explore/angkor-thom.png'
-import siemreapLake from '../assets/explore/siemreap-lake.png'
-import kohRongSamloan from '../assets/explore/koh-rong-samloan.png'
-
-type Place = {
-  title: string
-  slug: string
-  location: string
-  image: string
-}
-
-const siemReap: Place[] = [
-  { title: 'Angkor Wat', slug: 'angkor-wat', location: 'Siem Reap', image: angkorWat },
-  { title: 'Pub Street', slug: 'pub-street', location: 'Siem Reap', image: pubStreet },
-  { title: 'Museum of Angkor', slug: 'museum-angkor', location: 'Siem Reap', image: museumAngkor },
-  {
-    title: 'Taplom',
-    slug: 'taplom',
-    location: 'Siem Reap',
-    image: taplom,
-  },
-  {
-    title: 'Angkor Thom',
-    slug: 'Angkor-thom',
-    location: 'Siem Reap',
-    image: angkorThom,
-  },
-    {
-    title: 'seamreapLake',
-    slug: 'seamreap-lake',
-    location: 'Siem Reap',
-    image: siemreapLake,
-  },
-]
-
-const phnomPenh: Place[] = [
-  {
-    title: 'National Museum',
-    slug: 'national-museum',
-    location: 'Phnom Penh',
-    image: nationalMuseum,
-  },
-  {
-    title: 'Wat Phnom',
-    slug: 'wat-phnom',
-    location: 'Phnom Penh',
-    image: watPhnom,
-  },
-  {
-    title: 'Royal Palace',
-    slug: 'royal-palace',
-    location: 'Phnom Penh',
-    image: royalPalace,
-  },
-  {
-    title: 'Central Market',
-    slug: 'central-market',
-    location: 'Phnom Penh',
-    image: centralMarket,
-  },
-  {
-    title: 'Koh Pich',
-    slug: 'koh-pich',
-    location: 'Phnom Penh',
-    image: kohPenh,
-  },
-  {
-    title: 'Tuol Sleng Museum',
-    slug: 'tuol-sleng',
-    location: 'Phnom Penh',
-    image: toulsreang,
-  },
-]
-
-const preahSihanouk: Place[] = [
-  {
-    title: 'Koh Takiev',
-    slug: 'koh-takiev',
-    location: 'Preah Sihanouk',
-    image: kohTaKiev,
-  },
-    {
-    title: 'Koh Rong',
-    slug: 'koh-rong',
-    location: 'Preah Sihanouk',
-    image: kohrong,
-  },
-  {
-    title: 'Otres Beach',
-    slug: 'otres-beach',
-    location: 'Preah Sihanouk',
-    image: ochheauteal,
-  },
-  {
-    title: 'Serendipity Beach',
-    slug: 'serendipity-beach',
-    location: 'Preah Sihanouk',
-    image: serendipity,
-  },
-  {
-    title: 'Sokha Beach',
-    slug: 'sokha-beach',
-    location: 'Preah Sihanouk',
-    image: sokha,
-  },
-    {
-    title: 'Koh Rong Samloan',
-    slug: 'Koh-Rong-Samloan',
-    location: 'Preah Sihanouk',
-    image: kohRongSamloan,
-  },
-]
-
-
+const placeStore = usePlaceStore()
+const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
 </script>
+
 
 <style scoped>
 .page {
@@ -252,8 +127,8 @@ const preahSihanouk: Place[] = [
   overflow: hidden;
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transform 0.15s ease,
+  box-shadow 0.15s ease;
 }
 
 .card:hover {
