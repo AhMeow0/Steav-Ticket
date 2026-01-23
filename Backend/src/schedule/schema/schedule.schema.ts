@@ -7,24 +7,24 @@ import { Promotion } from "../../promotions/schema/promotion.schema";
 @Schema()
 export class schedule{
     @Prop({type: Types.ObjectId, ref: 'Route', required: true})
-    routeId: string
+    routeId: Types.ObjectId;
 
     @Prop({type: Types.ObjectId, ref: 'Bus', required: true})
-    busId: string
+    busId: Types.ObjectId;
 
     @Prop({type: Types.ObjectId, ref: 'Promotion', required: true})
-    promotionId: string
+    promotionId: Types.ObjectId;
 
     @Prop({require: true})
     departureDate: Date
 
     @Prop({required: true})
-    departureTime: string
+    departureTime: String
 
     @Prop({required: true})
     price: number
 
-    @Prop({default: 'ACTIVE'})
-    status: string
+    @Prop({ enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' })
+    status: 'ACTIVE' | 'INACTIVE';
 }
 export const scheduleSchema = SchemaFactory.createForClass(schedule);

@@ -19,7 +19,4 @@ export class CreateScheduleDto{
     @IsNumber()
     price: number
 
-    @IsString()
-    status: string
-
 }

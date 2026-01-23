@@ -10,12 +10,14 @@ export class ScheduleService{
    constructor(@InjectModel(schedule.name) private scheduleModel: Model<schedule>) {}
 
    async create(dto: CreateScheduleDto): Promise<schedule>{
-      const newSchedule = new this.scheduleModel(dto)
+      const newSchedule = new this.scheduleModel()
       return newSchedule.save();
    }
+
    async findAll(): Promise<schedule[]>{
       return this.scheduleModel.find().lean();
    }
+
    async findOne(id: string): Promise<schedule>{
       const schedule = await this.scheduleModel.findById(id).lean();
       if(!schedule){
@@ -23,6 +25,7 @@ export class ScheduleService{
       }
       return schedule;
    }
+
    async update(id:string, dto: UpdateScheduleDto): Promise<schedule>{
       const update = await this.scheduleModel.findByIdAndUpdate(
          id, dto, {new: true}
@@ -32,6 +35,7 @@ export class ScheduleService{
       }
       return update;
    }
+
    async remove(id: string): Promise<void>{
       const deleted = await this.scheduleModel.findByIdAndDelete(id)
       if(!deleted){
