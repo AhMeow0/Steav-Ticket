@@ -84,12 +84,16 @@
           </div>
 
         </div>
-
         <button class="search-main-btn" @click="goToBooking">
           Search Bus
         </button>
       </div>
     </section>
+
+  <section class = "container promotion-section"> 
+    <h3>Promoiton</h3>
+     <img src="/src/assets/explore/promotion/promotion1.png" class="dest-img" />
+  </section>
 
   <section class="container popular-section">
   <h3>Popular</h3>
@@ -414,6 +418,47 @@ const goToBooking = () => {
 
 .dest-info span {
   font-size: 0.8rem;
+}
+
+.promotion-section {
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.promotion-section h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  color: #111;
+}
+
+.promotion-section img {
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  border-radius: 20px;
+  object-fit: cover;
+
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15);
+
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+
+.promotion-section img:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .promotion-section {
+    margin: 2rem auto;
+  }
+
+  .promotion-section img {
+    border-radius: 16px;
+  }
 }
 
 </style>
