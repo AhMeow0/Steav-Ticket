@@ -131,10 +131,12 @@ async function login() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 480px;
+  width: 100%;
+  max-width: 480px;
   background: white;
   padding: 40px 50px;
   border-radius: 12px;
@@ -184,6 +186,8 @@ input {
   margin-top: -5px;
   margin-bottom: 15px;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .forgot {
@@ -232,5 +236,15 @@ input {
 .social-row img {
   width: 35px;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 26px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
 </style>

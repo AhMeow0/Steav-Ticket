@@ -178,10 +178,12 @@ async function submitForm() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   background: white;
   padding: 25px 50px;
   border-radius: 12px;
@@ -270,5 +272,19 @@ input {
   font-size: 10px;
   margin-top: -4px;
   margin-bottom: 10px;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 22px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
 }
 </style>

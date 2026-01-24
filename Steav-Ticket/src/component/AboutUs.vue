@@ -58,7 +58,6 @@ import HeadBar from './HeadBar.vue'
 .page-title {
   color: #e91e63;
   margin-top: 100px;
-  margin-left: 200px;
   margin-bottom: 2rem;
 }
 
@@ -107,5 +106,23 @@ import HeadBar from './HeadBar.vue'
   font-size: 1.1rem;
   line-height: 1.6;
   color: black;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    margin-top: 90px;
+    text-align: center;
+  }
+
+  .about-card {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .logo-circle {
+    width: 160px;
+    height: 160px;
+  }
 }
 </style>
