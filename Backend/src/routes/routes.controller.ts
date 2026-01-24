@@ -43,10 +43,7 @@ export class RoutesController {
   bulkUpdatePrice(
     @Body() dto: BulkUpdatePriceDto,
   ): Promise<BulkPriceUpdateResult> {
-    const bulkUpdatePrice = this.routesService.bulkUpdatePrice as (
-      body: BulkUpdatePriceDto,
-    ) => Promise<BulkPriceUpdateResult>;
-    return bulkUpdatePrice(dto);
+    return this.routesService.bulkUpdatePrice(dto);
   }
 
   //@UseGuards(AuthGuard, RolesGuard)
