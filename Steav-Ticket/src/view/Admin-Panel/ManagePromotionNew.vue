@@ -98,89 +98,10 @@ const promotionPercentage = ref(0)
 
 const promotions = ref<Promotion[]>([])
 
-<<<<<<< HEAD
 const fetchPromotions = async () => {
   const res = await fetch(API_URL)
   promotions.value = (await res.json()) as Promotion[]
 }
-=======
-  name: 'ManagePromotion',
-  data() {
-    return {
-      code: '',
-      discountType: 'PERCENT',
-      discountValue: 0,
-      startDate: '',
-      endDate: '',
-      promotions: [] as Promotion[],
-      editId: '' as string
-    };
-  },
-  mounted(){
-    this.fetchPromotion();
-  },
-  methods:{
-    async fetchPromotion(): Promise<void>{
-      try{
-        const response = await axios.get<Promotion[]>('http://localhost:3000/api/promotions')
-        this.promotions = response.data;
-      }catch(error){
-        console.error;
-      }
-    },
-  async createPromotion(): Promise<void> {
-   
-    try {
-      const payload = {
-        code: this.code,
-        discountType: this.discountType,
-        discountValue: this.discountValue,
-        startDate: this.startDate,
-        endDate: this.endDate
-      };
-      if (this.editId) {
-        await axios.put(
-          `http://localhost:3000/api/promotions/${this.editId}`,
-          payload
-        );
-      } else {
-        await axios.post(
-          'http://localhost:3000/api/promotions',
-          payload
-        );
-      }
-
-      this.resetForm();
-      this.fetchPromotion();
-    } catch (err) {
-      console.error('Save failed', err);
-    }
-  },
-    async updatePromotion(promo: Promotion): Promise<void> {
-      this.editId = promo._id;
-      this.code = promo.code;
-      this.discountType = promo.discountType;
-      this.discountValue = promo.discountValue;
-      this.startDate = promo.startDate.slice(0, 10);
-      this.endDate = promo.endDate.slice(0, 10);
-    },
-    async deletePromotion(id: string): Promise<void> {
-    try {
-      await axios.delete(`http://localhost:3000/api/promotions/${id}`);
-      this.fetchPromotion();
-      } catch (err) {
-      console.error('Failed to delete promotion', err);
-      }
-    },
-    resetForm() {
-      this.code = '';
-      this.discountType = 'PERCENT';
-      this.discountValue = 0;
-      this.startDate = '';
-      this.endDate = '';
-      this.editId = '';
-    }
->>>>>>> main
 
 const publish = async () => {
   if (!title.value || !type.value || !content.value) {
