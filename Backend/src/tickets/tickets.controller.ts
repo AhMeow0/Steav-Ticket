@@ -3,6 +3,15 @@ import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role?: string;
+};
+
+type AuthenticatedRequest = ExpressRequest & { user: JwtPayload };
 
 @Controller('tickets')
 export class TicketsController {
@@ -12,7 +21,7 @@ export class TicketsController {
   @Post()
   async protectedCreate(
     @Body() createTicketDto: CreateTicketDto,
-    @Req() req,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user.sub;
     return this.ticketsService.create(createTicketDto, userId);
@@ -20,7 +29,7 @@ export class TicketsController {
 
   @UseGuards(AuthGuard)
   @Get('my-tickets')
-  async findMyTickets(@Req() req) {
+  async findMyTickets(@Req() req: AuthenticatedRequest) {
     const userId = req.user.sub;
     return this.ticketsService.findMyTickets(userId);
   }

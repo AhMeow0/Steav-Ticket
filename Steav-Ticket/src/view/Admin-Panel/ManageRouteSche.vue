@@ -22,30 +22,83 @@
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">Depart Time</label>
-          <select class="manage-route-page__select"></select>
+          <input
+            type="datetime-local"
+            v-model="departureTimeLocal"
+            class="manage-route-page__input"
+          />
         </div>
 
         <div class="manage-route-page__field">
-          <label class="manage-route-page__label">Day</label>
-          <input class="manage-route-page__input" />
+          <label class="manage-route-page__label">Price ($)</label>
+          <input
+            type="number"
+            v-model.number="form.price"
+            min="1"
+            step="0.01"
+            class="manage-route-page__input"
+            placeholder="e.g. 15"
+          />
         </div>
 
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Company Name</label>
+          <input
+            type="text"
+            v-model="form.company"
+            class="manage-route-page__input"
+            placeholder="e.g. Virak Buntham"
+          />
+        </div>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Route Number (optional)</label>
+          <input
+            type="text"
+            v-model="form.routeNumber"
+            class="manage-route-page__input"
+            placeholder="e.g. R-101"
+          />
+        </div>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Total Seats</label>
+          <input
+            type="number"
+            v-model.number="form.totalSeats"
+            min="1"
+            step="1"
+            class="manage-route-page__input"
+            placeholder="e.g. 40"
+          />
+        </div>
       </div>
 
-      <button class="manage-route-page__button">Confirm</button>
+      <button @click="saveSchedule" class="manage-route-page__button">
+        {{ loading ? 'Saving...' : editingId ? 'Save Changes' : 'Confirm Create' }}
+      </button>
+      <button
+        v-if="editingId"
+        @click="cancelEdit"
+        class="manage-route-page__button manage-route-page__button--secondary"
+        :disabled="loading"
+      >
+        Cancel
+      </button>
     </div>
 
-    <!-- Table Section -->
     <div class="manage-route-page__table">
-      <h1 class="manage-route-page__title">Assigned Route & Schedules</h1>
+      <h1 class="manage-route-page__title">Active Schedules</h1>
 
-      <table>
+      <table v-if="schedules.length > 0">
         <thead>
           <tr>
-            <th>From</th>
-            <th>To</th>
-            <th>Depart Time</th>
-            <th>Day</th>
+            <th>Company</th>
+            <th>Route</th>
+            <th>Time</th>
+            <th class="price-col">Price</th>
+            <th class="price-col">Seats</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -56,6 +109,7 @@
           </tr>
         </tbody>
       </table>
+      <p v-else style="text-align: center; padding: 20px; color: #888">No schedules found.</p>
     </div>
   </div>
 </template>
@@ -111,7 +165,6 @@ export default defineComponent({
   padding: 30px;
   border-radius: 10px;
 }
-
 .manage-route-page__form,
 .manage-route-page__table {
   background: #111827;
@@ -119,49 +172,60 @@ export default defineComponent({
   border-radius: 10px;
   margin-bottom: 20px;
 }
-
 .manage-route-page__title {
   font-size: 26px;
   font-weight: bold;
   margin-bottom: 15px;
 }
-
-/* Grid Layout */
 .manage-route-page__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
-
 .manage-route-page__field {
   display: flex;
   flex-direction: column;
 }
-
 .manage-route-page__label {
   margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #aaa;
 }
 
 /* Inputs */
 .manage-route-page__input {
   width: 100%;
-  padding: 18px;
-  background: #111827;
-  border: 1px solid #424242;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 12px;
+  background: #1f2937;
+  border: 1px solid #374151;
   color: white;
   border-radius: 8px;
   font-size: 14px;
 }
-
-
 .manage-route-page__button {
   margin-top: 20px;
-  background: #4caf50;
-  padding: 15px 30px;
+  background: #10b981;
+  padding: 12px 30px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
   color: white;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.manage-route-page__button:hover {
+  background: #059669;
+}
+
+.manage-route-page__button--secondary {
+  margin-left: 10px;
+  background: #374151;
+}
+
+.manage-route-page__button--secondary:hover {
+  background: #4b5563;
 }
 
 /* Table */
@@ -170,10 +234,26 @@ table {
   border-collapse: collapse;
   margin-top: 10px;
 }
-
 th {
   padding: 12px;
-  border-bottom: 1px solid #333;
-  text-align: center;
+  border-bottom: 1px solid #374151;
+  text-align: left;
+  color: #9ca3af;
+}
+td {
+  padding: 12px;
+  border-bottom: 1px solid #374151;
+}
+.price-col {
+  text-align: right;
+  white-space: nowrap;
+}
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>

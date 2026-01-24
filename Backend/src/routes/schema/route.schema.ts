@@ -5,6 +5,9 @@ export type RouteDocument = HydratedDocument<Route>;
 
 @Schema()
 export class Route {
+  @Prop()
+  company?: string;
+
   @Prop({ required: true })
   routeNumber: string; // e.g., "BUS-101"
 

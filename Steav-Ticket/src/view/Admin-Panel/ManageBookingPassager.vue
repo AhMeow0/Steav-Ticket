@@ -1,30 +1,36 @@
 <template>
   <div class="manage-booking-passenger-page">
-    <!-- Form Section -->
     <div class="form-box">
-      <h1>Manage Route & Schedules</h1>
+      <h1>Manage Booking & Passenger</h1>
 
       <div class="form-grid">
         <div class="form-field">
           <label>Routes</label>
-          <select></select>
+          <select v-model="selectedDestination">
+            <option value="">All</option>
+            <option v-for="d in destinations" :key="d" :value="d">{{ d }}</option>
+          </select>
         </div>
 
         <div class="form-field">
           <label>Date of Journey</label>
-          <input type="date" />
+          <input v-model="selectedDate" type="date" />
         </div>
 
         <div class="form-field">
           <label>Time</label>
-          <select></select>
+          <select v-model="selectedDepartureTime">
+            <option value="">All</option>
+            <option v-for="t in departureTimes" :key="t" :value="t">{{ formatTime(t) }}</option>
+          </select>
         </div>
       </div>
 
-      <button class="save-btn">Apply Filter</button>
+      <button class="save-btn" :disabled="loading" @click="applyFilter">
+        {{ loading ? 'Loading...' : 'Apply Filter' }}
+      </button>
     </div>
 
-    <!-- Table Section -->
     <div class="table-box">
       <h1>Assigned Booking & Passenger</h1>
 
@@ -40,13 +46,197 @@
           </tr>
         </thead>
 
-        <tbody></tbody>
+        <tbody>
+          <tr v-for="b in bookings" :key="b._id">
+            <td>{{ b.destination }}</td>
+            <td>{{ b.user?.name ?? b.user?.email ?? b.user?._id }}</td>
+            <td>{{ b.seatNumber }}</td>
+            <td>{{ formatTime(b.departureTime) }}</td>
+            <td>{{ b.status }}</td>
+            <td>
+              <button
+                class="action-btn"
+                :disabled="loading"
+                @click="updateStatus(b._id, 'CONFIRMED')"
+              >
+                Confirm
+              </button>
+              <button
+                class="action-btn action-btn--secondary"
+                :disabled="loading"
+                @click="updateStatus(b._id, 'CANCELLED')"
+              >
+                Cancel
+              </button>
+            </td>
+          </tr>
+
+          <tr v-if="!loading && bookings.length === 0">
+            <td colspan="6">No bookings found</td>
+          </tr>
+        </tbody>
       </table>
+
+      <div v-if="error" class="error">{{ error }}</div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { apiUrl } from '@/lib/api'
+
+type RouteSchedule = {
+  _id: string
+  origin: string
+  destination: string
+  departureTime: string
+}
+
+type BookingRow = {
+  _id: string
+  destination: string
+  departureTime: string
+  seatNumber: number
+  passengerName: string
+  status: string
+  price: number
+  user: { _id: string; name?: string; email?: string }
+}
+
+const loading = ref(false)
+const error = ref('')
+
+const routes = ref<RouteSchedule[]>([])
+const bookings = ref<BookingRow[]>([])
+
+const selectedDestination = ref('')
+const selectedDate = ref('')
+const selectedDepartureTime = ref('')
+
+const destinations = computed(() => {
+  const set = new Set<string>()
+  for (const r of routes.value) {
+    if (r.destination) set.add(r.destination)
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b))
+})
+
+const departureTimes = computed(() => {
+  const set = new Set<string>()
+  const filtered = selectedDestination.value
+    ? routes.value.filter((r) => r.destination === selectedDestination.value)
+    : routes.value
+  for (const r of filtered) {
+    if (r.departureTime) set.add(r.departureTime)
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b))
+})
+
+function formatTime(isoOrString: string) {
+  const d = new Date(isoOrString)
+  if (Number.isNaN(d.getTime())) return isoOrString
+  return d.toLocaleString()
+}
+
+async function fetchRoutes() {
+  try {
+    const response = await fetch(apiUrl('/routes'))
+    if (!response.ok) throw new Error('Failed to load routes')
+    const data = (await response.json()) as RouteSchedule[]
+    routes.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function fetchBookings() {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    error.value = 'You must be logged in as Admin!'
+    return
+  }
+
+  error.value = ''
+  loading.value = true
+  try {
+    const qs = new URLSearchParams()
+    if (selectedDestination.value) qs.set('destination', selectedDestination.value)
+    if (selectedDate.value) qs.set('date', selectedDate.value)
+    if (selectedDepartureTime.value) qs.set('departureTime', selectedDepartureTime.value)
+
+    const url = apiUrl(`/admin/bookings${qs.toString() ? `?${qs.toString()}` : ''}`)
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        error.value = 'Unauthorized: please log in again (token invalid/expired).'
+        return
+      }
+      if (response.status === 403) {
+        error.value = 'Forbidden: your account is not admin.'
+        return
+      }
+      error.value = 'Failed to load bookings'
+      return
+    }
+
+    const data = (await response.json()) as BookingRow[]
+    bookings.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    console.error(err)
+    error.value = 'Network Error'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('You must be logged in as Admin!')
+    return
+  }
+
+  try {
+    const response = await fetch(apiUrl(`/admin/bookings/${id}/status`), {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) return alert('Unauthorized: please log in again.')
+      if (response.status === 403) return alert('Forbidden: your account is not admin.')
+      return alert('Failed to update status')
+    }
+
+    await fetchBookings()
+  } catch (err) {
+    console.error(err)
+    alert('Network Error')
+  }
+}
+
+function applyFilter() {
+  void fetchBookings()
+}
+
+onMounted(() => {
+  void fetchRoutes()
+  void fetchBookings()
+})
+</script>
+
 <style scoped>
-  .manage-booking-passenger-page {
+.manage-booking-passenger-page {
   color: white;
   padding: 30px;
   border-radius: 10px;
@@ -96,7 +286,6 @@ select {
   font-size: 14px;
 }
 
-
 .save-btn {
   margin-top: 20px;
   background: #4caf50;
@@ -105,10 +294,8 @@ select {
   border: none;
   cursor: pointer;
   color: white;
-
 }
 
-/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -121,4 +308,23 @@ td {
   text-align: center;
 }
 
+.action-btn {
+  background: #4caf50;
+  padding: 10px 14px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  margin-right: 8px;
+}
+
+.action-btn--secondary {
+  background: #111827;
+  border: 1px solid #424242;
+}
+
+.error {
+  margin-top: 12px;
+  color: #e5e7eb;
+}
 </style>

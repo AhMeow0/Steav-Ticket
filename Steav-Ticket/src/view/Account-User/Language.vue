@@ -67,6 +67,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+defineOptions({ name: 'AccountLanguage' })
+
 const router = useRouter()
 const selectedLanguage = ref('english')
 const showLogoutModal = ref(false)

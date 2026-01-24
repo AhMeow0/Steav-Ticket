@@ -109,6 +109,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/admin',
     name: 'AdminView',
     component: AdminView,
+    meta: { requiresAdmin: true },
     children: [
       { path: 'dashboard', name: 'Dashboard', component: DashBoard },
       { path: 'manage-bus', name: 'ManageBus', component: ManageBuses },
@@ -151,6 +152,21 @@ const router = createRouter({
   routes,
   // This class makes the active link (like "Home" or "Explore") turn Pink automatically
   linkActiveClass: 'active-link',
+})
+
+router.beforeEach((to) => {
+  const needsAdmin = to.matched.some((r) => Boolean(r.meta?.requiresAdmin))
+  if (!needsAdmin) return true
+
+  const token = localStorage.getItem('access_token')
+  if (!token) return { name: 'LoginPage' }
+
+  const payload = parseJwt(token)
+  if (!payload?.role || payload.role !== 'admin') {
+    return { name: 'UserHome' }
+  }
+
+  return true
 })
 
 export default router

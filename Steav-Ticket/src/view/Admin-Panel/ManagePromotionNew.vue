@@ -1,6 +1,5 @@
 <template>
   <div class="manage-promotion-page">
-
     <!-- Form Section -->
     <div class="form-box">
       <h1 class="section-title">Manage Promotion & News</h1>
@@ -38,9 +37,7 @@
         </div>
       </div>
 
-      <button class="save-btn" @click="publish">
-        Publish
-      </button>
+      <button class="save-btn" @click="publish">Publish</button>
     </div>
 
     <!-- Table Section -->
@@ -65,9 +62,7 @@
             <td>{{ item.promotionPercentage }}%</td>
             <td>{{ formatDate(item.active) }}</td>
             <td>
-              <button class="delete-btn" @click="deletePromotion(item._id)">
-                Delete
-              </button>
+              <button class="delete-btn" @click="deletePromotion(item._id)">Delete</button>
             </td>
           </tr>
 
@@ -77,14 +72,23 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { apiUrl } from '@/lib/api'
 
-const API_URL = 'http://localhost:3000/promotions'
+type Promotion = {
+  _id: string
+  title: string
+  type: string
+  promotionPercentage: number
+  active: string
+  content?: string
+}
+
+const API_URL = apiUrl('/promotions')
 
 const title = ref('')
 const type = ref('')
@@ -92,14 +96,12 @@ const active = ref('')
 const content = ref('')
 const promotionPercentage = ref(0)
 
-const promotions = ref([])
-
+const promotions = ref<Promotion[]>([])
 
 const fetchPromotions = async () => {
   const res = await fetch(API_URL)
-  promotions.value = await res.json()
+  promotions.value = (await res.json()) as Promotion[]
 }
-
 
 const publish = async () => {
   if (!title.value || !type.value || !content.value) {
@@ -129,15 +131,14 @@ const publish = async () => {
   fetchPromotions()
 }
 
-const deletePromotion = async (id) => {
+const deletePromotion = async (id: string) => {
   await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
   })
   fetchPromotions()
 }
 
-
-const formatDate = (date) => {
+const formatDate = (date: string) => {
   if (!date) return '-'
   return new Date(date).toLocaleDateString()
 }
@@ -159,20 +160,17 @@ onMounted(fetchPromotions)
   margin-bottom: 20px;
 }
 
-
 .section-title {
   font-weight: bold;
   font-size: 26px;
   margin-bottom: 15px;
 }
 
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
-
 
 .input-group {
   display: flex;
@@ -196,7 +194,6 @@ input {
 .content-input {
   height: 80px;
 }
-
 
 .save-btn {
   margin-top: 20px;
