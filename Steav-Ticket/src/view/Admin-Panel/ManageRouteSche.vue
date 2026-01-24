@@ -7,25 +7,17 @@
       <div class="manage-route-page__grid">
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">From</label>
-<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
           <input
             class="manage-route-page__input"
             type="text"
             placeholder="Enter from"
             v-model="from"
           />
-=======
-          <select class="manage-route-page__select"></select>
->>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
         </div>
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">To</label>
-<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
           <input class="manage-route-page__input" type="text" placeholder="Enter to" v-model="to" />
-=======
-          <select class="manage-route-page__select"></select>
->>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
         </div>
 
         <div class="manage-route-page__field">
@@ -56,7 +48,6 @@
             <th>Day</th>
           </tr>
         </thead>
-<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 
         <tbody>
           <tr v-for="route in routes" :key="route._id">
@@ -64,14 +55,11 @@
             <td>{{ route.endLocation }}</td>
           </tr>
         </tbody>
-=======
->>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
       </table>
     </div>
   </div>
 </template>
 
-<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
@@ -117,8 +105,6 @@ export default defineComponent({
 })
 </script>
 
-=======
->>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
 <style scoped>
 .manage-route-page {
   color: white;
@@ -157,12 +143,7 @@ export default defineComponent({
 }
 
 /* Inputs */
-<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 .manage-route-page__input {
-=======
-.manage-route-page__input,
-.manage-route-page__select {
->>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
   width: 100%;
   padding: 18px;
   background: #111827;
