@@ -5,10 +5,15 @@ import {
   Min,
   IsOptional,
   IsInt,
+  IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateRouteDto {
+  @IsOptional()
+  @IsMongoId()
+  busId?: string;
+
   @IsOptional()
   @IsString()
   company?: string;
@@ -25,10 +30,11 @@ export class CreateRouteDto {
   @IsNotEmpty()
   destination: string;
 
+  @IsOptional()
   @IsNumber()
-  @Min(1) // Price cannot be 0 or negative
+  @Min(0)
   @Type(() => Number)
-  price: number;
+  price?: number;
 
   @IsString()
   @IsNotEmpty()

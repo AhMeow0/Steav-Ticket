@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { Type } from 'class-transformer';
 
-export class CreateBusDto{
+export class UpdateBusDto{
 
     @IsString()
     @IsNotEmpty()
@@ -13,7 +13,7 @@ export class CreateBusDto{
 
     @IsString()
     busType: string;
-    
+
     @Type(() => Number)
     @IsNumber()
     capacity: number;

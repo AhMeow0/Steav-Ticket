@@ -198,10 +198,11 @@ async function fetchBookings() {
 async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
   const token = localStorage.getItem('access_token')
   if (!token) {
-    alert('You must be logged in as Admin!')
+    error.value = 'You must be logged in as Admin!'
     return
   }
 
+  error.value = ''
   try {
     const response = await fetch(apiUrl(`/admin/bookings/${id}/status`), {
       method: 'PATCH',
@@ -213,15 +214,22 @@ async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
     })
 
     if (!response.ok) {
-      if (response.status === 401) return alert('Unauthorized: please log in again.')
-      if (response.status === 403) return alert('Forbidden: your account is not admin.')
-      return alert('Failed to update status')
+      if (response.status === 401) {
+        error.value = 'Unauthorized: please log in again.'
+        return
+      }
+      if (response.status === 403) {
+        error.value = 'Forbidden: your account is not admin.'
+        return
+      }
+      error.value = 'Failed to update status'
+      return
     }
 
     await fetchBookings()
   } catch (err) {
     console.error(err)
-    alert('Network Error')
+    error.value = 'Network Error'
   }
 }
 

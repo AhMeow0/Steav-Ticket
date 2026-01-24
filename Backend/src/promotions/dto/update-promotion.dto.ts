@@ -1,7 +1,7 @@
 import { IsString,IsNotEmpty,IsEnum,IsNumber,Min,IsDateString,} from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreatePromotionDto {
+export class UpdatePromotionDto {
 
   @IsString()
   @IsNotEmpty()
@@ -20,4 +20,5 @@ export class CreatePromotionDto {
 
   @IsDateString()
   endDate: string;
+    
 }

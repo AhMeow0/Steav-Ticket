@@ -41,6 +41,7 @@ type JwtPayload = {
   sub: string
   email: string
   role?: string
+  exp?: number
 }
 
 function parseJwt(token: string): JwtPayload | null {
@@ -175,6 +176,10 @@ router.beforeEach((to) => {
   if (!token) return { name: 'LoginPage' }
 
   const payload = parseJwt(token)
+  if (payload?.exp && Date.now() >= payload.exp * 1000) {
+    localStorage.removeItem('access_token')
+    return { name: 'LoginPage' }
+  }
   if (!payload?.role || payload.role !== 'admin') {
     return { name: 'UserHome' }
   }

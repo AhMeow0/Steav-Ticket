@@ -3,6 +3,16 @@
     <div class="manage-route-page__form">
       <h1 class="manage-route-page__title">Manage Route & Schedules</h1>
 
+      <p v-if="error" class="manage-route-page__message manage-route-page__message--error">
+        {{ error }}
+      </p>
+      <p
+        v-else-if="success"
+        class="manage-route-page__message manage-route-page__message--success"
+      >
+        {{ success }}
+      </p>
+
       <div class="manage-route-page__grid">
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">From</label>
@@ -38,46 +48,23 @@
         </div>
 
         <div class="manage-route-page__field">
-          <label class="manage-route-page__label">Price ($)</label>
-          <input
-            type="number"
-            v-model.number="form.price"
-            min="1"
-            step="0.01"
-            class="manage-route-page__input"
-            placeholder="e.g. 15"
-          />
+          <label class="manage-route-page__label">Bus</label>
+          <select v-model="form.busId" class="manage-route-page__select" @change="onBusChange">
+            <option disabled value="">Select Bus</option>
+            <option v-for="b in buses" :key="b._id" :value="b._id">
+              {{ b.busPlate }} — {{ b.companyName }}
+            </option>
+          </select>
         </div>
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">Company Name</label>
           <input
             type="text"
-            v-model="form.company"
+            :value="selectedBus?.companyName || ''"
             class="manage-route-page__input"
-            placeholder="e.g. Virak Buntham"
-          />
-        </div>
-
-        <div class="manage-route-page__field">
-          <label class="manage-route-page__label">Route Number (optional)</label>
-          <input
-            type="text"
-            v-model="form.routeNumber"
-            class="manage-route-page__input"
-            placeholder="e.g. R-101"
-          />
-        </div>
-
-        <div class="manage-route-page__field">
-          <label class="manage-route-page__label">Total Seats</label>
-          <input
-            type="number"
-            v-model.number="form.totalSeats"
-            min="1"
-            step="1"
-            class="manage-route-page__input"
-            placeholder="e.g. 40"
+            placeholder="Auto from bus"
+            disabled
           />
         </div>
       </div>
@@ -102,21 +89,21 @@
         <thead>
           <tr>
             <th>Company</th>
+            <th>Bus Plate</th>
             <th>Route</th>
             <th>Time</th>
-            <th class="price-col">Price</th>
             <th class="price-col">Seats</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in schedules" :key="item._id">
-            <td>{{ item.company || 'Bus' }}</td>
+            <td>{{ getCompanyLabel(item) }}</td>
+            <td>{{ getBusPlateLabel(item) }}</td>
             <td>{{ item.origin }} ➔ {{ item.destination }}</td>
             <td>{{ formatDepartTime(item.departureTime) }}</td>
-            <td class="price-col">{{ formatPrice(item.price) }}</td>
             <td class="price-col">
-              {{ item.totalSeats - item.bookedSeats.length }} / {{ item.totalSeats }}
+              {{ getTotalSeats(item) - item.bookedSeats.length }} / {{ getTotalSeats(item) }}
             </td>
             <td>
               <button class="edit-btn" @click="startEdit(item)">Edit</button>
@@ -132,7 +119,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
+
+interface Bus {
+  _id: string
+  companyName: string
+  busPlate: string
+  busType: string
+  capacity: number
+}
+
+type BusRef = string | Bus
 
 interface Schedule {
   _id: string
@@ -142,22 +140,30 @@ interface Schedule {
   price: number
   company?: string
   routeNumber?: string
+  busId?: BusRef
   totalSeats: number
   bookedSeats: number[]
 }
 
 const loading = ref(false)
 const schedules = ref<Schedule[]>([])
+const buses = ref<Bus[]>([])
 const editingId = ref<string | null>(null)
+const error = ref('')
+const success = ref('')
+
+const router = useRouter()
 
 const form = ref({
   origin: '',
   destination: '',
   departureTime: '',
-  price: 0,
-  company: '',
-  routeNumber: '',
-  totalSeats: 40,
+  busId: '',
+})
+
+const selectedBus = computed(() => {
+  if (!form.value.busId) return null
+  return buses.value.find((b) => b._id === form.value.busId) ?? null
 })
 
 function pad2(n: number): string {
@@ -218,18 +224,24 @@ function formatDepartTime(value: string): string {
   return d.toLocaleString()
 }
 
-const formatPrice = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format(value ?? 0)
-}
+
 
 // 1. Fetch existing schedules on load
 onMounted(async () => {
+  await fetchBuses()
   await fetchSchedules()
 })
+
+async function fetchBuses() {
+  try {
+    const res = await fetch(apiUrl('/buses'))
+    if (res.ok) {
+      buses.value = (await res.json()) as Bus[]
+    }
+  } catch (err) {
+    console.error('Error fetching buses', err)
+  }
+}
 
 async function fetchSchedules() {
   try {
@@ -248,38 +260,74 @@ function cancelEdit() {
     origin: '',
     destination: '',
     departureTime: '',
-    price: 0,
-    company: '',
-    routeNumber: '',
-    totalSeats: 40,
+    busId: '',
   }
 }
 
 function startEdit(item: Schedule) {
+  const busId =
+    typeof item.busId === 'string'
+      ? item.busId
+      : item.busId && typeof item.busId === 'object'
+        ? item.busId._id
+        : ''
+
   editingId.value = item._id
   form.value = {
     origin: item.origin,
     destination: item.destination,
     departureTime: item.departureTime,
-    price: item.price,
-    company: item.company ?? '',
-    routeNumber: item.routeNumber ?? '',
-    totalSeats: item.totalSeats ?? 40,
+    busId,
   }
+}
+
+function onBusChange() {
+  // no-op (kept to avoid template churn)
+}
+
+function getCompanyLabel(item: Schedule): string {
+  if (item.busId && typeof item.busId === 'object' && item.busId.companyName) {
+    return item.busId.companyName
+  }
+  return item.company || '—'
+}
+
+function getBusPlateLabel(item: Schedule): string {
+  if (item.busId && typeof item.busId === 'object' && item.busId.busPlate) {
+    return item.busId.busPlate
+  }
+  // Back-compat: some older records store the bus plate in routeNumber
+  return item.routeNumber || '—'
+}
+
+function getTotalSeats(item: Schedule): number {
+  if (item.busId && typeof item.busId === 'object' && item.busId.capacity !== undefined) {
+    const cap = Number(item.busId.capacity)
+    return Number.isFinite(cap) && cap > 0 ? cap : item.totalSeats
+  }
+  return item.totalSeats
 }
 
 // 2. Create or Update a Schedule
 async function saveSchedule() {
   const token = localStorage.getItem('access_token')
-  if (!token) return alert('You must be logged in as Admin!')
+  if (!token) {
+    error.value = 'You must be logged in as Admin.'
+    void router.push({ name: 'LoginPage' })
+    return
+  }
+
+  error.value = ''
+  success.value = ''
 
   if (
     !form.value.origin ||
     !form.value.destination ||
     !form.value.departureTime ||
-    !form.value.price
+    !form.value.busId
   ) {
-    return alert('Please fill in all fields')
+    error.value = 'Please fill in all fields.'
+    return
   }
 
   loading.value = true
@@ -291,13 +339,7 @@ async function saveSchedule() {
       origin: form.value.origin,
       destination: form.value.destination,
       departureTime: form.value.departureTime,
-      price: Number(form.value.price),
-      company: form.value.company,
-      totalSeats: Number(form.value.totalSeats) || 40,
-    }
-
-    if (form.value.routeNumber && form.value.routeNumber.trim()) {
-      payload.routeNumber = form.value.routeNumber.trim()
+      busId: form.value.busId,
     }
 
     const response = await fetch(url, {
@@ -310,7 +352,9 @@ async function saveSchedule() {
     })
 
     if (response.ok) {
-      alert(isEditing ? 'Schedule updated successfully!' : 'Schedule created successfully!')
+      success.value = isEditing
+        ? 'Schedule updated successfully.'
+        : 'Schedule created successfully.'
       await fetchSchedules() // Refresh table
       cancelEdit()
     } else {
@@ -323,20 +367,23 @@ async function saveSchedule() {
       }
 
       if (response.status === 401) {
-        alert('Unauthorized: please log in again (token invalid/expired).')
+        error.value = 'Unauthorized: please log in again.'
+        localStorage.removeItem('access_token')
+        void router.push({ name: 'LoginPage' })
         return
       }
 
       if (response.status === 403) {
-        alert('Forbidden: your account is not admin.')
+        error.value = 'Forbidden: your account is not admin.'
+        void router.push({ name: 'UserHome' })
         return
       }
 
-      alert('Failed: ' + message)
+      error.value = `Failed: ${message}`
     }
-  } catch (error) {
-    console.error(error)
-    alert('Network Error')
+  } catch (err) {
+    console.error(err)
+    error.value = 'Network Error'
   } finally {
     loading.value = false
   }
@@ -348,14 +395,41 @@ async function deleteSchedule(id: string) {
 
   const token = localStorage.getItem('access_token')
   if (!token) {
-    alert('You must be logged in as Admin!')
+    error.value = 'You must be logged in as Admin.'
+    void router.push({ name: 'LoginPage' })
     return
   }
-  await fetch(apiUrl(`/routes/${id}`), {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  fetchSchedules()
+
+  error.value = ''
+  success.value = ''
+  try {
+    const res = await fetch(apiUrl(`/routes/${id}`), {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        error.value = 'Unauthorized: please log in again.'
+        localStorage.removeItem('access_token')
+        void router.push({ name: 'LoginPage' })
+        return
+      }
+      if (res.status === 403) {
+        error.value = 'Forbidden: your account is not admin.'
+        void router.push({ name: 'UserHome' })
+        return
+      }
+      error.value = 'Failed to delete schedule.'
+      return
+    }
+
+    success.value = 'Schedule deleted.'
+    await fetchSchedules()
+  } catch (err) {
+    console.error(err)
+    error.value = 'Network Error'
+  }
 }
 </script>
 
@@ -376,6 +450,26 @@ async function deleteSchedule(id: string) {
   font-size: 26px;
   font-weight: bold;
   margin-bottom: 15px;
+}
+
+.manage-route-page__message {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.manage-route-page__message--error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fecaca;
+}
+
+.manage-route-page__message--success {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #bbf7d0;
 }
 .manage-route-page__grid {
   display: grid;

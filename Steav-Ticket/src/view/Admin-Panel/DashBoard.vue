@@ -2,6 +2,8 @@
   <main class="dashboard-main">
     <h1>Dashboard</h1>
 
+    <p v-if="error" class="dashboard-error">{{ error }}</p>
+
     <!-- Top Stats -->
     <div class="stats-box">
       <div class="stat-card stat-card--trips">
@@ -95,6 +97,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
 
 type DashboardStats = {
@@ -120,6 +123,9 @@ type DashboardStatusPoint = {
 
 const period = ref<DashboardStats['period']>('all')
 const loading = ref(false)
+const error = ref('')
+
+const router = useRouter()
 
 const series = ref<DashboardSeriesPoint[]>([])
 const statusBreakdown = ref<DashboardStatusPoint[]>([])
@@ -147,10 +153,12 @@ const stats = ref<DashboardStats>({
 async function fetchStats() {
   const token = localStorage.getItem('access_token')
   if (!token) {
-    alert('You must be logged in as Admin!')
+    error.value = 'You must be logged in as Admin.'
+    void router.push({ name: 'LoginPage' })
     return
   }
 
+  error.value = ''
   loading.value = true
   try {
     const url = apiUrl(`/admin/dashboard?period=${encodeURIComponent(period.value)}`)
@@ -162,15 +170,18 @@ async function fetchStats() {
 
     if (!response.ok) {
       if (response.status === 401) {
-        alert('Unauthorized: please log in again (token invalid/expired).')
+        error.value = 'Unauthorized: please log in again.'
+        localStorage.removeItem('access_token')
+        void router.push({ name: 'LoginPage' })
         return
       }
       if (response.status === 403) {
-        alert('Forbidden: your account is not admin.')
+        error.value = 'Forbidden: your account is not admin.'
+        void router.push({ name: 'UserHome' })
         return
       }
 
-      alert('Failed to load dashboard')
+      error.value = 'Failed to load dashboard.'
       return
     }
 
@@ -188,7 +199,7 @@ async function fetchStats() {
     recomputeDonut()
   } catch (err) {
     console.error(err)
-    alert('Network Error')
+    error.value = 'Network Error'
   } finally {
     loading.value = false
   }
@@ -283,6 +294,16 @@ h1 {
   font-weight: bold;
   font-size: 26px;
   margin-bottom: 20px;
+}
+
+.dashboard-error {
+  margin: -6px 0 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fecaca;
+  font-size: 14px;
 }
 
 .stats-box {

@@ -5,7 +5,7 @@ import { ROLES_KEY } from './roles.decorator';
 type JwtPayload = {
   sub: string;
   email: string;
-  role?: string;
+  role?: string | string[];
 };
 
 @Injectable()
@@ -29,6 +29,11 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     // Check if the user has the required role
-    return requiredRoles.some((role) => user?.role?.includes(role));
+    const userRole = user?.role;
+    if (!userRole) return false;
+    if (Array.isArray(userRole)) {
+      return requiredRoles.some((r) => userRole.includes(r));
+    }
+    return requiredRoles.some((r) => userRole === r);
   }
 }

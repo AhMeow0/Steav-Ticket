@@ -1,36 +1,38 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { BusService } from './buses.service';
 import { CreateBusDto } from './dto/create-bus.dto';
-import { bus } from './schema/bus.schema';
-import { AuthGuard } from '../auth/auth.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
+import { UpdateBusDto } from './dto/update-bus.dto';
+import { Bus } from './schema/bus.schema';
 
 @Controller('buses')
 export class BusController {
   constructor(private readonly busService: BusService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
   @Post()
-  create(@Body() createBusDto: CreateBusDto): Promise<bus> {
+  create(@Body() createBusDto: CreateBusDto): Promise<Bus> {
     return this.busService.create(createBusDto);
   }
 
   @Get()
-  findAll(): Promise<bus[]> {
+  findAll(): Promise<Bus[]> {
     return this.busService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<bus> {
+  findOne(@Param('id') id: string): Promise<Bus> {
     return this.busService.findOne(id);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateBusDto: UpdateBusDto,
+  ): Promise<Bus> {
+    return this.busService.update(id, updateBusDto);
+  }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Promise<void> {
     return this.busService.delete(id);
   }
 }

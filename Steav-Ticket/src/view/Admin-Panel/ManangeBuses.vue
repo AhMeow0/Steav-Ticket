@@ -1,10 +1,22 @@
 <template>
   <div class="manage-buses-page">
+
     <!-- Form Section -->
     <div class="manage-buses-page__form">
       <h1 class="manage-buses-page__title">Manage Buses</h1>
 
       <div class="manage-buses-page__grid">
+
+        <div class="manage-buses-page__field">
+          <label class="manage-buses-page__label">Company Name</label>
+          <input
+            class="manage-buses-page__input"
+            type="text"
+            placeholder="Virak Buntham"
+            v-model="companyName"
+          />
+        </div>
+
         <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Plate</label>
           <input
@@ -17,10 +29,13 @@
 
         <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Type</label>
-          <select class="manage-buses-page__select" v-model="busType">
-            <option value="">Select type</option>
+          <select
+            class="manage-buses-page__select"
+            v-model="busType"
+          >
+            <option disabled value="">Select type</option>
             <option value="VIP">VIP</option>
-            <option value="Bus">Standard</option>
+            <option value="Bus">Bus</option>
             <option value="Sleeper">Sleeper</option>
           </select>
         </div>
@@ -34,9 +49,15 @@
             v-model.number="capacity"
           />
         </div>
+
       </div>
 
-      <button class="manage-buses-page__button" @click="saveBus">Save Buses</button>
+      <button
+        class="manage-buses-page__button"
+        @click="createBus"
+      >
+        {{editId ? 'Update bus':'Save Bus'}}
+      </button>
     </div>
 
     <!-- Table Section -->
@@ -47,141 +68,123 @@
         <thead>
           <tr>
             <th>No</th>
+            <th>Company</th>
             <th>Bus Plate</th>
             <th>Bus Type</th>
             <th>Capacity</th>
+            <th>Action</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr v-for="(bus, index) in buses" :key="bus._id">
-            <td>{{ index + 1 }}</td>
-            <td>{{ bus.busPlate }}</td>
-            <td>{{ bus.busType }}</td>
-            <td>{{ bus.capacity }}</td>
-            <td>
-              <button class="delete-btn" @click="deleteBus(bus._id)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
+            <tr v-for="(bus, index) in buses" :key="bus._id">
+              <td>{{ index + 1 }}</td>
+              <td>{{ bus.companyName }}</td>
+              <td>{{ bus.busPlate }}</td>
+              <td>{{ bus.busType }}</td>
+              <td>{{ bus.capacity }}</td>
+              <td class = "action">
+                <button class="edit-btn" @click="updateBus(bus)">edit</button>
+                <button
+                  class="delete-btn"
+                  @click="deleteBus(bus._id)">Delete</button>
+              </td>
+
+            </tr>
+          </tbody>
       </table>
     </div>
+
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { apiUrl } from '@/lib/api'
+<script lang = 'ts'>
+import axios from 'axios';
+import { defineComponent } from 'vue';
 
-type Bus = {
-  _id: string
-  busPlate: string
-  busType: string
-  capacity: number
+interface Bus{
+  _id: string;
+  companyName: string;
+  busPlate: string;
+  capacity: number;
+  busType: string;
 }
 
-const API_URL = apiUrl('/buses')
-
-const busPlate = ref('')
-const busType = ref('')
-const capacity = ref(0)
-
-const buses = ref<Bus[]>([])
-
-const fetchBuses = async () => {
-  const res = await fetch(API_URL)
-  buses.value = (await res.json()) as Bus[]
-}
-
-const saveBus = async () => {
-  const token = localStorage.getItem('access_token')
-  if (!token) {
-    alert('You must be logged in as Admin!')
-    return
-  }
-
-  if (!busPlate.value || !busType.value) {
-    alert('Please fill all fields')
-    return
-  }
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+export default defineComponent({
+  name: 'ManageBus',
+  data(){
+    return{
+      companyName: '' as string,
+      busPlate: '' as string,
+      capacity: 0,
+      busType: '' as string,
+      buses: [] as Bus[],
+      editId: null as string | null
+    }
+  },
+  mounted(){
+    this.fetchBus();
+  },
+  methods: {
+    async fetchBus(): Promise<void>{
+      try{
+        const response = await axios.get<Bus[]>('http://localhost:3000/api/buses');
+        this.buses = response.data;
+      }catch(error){
+        console.error;
+      }
     },
-    body: JSON.stringify({
-      busPlate: busPlate.value,
-      busType: busType.value,
-      capacity: capacity.value,
-    }),
-  })
-
-  if (!res.ok) {
-    let message = 'Unknown error'
-    try {
-      const err = await res.json()
-      message = err?.message ?? message
-    } catch {
-      // ignore JSON parse errors
-    }
-
-    if (res.status === 401) {
-      alert('Unauthorized: please log in again (token invalid/expired).')
-      return
-    }
-
-    if (res.status === 403) {
-      alert('Forbidden: your account is not admin.')
-      return
-    }
-
-    alert('Failed: ' + message)
-    return
-  }
-
-  busPlate.value = ''
-  busType.value = ''
-  capacity.value = 0
-
-  fetchBuses()
-}
-const deleteBus = async (id: string) => {
-  if (!confirm('Are you sure you want to delete this bus?')) {
-    return
-  }
-
-  const token = localStorage.getItem('access_token')
-  if (!token) {
-    alert('You must be logged in as Admin!')
-    return
-  }
-
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
+    async createBus(): Promise<void>{
+      try{
+        if(this.editId){
+          await axios.put(`http://localhost:3000/api/buses/${this.editId}`,{
+            companyName: this.companyName,
+            busPlate: this.busPlate,
+            busType: this.busType,
+            capacity: this.capacity,
+          });
+          this.resetForm();
+          this.fetchBus();
+        }
+        else{
+          await axios.post('http://localhost:3000/api/buses',{
+            companyName: this.companyName,
+            busPlate: this.busPlate,
+            busType: this.busType,
+            capacity: this.capacity,
+          });
+          this.resetForm();
+          this.fetchBus();
+        }
+      }catch(error){
+        console.error('failed to create bus');
+      }
     },
-  })
-
-  if (!res.ok) {
-    if (res.status === 401) {
-      alert('Unauthorized: please log in again (token invalid/expired).')
-      return
+    async updateBus(bus: Bus){
+      this.companyName = bus.companyName;
+      this.busPlate = bus.busPlate;
+      this.busType = bus.busType;
+      this.capacity = bus.capacity;
+      this.editId = bus._id;
+    },
+    async deleteBus(id: string): Promise<void>{
+      if(!confirm('delete this bus?')){return}
+      try{
+        await axios.delete(`http://localhost:3000/api/buses/${id}`)
+        this.fetchBus();
+      }catch(error){
+        console.error('failed to delete bus');
+      }
+    },
+    resetForm(){
+      this.companyName = '';
+      this.busPlate = '';
+      this.capacity = 0;
+      this.busType = '';
+      this.editId = null;
     }
-    if (res.status === 403) {
-      alert('Forbidden: your account is not admin.')
-      return
-    }
-    alert('Failed to delete bus')
-    return
   }
-
-  fetchBuses()
-}
-
-onMounted(fetchBuses)
+})
 </script>
 
 <style scoped>
@@ -253,16 +256,23 @@ td {
   padding: 12px;
   text-align: center;
 }
+
 .delete-btn {
   background: #e53935;
   color: white;
   border: none;
-  padding: 8px 14px;
+  padding: 9px 18px;
   border-radius: 5px;
   cursor: pointer;
 }
-
-.delete-btn:hover {
-  opacity: 0.8;
+.edit-btn{
+  background: blue;
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 8px;
 }
+
 </style>

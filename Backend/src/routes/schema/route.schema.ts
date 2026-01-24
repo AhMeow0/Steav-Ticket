@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type RouteDocument = HydratedDocument<Route>;
 
 @Schema()
 export class Route {
+  @Prop({ type: Types.ObjectId, ref: 'Bus', required: false })
+  busId?: Types.ObjectId;
+
   @Prop()
   company?: string;
 
@@ -17,7 +20,7 @@ export class Route {
   @Prop({ required: true })
   destination: string; // e.g., "Siem Reap"
 
-  @Prop({ required: true })
+  @Prop({ required: false, default: 0 })
   price: number; // e.g., 15.00
 
   @Prop({ required: true })
