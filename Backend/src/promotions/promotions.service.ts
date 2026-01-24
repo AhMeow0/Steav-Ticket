@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Promotion } from './schema/promotion.schema';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { error } from 'console';
 
 @Injectable()
 export class PromotionService {
@@ -13,6 +14,9 @@ export class PromotionService {
   ) {}
 
   async create(dto: CreatePromotionDto): Promise<Promotion> {
+    if(dto.startDate > dto.endDate){
+      throw new NotFoundException('error');
+    }
     return this.promotionModel.create(dto);
   }
 
@@ -45,7 +49,6 @@ export class PromotionService {
   if (!updated) {
     throw new NotFoundException(`Promotion with id ${id} not found`);
   }
-
     return updated;
   }
 

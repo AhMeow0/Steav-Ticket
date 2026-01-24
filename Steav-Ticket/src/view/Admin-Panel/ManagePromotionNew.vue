@@ -130,8 +130,7 @@ export default defineComponent({
       }
     },
   async createPromotion(): Promise<void> {
-    console.log('CREATE CLICKED'); 
-    
+   
     try {
       const payload = {
         code: this.code,
