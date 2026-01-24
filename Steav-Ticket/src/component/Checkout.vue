@@ -11,7 +11,6 @@
           <p class="sub">Review your trip & complete your booking</p>
         </div>
       </div>
-
       <div class="grid">
         <!-- LEFT: Trip summary -->
         <div class="card">
@@ -154,6 +153,11 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
+
+// @vue/component
+defineOptions({
+  name: 'CheckoutPage'
+})
 
 const route = useRoute()
 const router = useRouter()
