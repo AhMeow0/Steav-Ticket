@@ -48,11 +48,11 @@
         <!-- kep -->
 
         <section class="section">
-          <h2 class="section-title">KEP</h2>
+          <h2 class="section-title">Preah Sihanouk</h2>
 
           <div class="grid">
             <router-link
-              v-for="place in phnomPenh"
+              v-for="place in preahSihanouk"
               :key="place.slug"
               class="card"
               :to="`/place/${place.slug}`"
@@ -73,43 +73,15 @@
 </template>
 
 <script setup lang="ts">
-import HeadBar from './HeadBar.vue'
-import Footer from './Footer.vue'
+import { usePlaceStore } from '@/stores/placeDetail'
+import { storeToRefs } from 'pinia'
+import HeadBar from '@/component/HeadBar.vue'
+import Footer from '@/component/Footer.vue'
 
-// ✅ local images
-import angkorWat from '../assets/explore/siem_reab/angkor_wat.png'
-import pubStreet from '../assets/explore/siem_reab/pub_street.png'
-import museumAngkor from '../assets/explore/siem_reab/pub_street.png'
-import nationalMuseum from '../assets/explore/siem_reab/angkor_wat.png'
-import watPhnom from '../assets/explore/siem_reab/pub_street.png'
-import royalPalace from '../assets/explore/siem_reab/pub_street.png'
-
-// import museumAngkor from '@/assets/explore/siemreap/museum-angkor.jpg'
-
-type Place = {
-  title: string
-  slug: string
-  location: string
-  image: string
-}
-
-const siemReap: Place[] = [
-  { title: 'Angkor Wat', slug: 'angkor-wat', location: 'Siem Reap', image: angkorWat },
-  { title: 'Pub Street', slug: 'pub-street', location: 'Siem Reap', image: pubStreet },
-  { title: 'Museum of Angkor', slug: 'museum-angkor', location: 'Siem Reap', image: museumAngkor },
-]
-
-const phnomPenh: Place[] = [
-  {
-    title: 'National Museum',
-    slug: 'national-museum',
-    location: 'Phnom Penh',
-    image: nationalMuseum,
-  },
-  { title: 'Wat Phnom', slug: 'wat-phnom', location: 'Phnom Penh', image: watPhnom },
-  { title: 'Royal Palace', slug: 'royal-palace', location: 'Phnom Penh', image: royalPalace },
-]
+const placeStore = usePlaceStore()
+const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
 </script>
+
 
 <style scoped>
 .page {
@@ -118,6 +90,7 @@ const phnomPenh: Place[] = [
 }
 
 .explore-page {
+  margin-top: 80px;
   padding: 28px 0 40px;
 }
 
@@ -155,8 +128,8 @@ const phnomPenh: Place[] = [
   overflow: hidden;
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transform 0.15s ease,
+  box-shadow 0.15s ease;
 }
 
 .card:hover {
