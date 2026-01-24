@@ -89,7 +89,7 @@
 
           <!-- seat rows -->
           <div v-for="row in rows" :key="row" class="seat-row">
-            <!-- left group A/B -->
+
             <span class="row-num">{{ row }}</span>
 
             <button
@@ -174,15 +174,12 @@
       </div>
     </div>
 
-    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import HeadBar from '@/component/HeadBar.vue'
-import Footer from '@/component/Footer.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -226,7 +223,7 @@ const returnLabel = computed(() => (returnISO.value ? formatDate(returnISO.value
 const rows = [1, 2, 3, 4, 5, 6, 7]
 
 // demo booked seats (red, cannot click)
-const bookedSet = new Set<string>(['A1', 'D2', 'A4', 'B4', 'C5', 'D6'])
+const bookedSet = new Set<string>([])
 
 const selectedSeats = ref<string[]>([])
 
@@ -274,12 +271,13 @@ const checkout = () => {
 .seat-page {
   min-height: 100vh;
   background: #f6f7fb;
+  margin-top: 80px;
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 18px;
+  padding: 0 20px;
 }
 
 /* mini header */
@@ -328,7 +326,7 @@ const checkout = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   flex: 1;
   min-width: 0;
 }
@@ -426,6 +424,8 @@ const checkout = () => {
   border-radius: 14px;
   border: 1px solid #f0f0f0;
   padding: 14px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .col-labels {

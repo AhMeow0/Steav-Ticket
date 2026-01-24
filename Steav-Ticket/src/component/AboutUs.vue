@@ -44,19 +44,29 @@ import HeadBar from './HeadBar.vue'
 .page-wrapper {
   background-color: #fff;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.content-area {
+  flex: 1;
+}
+
 .content-area {
   padding-top: 2rem;
 }
 .page-title {
   color: #e91e63;
+  margin-top: 100px;
+  margin-left: 200px;
   margin-bottom: 2rem;
 }
+
 
 .about-card {
   display: flex;
   align-items: center;
-  background-color: #f8f9fa; /* Light grey background */
+  background-color: white;
   border-radius: 20px;
   padding: 3rem;
   gap: 3rem;
@@ -76,14 +86,14 @@ import HeadBar from './HeadBar.vue'
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* 🔑 keep image inside circle */
+  overflow: hidden; /*  keep image inside circle */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .logo-image {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 🔑 fills circle nicely */
+  object-fit: cover; /* fills circle nicely */
 }
 
 .logo-placeholder {
@@ -96,6 +106,6 @@ import HeadBar from './HeadBar.vue'
   flex: 2;
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #444;
+  color: black;
 }
 </style>
