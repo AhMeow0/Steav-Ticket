@@ -1,9 +1,26 @@
-import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  Min,
+  IsOptional,
+  IsInt,
+  IsMongoId,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateRouteDto {
+  @IsOptional()
+  @IsMongoId()
+  busId?: string;
+
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  routeNumber: string;
+  company?: string;
+
+  @IsOptional()
+  @IsString()
+  routeNumber?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -13,10 +30,19 @@ export class CreateRouteDto {
   @IsNotEmpty()
   destination: string;
 
+  @IsOptional()
   @IsNumber()
-  @Min(1) // Price cannot be 0 or negative
-  price: number;
+  @Min(0)
+  @Type(() => Number)
+  price?: number;
 
   @IsString()
+  @IsNotEmpty()
   departureTime: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  totalSeats?: number;
 }

@@ -1,30 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Promotion } from './schema/promotion.schema';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
+import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { error } from 'console';
 
 @Injectable()
 export class PromotionService {
   constructor(
     @InjectModel(Promotion.name)
-    private promotionModel: Model<Promotion>
+    private promotionModel: Model<Promotion>,
   ) {}
 
-  create(dto: CreatePromotionDto) {
-    const promotion = new this.promotionModel(dto);
-    return promotion.save();
+  async create(dto: CreatePromotionDto): Promise<Promotion> {
+    if(dto.startDate > dto.endDate){
+      throw new NotFoundException('error');
+    }
+    return this.promotionModel.create(dto);
   }
 
-  findAll() {
+  async findAll(): Promise<Promotion[]> {
     return this.promotionModel.find().exec();
   }
 
-  findOne(id: string) {
-    return this.promotionModel.findById(id).exec();
+  async findOne(id: string): Promise<Promotion> {
+    const promotion = await this.promotionModel.findById(id).exec();
+    if (!promotion) {
+      throw new NotFoundException(`Promotion with id ${id} not found`);
+    }
+    return promotion;
+  }
+  async update(id: string, dto: UpdatePromotionDto) {
+  const updated = await this.promotionModel
+    .findByIdAndUpdate(
+      id,
+      {
+        code: dto.code,
+        discountType: dto.discountType,
+        discountValue: dto.discountValue,
+        startDate: dto.startDate,
+        endDate: dto.endDate,
+      },
+      { new: true, runValidators: true }
+    )
+    .exec();
+
+  if (!updated) {
+    throw new NotFoundException(`Promotion with id ${id} not found`);
+  }
+    return updated;
   }
 
-  delete(id: string) {
-    return this.promotionModel.findByIdAndDelete(id).exec();
+
+  async delete(id: string): Promise<void> {
+    const deleted = await this.promotionModel.findByIdAndDelete(id).exec();
+    if (!deleted) {
+      throw new NotFoundException(`Promotion with id ${id} not found`);
+    }
   }
 }

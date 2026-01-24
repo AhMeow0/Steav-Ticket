@@ -8,29 +8,35 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role?: string;
+};
+
+type AuthenticatedRequest = Request & { user?: JwtPayload };
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Missing bearer token');
     }
 
     try {
-      // 1. Verify the token is real
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'MY_SECRET_KEY_123', // Must match your AuthModule secret!
-      });
-      
+      // 1. Verify the token is real (uses JwtModule secret)
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+
       // 2. Attach the user to the request object
       // This is super useful! Now you can access req.user.email later.
-      request['user'] = payload;
+      request.user = payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid or expired token');
     }
     return true;
   }

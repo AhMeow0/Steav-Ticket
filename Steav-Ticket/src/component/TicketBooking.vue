@@ -127,7 +127,7 @@ type Ticket = {
 const tickets = ref<Ticket[]>([])
 
 const loadTickets = () => {
-  const raw = JSON.parse(localStorage.getItem('tickets') || '[]')
+  const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as Array<Partial<Ticket>>
 
   //  ensure bookingDate exists even for old saved tickets
   tickets.value = raw.map((t: any) => ({

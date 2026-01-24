@@ -14,11 +14,13 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "clean": "rm -rf dist coverage test-results playwright-report",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "axios": "^1.13.2",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.17",
     "vue": "^3.5.22",

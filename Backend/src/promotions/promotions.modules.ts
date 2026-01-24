@@ -7,10 +7,10 @@ import { Promotion, PromotionSchema } from './schema/promotion.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Promotion.name, schema: PromotionSchema }
-    ])
+      { name: Promotion.name, schema: PromotionSchema },
+    ]),
   ],
   controllers: [PromotionController],
-  providers: [PromotionService]
+  providers: [PromotionService],
 })
 export class PromotionModule {}
