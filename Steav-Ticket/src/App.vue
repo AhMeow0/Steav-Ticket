@@ -23,10 +23,6 @@ router-view {
   flex: 1;
 }
 
-/* ---------------------- */
-/* Your Global Styles     */
-/* ---------------------- */
-
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
