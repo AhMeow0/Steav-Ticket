@@ -73,94 +73,106 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 
-const router = useRouter();
-const user = ref<any>(null);
-const isHidden = ref(false);
-const isScrolled = ref(false);
-const isMenuOpen = ref(false);
+defineOptions({ name: 'HeadBar' })
+
+type UserProfile = {
+  name?: string
+  email?: string
+}
+
+const router = useRouter()
+const user = ref<UserProfile | null>(null)
+const isHidden = ref(false)
+const isScrolled = ref(false)
+const isMenuOpen = ref(false)
 
 const displayName = computed(() => {
-  if (!user.value) {
-    return "";
-  }
-  return (
-    user.value.name ||
-    user.value.email?.split("@")[0] ||
-    "there"
-  );
-});
+  if (!user.value) return ''
+  return user.value.name || user.value.email?.split('@')[0] || 'there'
+})
 
-let lastScrollY = 0;
-let ticking = false;
+let lastScrollY = 0
+let ticking = false
 
 function updateScrollState() {
-  const current = window.scrollY;
-  isHidden.value = current > lastScrollY && current > 140;
-  isScrolled.value = current > 24;
-  lastScrollY = current;
-  ticking = false;
+  const current = window.scrollY
+  isHidden.value = current > lastScrollY && current > 140
+  isScrolled.value = current > 24
+  lastScrollY = current
+  ticking = false
 }
 
 function onScroll() {
   if (!ticking) {
-    window.requestAnimationFrame(updateScrollState);
-    ticking = true;
+    window.requestAnimationFrame(updateScrollState)
+    ticking = true
   }
 }
 
 function closeMenu() {
-  isMenuOpen.value = false;
+  isMenuOpen.value = false
 }
 
 function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value;
+  isMenuOpen.value = !isMenuOpen.value
 }
 
 function onResize() {
   if (window.innerWidth > 920 && isMenuOpen.value) {
-    closeMenu();
+    closeMenu()
+  }
+}
+
+async function fetchProfile() {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    user.value = null
+    return
+  }
+
+  try {
+    const response = await fetch(apiUrl('/auth/profile'), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (response.ok) {
+      user.value = (await response.json()) as UserProfile
+      return
+    }
+
+    localStorage.removeItem('access_token')
+    user.value = null
+  } catch (error) {
+    console.error('Profile fetch failed', error)
   }
 }
 
 function logout() {
-  localStorage.removeItem("access_token");
-  user.value = null;
-  closeMenu();
-  router.push("/login");
+  localStorage.removeItem('access_token')
+  user.value = null
+  closeMenu()
+  router.push('/login')
 }
 
 onMounted(async () => {
-  await nextTick();
-  lastScrollY = window.scrollY;
-  updateScrollState();
+  await nextTick()
+  lastScrollY = window.scrollY
+  updateScrollState()
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onResize);
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('resize', onResize)
 
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    try {
-      const res = await fetch("http://localhost:3000/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        user.value = await res.json();
-      } else {
-        localStorage.removeItem("access_token");
-      }
-    } catch (err) {
-      console.error("Profile fetch failed", err);
-    }
-  }
-});
+  await fetchProfile()
+})
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", onScroll);
-  window.removeEventListener("resize", onResize);
-});
+  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('resize', onResize)
+})
 </script>
 
 <style scoped>

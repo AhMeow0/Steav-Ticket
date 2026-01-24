@@ -23,6 +23,9 @@ export class Ticket {
   @Prop({ required: true })
   departureTime: string;
 
+  @Prop()
+  paymentMethod?: string;
+
   @Prop({ default: 'BOOKED' })
   status: string;
 }

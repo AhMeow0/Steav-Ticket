@@ -85,6 +85,8 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'SteavFooter' })
+
 import { computed } from 'vue'
 
 const currentYear = computed(() => new Date().getFullYear())
