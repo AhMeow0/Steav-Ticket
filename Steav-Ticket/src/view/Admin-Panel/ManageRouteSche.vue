@@ -2,39 +2,61 @@
   <div class="manage-route-page">
     <!-- Form Section -->
     <div class="manage-route-page__form">
-      <h1 class="manage-route-page__title">Manage Routes</h1>
+      <h1 class="manage-route-page__title">Manage Route & Schedules</h1>
 
       <div class="manage-route-page__grid">
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">From</label>
+<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
           <input
             class="manage-route-page__input"
             type="text"
             placeholder="Enter from"
             v-model="from"
           />
+=======
+          <select class="manage-route-page__select"></select>
+>>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
         </div>
 
         <div class="manage-route-page__field">
           <label class="manage-route-page__label">To</label>
+<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
           <input class="manage-route-page__input" type="text" placeholder="Enter to" v-model="to" />
+=======
+          <select class="manage-route-page__select"></select>
+>>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
         </div>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Depart Time</label>
+          <select class="manage-route-page__select"></select>
+        </div>
+
+        <div class="manage-route-page__field">
+          <label class="manage-route-page__label">Day</label>
+          <input class="manage-route-page__input" />
+        </div>
+
       </div>
 
-      <button class="manage-route-page__button" @click="createRoute">Create Route</button>
+      <button class="manage-route-page__button">Confirm</button>
     </div>
 
     <!-- Table Section -->
     <div class="manage-route-page__table">
-      <h1 class="manage-route-page__title">Route List</h1>
+      <h1 class="manage-route-page__title">Assigned Route & Schedules</h1>
 
       <table>
         <thead>
           <tr>
             <th>From</th>
             <th>To</th>
+            <th>Depart Time</th>
+            <th>Day</th>
           </tr>
         </thead>
+<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 
         <tbody>
           <tr v-for="route in routes" :key="route._id">
@@ -42,11 +64,14 @@
             <td>{{ route.endLocation }}</td>
           </tr>
         </tbody>
+=======
+>>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
       </table>
     </div>
   </div>
 </template>
 
+<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
@@ -92,6 +117,8 @@ export default defineComponent({
 })
 </script>
 
+=======
+>>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
 <style scoped>
 .manage-route-page {
   color: white;
@@ -116,8 +143,8 @@ export default defineComponent({
 /* Grid Layout */
 .manage-route-page__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 50px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .manage-route-page__field {
@@ -130,7 +157,12 @@ export default defineComponent({
 }
 
 /* Inputs */
+<<<<<<< HEAD:Steav-Ticket/src/view/Admin-Panel/ManageRoute.vue
 .manage-route-page__input {
+=======
+.manage-route-page__input,
+.manage-route-page__select {
+>>>>>>> 935cc54ae30e9033f8e6a6cbcb0ee6b58f5bdc6e:Steav-Ticket/src/view/Admin-Panel/ManageRouteSche.vue
   width: 100%;
   padding: 18px;
   background: #111827;
@@ -139,6 +171,7 @@ export default defineComponent({
   border-radius: 8px;
   font-size: 14px;
 }
+
 
 .manage-route-page__button {
   margin-top: 20px;

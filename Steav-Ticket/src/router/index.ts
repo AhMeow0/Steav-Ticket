@@ -23,10 +23,10 @@ import SignupPage from '@/auth/SignUp.vue' // Fixed spelling from 'anuth'
 import AdminView from '@/view/Admin-Panel/adminView.vue'
 import DashBoard from '@/view/Admin-Panel/DashBoard.vue'
 import ManagePromotionNew from '@/view/Admin-Panel/ManagePromotionNew.vue'
-import ManageTicketPrice from '@/view/Admin-Panel/ManageSche.vue'
+import ManageTicketPrice from '@/view/Admin-Panel/ManageTicketPrice.vue'
 import ManageBookingPassager from '@/view/Admin-Panel/ManageBookingPassager.vue'
 import ManageBuses from '@/view/Admin-Panel/ManangeBuses.vue'
-import ManageRouteSche from '@/view/Admin-Panel/ManageRoute.vue'
+import ManageRouteSche from '@/view/Admin-Panel/ManageRouteSche.vue'
 
 // ============================================
 // 4. ACCOUNT/USER ROUTES IMPORTS

@@ -4,23 +4,20 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class Promotion extends Document {
 
-  @Prop({ required: true, unique: true})
-  code: string;
-
-  @Prop({enum: ['PERCENT', 'FIXED'], required: true})
-  discount_type: string;
+  @Prop({ required: true })
+  title: string;
 
   @Prop({ required: true })
-  discount_value: number;
-
-  @Prop({ required: true})
-  start_date: Date;
+  type: string;
 
   @Prop({ required: true })
-  end_date: Date;
+  active: Date;
 
-  @Prop({ enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' })
-  status: 'ACTIVE' | 'INACTIVE';
+  @Prop({ required: true })
+  content: string;
+
+  @Prop({ required: true })
+  promotionPercentage: number;
 }
 
 export const PromotionSchema = SchemaFactory.createForClass(Promotion);
