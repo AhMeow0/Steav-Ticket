@@ -1,26 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { bus, RouteDocument } from './schema/bus.schema';
+import { Bus, RouteDocument } from './schema/bus.schema';
 import { CreateBusDto } from './dto/create-bus.dto';
 
 @Injectable()
 export class BusService {
   constructor(
-    @InjectModel(bus.name)
+    @InjectModel(Bus.name)
     private busModel: Model<RouteDocument>,
   ) {}
 
-  async create(createBusDto: CreateBusDto): Promise<bus> {
+  async create(createBusDto: CreateBusDto): Promise<Bus> {
     const newBus = new this.busModel(createBusDto);
     return newBus.save();
   }
 
-  async findAll(): Promise<bus[]> {
+  async findAll(): Promise<Bus[]> {
     return this.busModel.find().exec();
   }
 
-  async findOne(id: string): Promise<bus> {
+  async findOne(id: string): Promise<Bus> {
     const foundBus = await this.busModel.findById(id).exec();
 
     if (!foundBus) {
@@ -30,7 +30,7 @@ export class BusService {
     return foundBus;
   }
 
-  async delete(id: string): Promise<bus> {
+  async delete(id: string): Promise<Bus> {
     const deletedBus = await this.busModel.findByIdAndDelete(id).exec();
 
     if (!deletedBus) {

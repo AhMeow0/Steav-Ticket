@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type RouteDocument = HydratedDocument<bus>;
+export type RouteDocument = HydratedDocument<Bus>;
 
 @Schema()
-export class bus {
+export class Bus {
   @Prop({ required: true })
   busPlate: string;
 
@@ -14,4 +14,4 @@ export class bus {
   @Prop({ default: 40 })
   capacity: number;
 }
-export const BusSchema = SchemaFactory.createForClass(bus);
+export const BusSchema = SchemaFactory.createForClass(Bus);

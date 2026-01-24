@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { BusService } from './buses.service';
 import { CreateBusDto } from './dto/create-bus.dto';
-import { bus } from './schema/bus.schema';
+import { Bus } from './schema/bus.schema';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -13,17 +13,17 @@ export class BusController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('admin')
   @Post()
-  create(@Body() createBusDto: CreateBusDto): Promise<bus> {
+  create(@Body() createBusDto: CreateBusDto): Promise<Bus> {
     return this.busService.create(createBusDto);
   }
 
   @Get()
-  findAll(): Promise<bus[]> {
+  findAll(): Promise<Bus[]> {
     return this.busService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<bus> {
+  findOne(@Param('id') id: string): Promise<Bus> {
     return this.busService.findOne(id);
   }
 
