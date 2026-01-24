@@ -90,6 +90,7 @@ const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
 }
 
 .explore-page {
+  margin-top: 80px;
   padding: 28px 0 40px;
 }
 

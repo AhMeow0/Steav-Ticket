@@ -73,6 +73,7 @@ const goBack = () => {
   padding: 24px;
   font-family: system-ui, sans-serif;
   color: #111;
+  margin-top: 80px;
 }
 
 .breadcrumb {

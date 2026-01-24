@@ -44,14 +44,24 @@ import HeadBar from './HeadBar.vue'
 .page-wrapper {
   background-color: #fff;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.content-area {
+  flex: 1;
+}
+
 .content-area {
   padding-top: 2rem;
 }
 .page-title {
   color: #e91e63;
+  margin-top: 100px;
+  margin-left: 200px;
   margin-bottom: 2rem;
 }
+
 
 .about-card {
   display: flex;

@@ -2,11 +2,31 @@
 </script>
 
 <template>
-  <router-view />
+  <div id="app-root">
+    <router-view />
+  </div>
 </template>
 
 <style>
-/* Global Styles */
+/* --- GLOBAL LAYOUT FIX (THIS MAKES FOOTER STAY AT BOTTOM) --- */
+html, body, #app-root {
+  height: 100%;
+  margin: 0;
+}
+
+#app-root {
+  display: flex;
+  flex-direction: column;
+}
+
+router-view {
+  flex: 1;
+}
+
+/* ---------------------- */
+/* Your Global Styles     */
+/* ---------------------- */
+
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -21,11 +41,13 @@ body {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
+
 .logo {
   font-size: 24px;
   font-weight: bold;
   color: #f54d65;
 }
+
 .links a {
   margin: 0 15px;
   text-decoration: none;
@@ -33,9 +55,11 @@ body {
   font-weight: 500;
   cursor: pointer;
 }
+
 .links a.active {
   color: #f54d65;
 }
+
 .login-pill {
   background: #ffeef1;
   color: #f54d65;

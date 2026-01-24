@@ -208,7 +208,6 @@ onUnmounted(() => {
   font-family: "Poppins", sans-serif;
   font-weight: 800;
   font-size: 2.8rem;
-  color: #ffffff;
   position: relative;
   padding-bottom: 10px;
   transition: color 0.3s ease;
@@ -244,7 +243,7 @@ onUnmounted(() => {
   text-decoration: none;
   font-weight: 600;
   font-size: 1.05rem;
-  color: #ffffff;
+  color: black;
   position: relative;
   padding: 0.5rem 0;
   transition: color 0.2s ease;

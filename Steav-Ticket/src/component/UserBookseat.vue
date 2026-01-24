@@ -101,7 +101,6 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
-import Footer from '@/component/Footer.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -212,6 +211,7 @@ const trips = ref([
 
 <style scoped>
 .booking-page {
+  margin-top: 80px;
   min-height: 100vh;
   background: #f6f7fb;
   padding-bottom: 30px;

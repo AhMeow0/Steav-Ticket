@@ -146,8 +146,7 @@ const code = (city: string) => {
     'Phnom Penh': 'PP',
     'Siem Reab': 'SR',
     'Battambang': 'BB',
-    'Sihanuk villige': 'SHV',
-    'Poi pet': 'PP',
+    'Sihanoukville': 'SHV',
   }
   return map[city] || city.slice(0, 2).toUpperCase()
 }
@@ -181,14 +180,20 @@ const qrUrl = (data: string) =>
 .page-wrapper {
   background-color: #f9f9f9;
   min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
 }
+
 
 .content-area {
   background-color: white;
   padding-top: 5rem;
   padding-bottom: 5rem;
-  padding-left: 3rem;
+  padding-left: 175px;
   padding-right: 3rem;
+  flex: 1;
+  margin-top: 50px;
 }
 
 .section-title {

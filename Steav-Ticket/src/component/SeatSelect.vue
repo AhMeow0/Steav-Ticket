@@ -174,7 +174,6 @@
       </div>
     </div>
 
-    <Footer />
   </div>
 </template>
 
@@ -272,6 +271,7 @@ const checkout = () => {
 .seat-page {
   min-height: 100vh;
   background: #f6f7fb;
+  margin-top: 80px;
 }
 
 .container {

@@ -125,19 +125,21 @@
         </div>
       </div>
     </section>
-
-    <!-- POPULAR (unchanged) -->
     <section class="container popular-section">
       <h3>Popular</h3>
+
       <div class="destination-grid">
-        <div class="dest-card">
-          <img src="/src/assets/explore/siem_reab/angkor.png" class="dest-img" />
+        <div
+          v-for="place in popularPlaces"
+          :key="place.slug"
+          class="dest-card"
+          @click="router.push({path: `/place/${place.slug}`,query: { from: 'home' }})">
+          <img :src="place.image" class="dest-img" />
           <div class="dest-info">
-            <h4>Angkor Wat</h4>
-            <span>Siem Reap</span>
+            <h4>{{ place.title }}</h4>
+            <span>{{ place.location }}</span>
           </div>
-        </div>
-        <!-- Add more cards as needed -->
+      </div>
       </div>
     </section>
 
@@ -151,6 +153,8 @@ import { useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
 import Angkor from '@/assets/explore/siem_reab/angkor.png'
+import { storeToRefs } from 'pinia'
+import { usePlaceStore, type Place } from '@/stores/placeDetail'
 
 const router = useRouter()
 
@@ -165,7 +169,19 @@ const openTo = ref(false)
 const heroStyle = computed(() => ({
   backgroundImage: `url(${Angkor})`,
 }))
-
+const placeStore = usePlaceStore()
+const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
+const popularPlaces = computed(() =>
+  [
+    siemReap.value.find(p => p.slug === 'angkor-wat'),
+    phnomPenh.value.find(p => p.slug === 'royal-palace'),
+    phnomPenh.value.find(p => p.slug === 'national-museum'),
+    preahSihanouk.value.find(p => p.slug === 'koh-rong'),
+    preahSihanouk.value.find(p => p.slug === 'serendipity-beach'),
+    siemReap.value.find(p => p.slug === 'taplom'),
+    siemReap.value.find(p => p.slug === 'angkor-thom'),
+  ].filter((p): p is Place => Boolean(p))
+)
 const fromOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
 const toOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
 

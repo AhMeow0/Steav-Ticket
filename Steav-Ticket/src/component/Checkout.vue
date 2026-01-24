@@ -1,6 +1,5 @@
 <template>
   <div class="checkout-page">
-    <HeadBar />
 
     <div class="container">
       <!-- Header -->
@@ -244,6 +243,7 @@ const goHome = () => {
 .checkout-page {
   background: #f6f7fb;
   min-height: 100vh;
+  margin-top: 50px;
 }
 
 .container {
@@ -256,6 +256,7 @@ const goHome = () => {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .back-btn {
