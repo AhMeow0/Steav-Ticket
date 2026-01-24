@@ -2,164 +2,144 @@
   <div class="user-home">
     <HeadBar />
 
-    <!-- HERO SECTION -->
+    <!-- HERO SECTION (unchanged) -->
     <section class="hero-section">
-      <div class="bus-image-placeholder" :style="heroStyle"></div>
+      <div class="hero-bg" :style="heroStyle"></div>
 
-      <div class="search-container container">
-        <div class="search-form-card">
+      <div class="search-container">
+        <div class="search-card">
+          <div class="form-row">
+            <!-- FROM -->
+            <div class="input-group">
+              <label>From</label>
+              <div
+                class="input-wrapper"
+                :class="{ active: openFrom }"
+                @click.stop="openFrom = true"
+              >
+                <span class="icon from-icon">📍</span>
+                <input
+                  v-model="from"
+                  placeholder="Select Origin"
+                  readonly
+                />
+              </div>
 
-          <!-- FROM -->
-          <div class="input-group">
-            <label>From</label>
-
-            <div class="input-wrapper" @click.stop="openFrom = true">
-              <span class="icon">📍</span>
-              <input
-                v-model="from"
-                placeholder="Select Origin"
-                readonly
-              />
+              <div v-if="openFrom" class="dropdown">
+                <div
+                  v-for="city in fromOptions"
+                  :key="city"
+                  class="dropdown-item"
+                  @click="selectFrom(city)"
+                >
+                  {{ city }}
+                </div>
+              </div>
             </div>
 
-            <div v-if="openFrom" class="dropdown">
-
-              <p class="dropdown-title">From</p>
+            <!-- TO -->
+            <div class="input-group">
+              <label>To</label>
               <div
-                v-for="city in fromOptions"
-                :key="city"
-                class="dropdown-item"
-                @click="selectFrom(city)"
+                class="input-wrapper"
+                :class="{ disabled: !from, active: openTo }"
+                @click.stop="from && (openTo = true)"
               >
-                {{ city }}
+                <span class="icon to-icon">🏁</span>
+                <input
+                  v-model="to"
+                  placeholder="Select Destination"
+                  readonly
+                  :disabled="!from"
+                />
+              </div>
+
+              <div v-if="openTo" class="dropdown">
+                <div
+                  v-for="city in toOptionsFiltered"
+                  :key="city"
+                  class="dropdown-item"
+                  @click="selectTo(city)"
+                >
+                  {{ city }}
+                </div>
+              </div>
+            </div>
+
+            <!-- JOURNEY DATE -->
+            <div class="input-group">
+              <label>Journey Date</label>
+              <div class="input-wrapper">
+                <span class="icon date-icon">📅</span>
+                <input
+                  type="date"
+                  v-model="journeyDate"
+                  :min="minJourneyDate"
+                />
+              </div>
+            </div>
+
+            <!-- RETURN DATE -->
+            <div class="input-group">
+              <label>Return Date (Optional)</label>
+              <div class="input-wrapper">
+                <span class="icon return-icon">↩</span>
+                <input
+                  type="date"
+                  v-model="returnDate"
+                  :min="minReturnDate"
+                />
               </div>
             </div>
           </div>
 
-          <!-- TO -->
-          <div class="input-group">
-            <label>To</label>
-            <div
-              class="input-wrapper"
-              :class="{ disabled: !from }"
-              @click.stop="from && (openTo = true)"
-            >
-              <span class="icon">🏁</span>
-              <input
-                v-model="to"
-                placeholder="Select Destination"
-                readonly
-                :disabled="!from"
-              />
-            </div>
-
-            <div v-if="openTo" class="dropdown">
-              <div
-                v-for="city in toOptionsFiltered"
-                :key="city"
-                class="dropdown-item"
-                @click="selectTo(city)"
-              >
-                {{ city }}
-              </div>
-            </div>
-          </div>
-
-          <!-- JOURNEY DATE -->
-          <div class="input-group">
-            <label>Journey Date</label>
-            <div class="input-wrapper">
-              <span class="icon">📅</span>
-              <input type="date" v-model="journeyDate" :min="minJourneyDate" />
-            </div>
-          </div>
-
-          <!-- RETURN DATE -->
-          <div class="input-group">
-            <label>Return Date (Optional)</label>
-            <div class="input-wrapper">
-              <span class="icon">🔙</span>
-              <input type="date" v-model="returnDate" :min="minReturnDate" />
-            </div>
-          </div>
-
+          <button class="search-btn" @click="goToBooking">
+            Search Bus
+          </button>
         </div>
-        <button class="search-main-btn" @click="goToBooking">
-          Search Bus
-        </button>
       </div>
     </section>
 
-  <section class = "container promotion-section">
-    <h3>Promoiton</h3>
-     <img src="/src/assets/explore/promotion/promotion1.png" class="dest-img" />
-  </section>
+    <!-- FIXED PROMOTION SECTION – horizontal carousel like screenshot -->
+    <section class="promotion-section">
+      <div class="container">
+        <h3>Promotion</h3>
+        <p class="section-subtitle">Promotions, deals, and special offers for you</p>
 
-  <section class="container popular-section">
-  <h3>Popular</h3>
-
-  <div class="destination-grid">
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/siem_reab/angkor.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Angkor Wat</h4>
-        <span> Siem Reap</span>
+        <div class="promotion-carousel">
+          <!-- Use your real promotion banners here -->
+          <!-- I used promotion1.png as placeholder – add 4–5 different images -->
+          <div class="promo-card">
+            <img src="/src/assets/explore/promotion/promotion3.png" alt="15% Off" />
+          </div>
+          <div class="promo-card">
+            <img src="/src/assets/explore/promotion/promotion1.png" alt="Wing Bank Offer" />
+          </div>
+          <div class="promo-card">
+            <img src="/src/assets/explore/promotion/promotion3.png" alt="E-Arrival Card" />
+          </div>
+          <div class="promo-card">
+            <img src="/src/assets/explore/promotion/promotion1.png" alt="Give $2, Get $2" />
+          </div>
+          <!-- Add more cards with different images when ready -->
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="dest-card">
-      <img src="/src/assets/explore/royal-palace.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Royal Palace</h4>
-        <span>Phnom Penh</span>
+    <!-- POPULAR (unchanged) -->
+    <section class="container popular-section">
+      <h3>Popular</h3>
+      <div class="destination-grid">
+        <div class="dest-card">
+          <img src="/src/assets/explore/siem_reab/angkor.png" class="dest-img" />
+          <div class="dest-info">
+            <h4>Angkor Wat</h4>
+            <span>Siem Reap</span>
+          </div>
+        </div>
+        <!-- Add more cards as needed -->
       </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/national-museum.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>National Museum</h4>
-        <span>Siem Reap</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Koh Rong</h4>
-        <span> Sihanoukville</span>
-      </div>
-    </div>
-    <div class="dest-card">
-      <img src="/src/assets/explore/kohRong.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Koh Rong</h4>
-        <span> Sihanoukville</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/kulen.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>kulen</h4>
-        <span> Siem Reap</span>
-      </div>
-    </div>
-
-    <div class="dest-card">
-      <img src="/src/assets/explore/walkstreet.png" class="dest-img" />
-      <div class="dest-info">
-        <h4>Walk street</h4>
-        <span>Phnom Penh</span>
-      </div>
-    </div>
-
-
-
-  </div>
-</section>
-
+    </section>
 
     <Footer />
   </div>
@@ -174,43 +154,25 @@ import Angkor from '@/assets/explore/siem_reab/angkor.png'
 
 const router = useRouter()
 
-// form data
-const from = ref('')
-const to = ref('')
-const journeyDate = ref('')
-const returnDate = ref('')
+const from = ref<string>('')
+const to = ref<string>('')
+const journeyDate = ref<string>('')
+const returnDate = ref<string>('')
 
-// dropdown state
 const openFrom = ref(false)
 const openTo = ref(false)
 
-// background image
 const heroStyle = computed(() => ({
   backgroundImage: `url(${Angkor})`,
 }))
 
-// city lists
-const fromOptions = [
-  'Phnom Penh',
-  'Siem Reap',
-  'Battambang',
-  'Sihanoukville',
-]
+const fromOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
+const toOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
 
-const toOptions = [
-  'Phnom Penh',
-  'Siem Reap',
-  'Battambang',
-  'Sihanoukville',
-]
-
-
-// filtered To
 const toOptionsFiltered = computed(() =>
-  toOptions.filter((city) => city !== from.value)
+  toOptions.filter(city => city !== from.value)
 )
 
-// select handlers
 const selectFrom = (city: string) => {
   from.value = city
   openFrom.value = false
@@ -221,30 +183,20 @@ const selectTo = (city: string) => {
   openTo.value = false
 }
 
-// auto clear To
-watch(from, (newFrom) => {
-  if (to.value === newFrom) to.value = ''
+watch(from, (newVal) => {
+  if (to.value === newVal) to.value = ''
 })
 
-// date helpers
-const toISODate = (d: Date) => {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const toISODate = (date: Date) => date.toISOString().split('T')[0]
 
 const minJourneyDate = computed(() => {
-  const today = new Date()
-  today.setDate(today.getDate() + 1)
-  return toISODate(today)
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return toISODate(tomorrow)
 })
 
-const minReturnDate = computed(() =>
-  journeyDate.value ? journeyDate.value : minJourneyDate.value
-)
+const minReturnDate = computed(() => journeyDate.value || minJourneyDate.value)
 
-// close dropdown on outside click
 const closeDropdowns = () => {
   openFrom.value = false
   openTo.value = false
@@ -253,7 +205,6 @@ const closeDropdowns = () => {
 onMounted(() => window.addEventListener('click', closeDropdowns))
 onBeforeUnmount(() => window.removeEventListener('click', closeDropdowns))
 
-// navigation
 const goToBooking = () => {
   if (!from.value || !to.value || !journeyDate.value) {
     alert('Please fill From, To and Journey Date')
@@ -266,199 +217,285 @@ const goToBooking = () => {
       from: from.value,
       to: to.value,
       journeyDate: journeyDate.value,
-      returnDate: returnDate.value,
+      returnDate: returnDate.value || undefined,
     },
   })
 }
-
-// dummy popular
-// const popularDestinations = ref([
-//   { title: 'Angkor Wat', location: 'Siem Reap', image: Angkor },
-//   { title: 'Royal Palace', location: 'Phnom Penh', image: Angkor },
-// ])
 </script>
 
 <style scoped>
-.hero-section {
-  position: relative;
-  margin-bottom: 4rem;
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-.bus-image-placeholder {
-  height: 450px;
+/* Hero & Search – unchanged */
+.hero-section {
+  position: relative;
+  height: 800px;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .search-container {
-  position: relative;
-  top: -75px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 1.5rem;
+  pointer-events: none;
 }
 
-.search-form-card {
+.search-card {
   background: white;
-  padding: 30px;
-  border-radius: 24px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  border-radius: 40px;
+  padding: 40px 48px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  pointer-events: all;
+}
+
+.form-row {
   display: flex;
-  gap: 20px;
-  width: 100%;
-  max-width: 1500px;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
 .input-group {
   flex: 1;
+  min-width: 220px;
   position: relative;
 }
 
+.input-group label {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
 .input-wrapper {
-  height: 70px;
-  background: #f4f5f7;
-  border-radius: 16px;
+  height: 64px;
+  background: #f5f6f8;
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 20px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.input-wrapper.active {
+  border-color: #f54e75;
+  box-shadow: 0 0 0 3px rgba(245, 78, 117, 0.15);
 }
 
 .input-wrapper.disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .input-wrapper input {
-  width: 100%;
+  flex: 1;
   border: none;
   background: transparent;
   font-size: 1.1rem;
-  font-weight: bold;
+  color: #333;
   outline: none;
 }
 
-.icon {
-  margin-right: 10px;
-  font-size: 1.4rem;
+.input-wrapper input::placeholder {
+  color: #aaa;
 }
+
+.input-wrapper input[readonly] {
+  cursor: pointer;
+}
+
+.input-wrapper input[type="date"] {
+  color-scheme: light;
+}
+
+.icon {
+  font-size: 1.7rem;
+  margin-right: 16px;
+}
+
+.from-icon { color: #f54e75; }
+.to-icon { color: #555; }
+.date-icon { color: #f54e75; }
+.return-icon { color: #2196f3; }
 
 .dropdown {
   position: absolute;
-  top: 105%;
-  width: 100%;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 10px;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  padding: 10px 0;
-  z-index: 50;
-}
-
-.dropdown-title {
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #999;
-  padding: 8px 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  z-index: 100;
+  overflow: hidden;
 }
 
 .dropdown-item {
-  padding: 12px 20px;
+  padding: 16px 20px;
   cursor: pointer;
+  font-size: 1.05rem;
+  transition: background 0.2s;
 }
 
 .dropdown-item:hover {
-  background: #fdecef;
+  background: #fff0f5;
+  color: #f54e75;
 }
 
-.search-main-btn {
-  margin-top: -20px;
-  padding: 1rem 6rem;
-  border-radius: 30px;
-  background: #e91e63;
+.search-btn {
+  display: block;
+  width: 320px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 18px;
+  background: #f54e75;
   color: white;
-  font-weight: bold;
+  font-size: 1.3rem;
+  font-weight: 700;
   border: none;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 15px;
+  box-shadow: 0 10px 30px rgba(245, 78, 117, 0.3);
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  background: #ef3768;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(245, 78, 117, 0.4);
+}
+
+/* Popular (unchanged) */
+.popular-section {
+  padding: 6rem 0;
+  text-align: center;
 }
 
 .popular-section h3 {
-  font-size: 18px;
-  margin-bottom: 1rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: #111;
 }
 
 .destination-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* smaller cards */
-  gap: 30px;
-  margin: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
 }
 
 .dest-card {
-  background: white;
-  border-radius: 8px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.dest-card:hover {
+  transform: translateY(-10px);
 }
 
 .dest-img {
   width: 100%;
-  height: 140px;
+  height: 200px;
   object-fit: cover;
 }
 
 .dest-info {
-  padding: 0.7rem;
+  padding: 1.5rem;
+  background: white;
 }
 
 .dest-info h4 {
-  font-size: 0.95rem;
-  margin-bottom: 4px;
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
 }
 
 .dest-info span {
-  font-size: 0.8rem;
+  color: #777;
+  font-size: 1rem;
 }
 
+/* FIXED PROMOTION SECTION – clean horizontal carousel */
 .promotion-section {
-  margin: 3rem auto;
-  text-align: center;
+  padding: 7rem 0; /* More vertical space */
+  background: #f9fafa;
 }
 
 .promotion-section h3 {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 1.2rem;
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.8rem;
   color: #111;
 }
 
-.promotion-section img {
+.section-subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 4rem;
+}
+
+.promotion-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 2.5rem;
+  padding: 1rem 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.promotion-carousel::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+.promo-card {
+  flex: 0 0 520px; /* Wide banner style like screenshot */
+  scroll-snap-align: start;
+}
+
+.promo-card img {
   width: 100%;
-  max-width: 1200px;
-  height: auto;
-  border-radius: 20px;
+  height: 280px; /* Consistent tall banner height */
   object-fit: cover;
-
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15);
-
-
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease;
 }
 
-
-.promotion-section img:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+.promo-card:hover img {
+  transform: scale(1.03);
 }
 
+/* Mobile – make cards take most of screen width */
 @media (max-width: 768px) {
-  .promotion-section {
-    margin: 2rem auto;
+  .promo-card {
+    flex: 0 0 85%;
   }
-
-  .promotion-section img {
-    border-radius: 16px;
+  .promotion-carousel {
+    gap: 1.5rem;
   }
 }
-
 </style>

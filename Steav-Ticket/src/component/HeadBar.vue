@@ -1,105 +1,170 @@
 <template>
-  <header ref="headerEl" class="head-bar" :class="{ scrolled: isScrolled, hidden: isHidden }">
-    <div class="container header-content">
-      <!-- Logo -->
-      <router-link to="/homepage" class="logo">
-        <h2 class="logo-text">Steav-Ticket</h2>
+  <header class="head-bar" :class="{ scrolled: isScrolled, hidden: isHidden }">
+    <div class="header-inner">
+      <router-link to="/homepage" class="logo" aria-label="Back to homepage">
+        <span class="logo-text">Steav-Ticket</span>
       </router-link>
 
-      <!-- Navigation -->
-      <nav class="nav-links">
-        <router-link to="/homepage">Home</router-link>
-        <router-link to="/booking">Ticket</router-link>
-        <router-link to="/explore">Explore</router-link>
-        <router-link to="/aboutus">About Us</router-link>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <router-link to="/homepage" class="nav-link">Home</router-link>
+        <router-link to="/booking" class="nav-link">Ticket</router-link>
+        <router-link to="/explore" class="nav-link">Explore</router-link>
+        <router-link to="/aboutus" class="nav-link">About Us</router-link>
       </nav>
 
-      <!-- Auth / User -->
-      <div class="auth-action">
+      <div class="right-actions">
+        <img
+          src="https://flagcdn.com/w40/gb.png"
+          alt="English"
+          class="flag-icon"
+        />
+
         <div v-if="user" class="user-profile">
-          <span class="welcome">Hi, {{ user.name || user.email.split('@')[0] }}</span>
+          <span class="welcome">Hi, {{ displayName }}</span>
           <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
-          <button @click="logout" class="logout-btn">Logout</button>
+          <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
-        <router-link v-else to="/login" class="login-btn">
-          Login / Sign Up
-          <span class="ticket-icon">🎫</span>
-        </router-link>
+        <div v-else class="auth-buttons">
+          <router-link to="/signup" class="ghost-btn signup-btn"
+            >Sign Up</router-link
+          >
+          <router-link to="/login" class="cta-btn login-btn"
+            >Log In</router-link
+          >
+        </div>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label="Toggle navigation menu"
+          aria-controls="mobile-nav"
+          :aria-expanded="String(isMenuOpen)"
+          @click="toggleMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-nav" class="mobile-nav" :class="{ open: isMenuOpen }">
+      <router-link to="/homepage" @click="closeMenu">Home</router-link>
+      <router-link to="/booking" @click="closeMenu">Ticket</router-link>
+      <router-link to="/explore" @click="closeMenu">Explore</router-link>
+      <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
+
+      <div v-if="user" class="mobile-user">
+        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
 
-      <!-- Mobile Menu Button (optional - add later if needed) -->
-      <!-- <button class="mobile-menu-btn" @click="toggleMobileMenu">☰</button> -->
+      <div v-else class="mobile-actions">
+        <router-link to="/signup" class="ghost-btn" @click="closeMenu"
+          >Sign Up</router-link
+        >
+        <router-link to="/login" class="cta-btn" @click="closeMenu"
+          >Log In</router-link
+        >
+      </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-const user = ref<any>(null)
-const headerEl = ref<HTMLElement | null>(null)
-const isHidden = ref(false)
-const isScrolled = ref(false)
+const router = useRouter();
+const user = ref<any>(null);
+const isHidden = ref(false);
+const isScrolled = ref(false);
+const isMenuOpen = ref(false);
 
-let lastScrollY = 0
-let ticking = false
-
-onMounted(async () => {
-  await nextTick()
-
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    try {
-      const res = await fetch('http://localhost:3000/auth/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        user.value = await res.json()
-      } else {
-        localStorage.removeItem('access_token')
-      }
-    } catch (err) {
-      console.error('Profile fetch failed', err)
-    }
+const displayName = computed(() => {
+  if (!user.value) {
+    return "";
   }
+  return (
+    user.value.name ||
+    user.value.email?.split("@")[0] ||
+    "there"
+  );
+});
 
-  window.addEventListener('scroll', onScroll)
-})
+let lastScrollY = 0;
+let ticking = false;
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-})
+function updateScrollState() {
+  const current = window.scrollY;
+  isHidden.value = current > lastScrollY && current > 140;
+  isScrolled.value = current > 24;
+  lastScrollY = current;
+  ticking = false;
+}
 
 function onScroll() {
   if (!ticking) {
-    window.requestAnimationFrame(() => {
-      const current = window.scrollY
+    window.requestAnimationFrame(updateScrollState);
+    ticking = true;
+  }
+}
 
-      // Hide when scrolling down past header height
-      isHidden.value = current > lastScrollY && current > 120
+function closeMenu() {
+  isMenuOpen.value = false;
+}
 
-      // Add scrolled class when past 50px
-      isScrolled.value = current > 50
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
 
-      lastScrollY = current
-      ticking = false
-    })
-    ticking = true
+function onResize() {
+  if (window.innerWidth > 920 && isMenuOpen.value) {
+    closeMenu();
   }
 }
 
 function logout() {
-  localStorage.removeItem('access_token')
-  user.value = null
-  router.push('/login')
+  localStorage.removeItem("access_token");
+  user.value = null;
+  closeMenu();
+  router.push("/login");
 }
+
+onMounted(async () => {
+  await nextTick();
+  lastScrollY = window.scrollY;
+  updateScrollState();
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onResize);
+
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    try {
+      const res = await fetch("http://localhost:3000/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        user.value = await res.json();
+      } else {
+        localStorage.removeItem("access_token");
+      }
+    } catch (err) {
+      console.error("Profile fetch failed", err);
+    }
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("resize", onResize);
+});
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap");
 
 .head-bar {
   position: fixed;
@@ -107,183 +172,329 @@ function logout() {
   left: 0;
   width: 100%;
   z-index: 1200;
-  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  transition: transform 0.35s ease, background 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .head-bar.scrolled {
-  padding: 0.9rem 0;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 6px 35px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
 }
 
 .head-bar.hidden {
   transform: translateY(-100%);
 }
 
-.container {
-  max-width: 1400px;
+.header-inner {
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 2.5rem;
-}
-
-.header-content {
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80px;
+  gap: 1.5rem;
+}
+
+.logo {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .logo-text {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 2.1rem;
-  color: #111;
-  letter-spacing: -0.6px;
-  margin: 0;
-  transition: color 0.3s;
-}
-
-.logo-text:hover {
-  color: #f54e75;
-}
-
-/* Navigation */
-.nav-links {
-  display: flex;
-  gap: 3.2rem;
-}
-
-.nav-links a {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-size: 2.8rem;
+  color: #ffffff;
   position: relative;
-  color: #2d2d2d;
-  font-weight: 600;
-  font-size: 1.05rem;
-  text-decoration: none;
+  padding-bottom: 10px;
   transition: color 0.3s ease;
-  padding: 0.6rem 0;
 }
 
-.nav-links a:hover,
-.nav-links a.router-link-active {
-  color: #f54e75;
+.head-bar.scrolled .logo-text {
+  color: #1a1a1a;
 }
 
-.nav-links a.router-link-active::after,
-.nav-links a:hover::after {
-  content: '';
+.logo-text::after {
+  content: "";
   position: absolute;
+  left: 0;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
+  width: 70%;
+  height: 4px;
   background: #f54e75;
-  border-radius: 3px;
+  border-radius: 999px;
   transition: width 0.3s ease;
 }
 
-/* Auth area */
-.auth-action {
-  display: flex;
-  align-items: center;
-  gap: 1.8rem;
+.logo:hover .logo-text::after {
+  width: 100%;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2.6rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #ffffff;
+  position: relative;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+}
+
+.head-bar.scrolled .nav-link {
+  color: #2d2d2d;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 0;
+  height: 3px;
+  background: #f54e75;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: width 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.router-link-active {
+  color: #f54e75;
+}
+
+.nav-link:hover::after,
+.nav-link.router-link-active::after {
+  width: 60%;
+}
+
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flag-icon {
+  width: 34px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.auth-buttons,
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 0.9rem;
+}
+
+.user-profile {
+  color: #ffffff;
+}
+
+.head-bar.scrolled .user-profile {
+  color: #2d2d2d;
 }
 
 .welcome {
-  font-weight: 500;
-  color: #444;
-  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2.5px solid #f54e75;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
   object-fit: cover;
-  box-shadow: 0 3px 12px rgba(245, 78, 117, 0.18);
+}
+
+.ghost-btn,
+.cta-btn {
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ghost-btn {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+
+.head-bar.scrolled .ghost-btn {
+  color: #f54e75;
+  border-color: #f54e75;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  transform: translateY(-1px);
+  color: #f54e75;
+  border-color: #f54e75;
+}
+
+.cta-btn {
+  background: #f54e75;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(245, 78, 117, 0.35);
+}
+
+.cta-btn:hover,
+.cta-btn:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(245, 78, 117, 0.45);
 }
 
 .logout-btn {
-  background: transparent;
-  border: 2px solid #f54e75;
-  color: #f54e75;
-  font-weight: 600;
-  padding: 0.55rem 1.4rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
 }
 
-.logout-btn:hover {
-  background: #f54e75;
-  color: white;
-}
-
-/* Login button */
-.login-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f54e75;
-  color: white;
-  padding: 0.85rem 2.1rem;
+.menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.head-bar.scrolled .menu-toggle {
+  border-color: #e6e6e6;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-toggle span {
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 999px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.head-bar.scrolled .menu-toggle span {
+  background: #2d2d2d;
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobile-nav {
+  display: none;
+  padding: 0 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(224, 224, 224, 0.8);
+}
+
+.mobile-nav.open {
+  display: block;
+}
+
+.mobile-nav a {
+  display: block;
+  padding: 0.85rem 0;
   font-weight: 600;
-  font-size: 1.05rem;
+  color: #2d2d2d;
   text-decoration: none;
-  box-shadow: 0 6px 20px rgba(245, 78, 117, 0.28);
-  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(226, 226, 226, 0.7);
 }
 
-.login-btn:hover {
-  background: #ef3768;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(245, 78, 117, 0.38);
+.mobile-nav a:last-of-type {
+  border-bottom: none;
 }
 
-.ticket-icon {
-  font-size: 1.35rem;
+.mobile-actions,
+.mobile-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
 }
 
-/* Mobile responsiveness */
-@media (max-width: 1024px) {
-  .nav-links {
-    gap: 2rem;
-  }
+.mobile-greeting {
+  font-weight: 600;
+  color: #2d2d2d;
+}
 
-  .header-content {
-    height: 70px;
+@media (max-width: 1100px) {
+  .header-inner {
+    padding: 0 1.8rem;
   }
 
   .logo-text {
-    font-size: 1.9rem;
+    font-size: 2.4rem;
+  }
+
+  .nav-links {
+    gap: 1.8rem;
+  }
+}
+
+@media (max-width: 920px) {
+  .nav-links {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .auth-buttons,
+  .user-profile {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
-  .nav-links {
-    display: none; /* You can implement hamburger menu here later */
+  .header-inner {
+    height: 80px;
+    padding: 0 1.2rem;
   }
 
-  .header-content {
-    justify-content: space-between;
+  .logo-text {
+    font-size: 2rem;
   }
 
-  .login-btn,
-  .logout-btn {
-    padding: 0.7rem 1.4rem;
-    font-size: 1rem;
+  .flag-icon {
+    width: 30px;
+  }
+}
+
+@media (max-width: 560px) {
+  .logo-text {
+    font-size: 1.8rem;
   }
 }
 </style>
