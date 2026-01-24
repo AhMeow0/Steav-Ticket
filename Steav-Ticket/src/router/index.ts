@@ -9,7 +9,7 @@ import Bookseat from '@/component/UserBookseat.vue'
 import UserExplore from '@/component/UserExplore.vue'
 import AboutUs from '@/component/AboutUs.vue'
 import SeatSelect from '@/component/SeatSelect.vue'
-
+import PlaceDetail from '@/component/placeDetail.vue'
 // ============================================
 // 2. AUTH IMPORTS
 // ============================================
@@ -37,26 +37,6 @@ import MethodPay from '@/view/Account-User/MethodPay.vue'
 import Language from '@/view/Account-User/Language.vue'
 import HelpPage from '@/view/Account-User/HelpPage.vue'
 
-type JwtPayload = {
-  sub: string
-  email: string
-  role?: string
-}
-
-function parseJwt(token: string): JwtPayload | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length < 2) return null
-    const base64Url = parts[1]
-    if (!base64Url) return null
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
-    const json = atob(padded)
-    return JSON.parse(json) as JwtPayload
-  } catch {
-    return null
-  }
-}
 
 const routes: Array<RouteRecordRaw> = [
   // ============================================
@@ -158,7 +138,14 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'help', name: 'HelpPage', component: HelpPage },
     ],
   },
+  {
+    path: '/place/:slug',
+    name: 'PlaceDetail',
+    component: PlaceDetail,
+  },
+
 ]
+
 
 const router = createRouter({
   history: createWebHistory('/'),

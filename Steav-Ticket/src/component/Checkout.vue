@@ -1,6 +1,5 @@
 <template>
   <div class="checkout-page">
-    <HeadBar />
 
     <div class="container">
       <!-- Header -->
@@ -11,7 +10,6 @@
           <p class="sub">Review your trip & complete your booking</p>
         </div>
       </div>
-
       <div class="grid">
         <!-- LEFT: Trip summary -->
         <div class="card">
@@ -85,29 +83,38 @@
 
           <div class="card-title">Payment method</div>
           <div class="payment-methods">
-            <button
-              class="pm"
-              :class="{ active: paymentMethod === 'cash' }"
-              @click="paymentMethod = 'cash'"
-            >
-              💵 Cash
-            </button>
+
             <button
               class="pm"
               :class="{ active: paymentMethod === 'card' }"
-              @click="paymentMethod = 'card'"
+              @click="toggleCard"
             >
               💳 Card
             </button>
-            <button
-              class="pm"
-              :class="{ active: paymentMethod === 'aba' }"
-              @click="paymentMethod = 'aba'"
-            >
-              📱 ABA
-            </button>
+          </div>
+          <div v-if="paymentMethod === 'card'" class="card-form">
+          <div class="field">
+            <label>Card number</label>
+            <input type="text" placeholder="1234 5678 9012 3456" />
           </div>
 
+          <div class="field">
+            <label>Card Holder Name</label>
+            <input type="text" placeholder="Hello world" />
+          </div>
+
+          <div class="card-row">
+            <div class="field">
+              <label>Expiry date</label>
+              <input type="text" placeholder="MM / YY" />
+            </div>
+
+            <div class="field">
+              <label>CVV</label>
+              <input type="password" placeholder="123" />
+            </div>
+          </div>
+         </div>
           <div class="total-box">
             <div class="total-row">
               <span>Seats</span>
@@ -128,7 +135,6 @@
       </div>
     </div>
 
-    <!-- ✅ SUCCESS SNACKBAR -->
     <div v-if="showSnack" class="snackbar">
       <div class="snack-card">
         <h4>Payment Successful 🎉</h4>
@@ -147,7 +153,10 @@ import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
 
-defineOptions({ name: 'SteavCheckout' })
+// @vue/component
+defineOptions({
+  name: 'CheckoutPage'
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -178,6 +187,10 @@ const name = ref('')
 const phone = ref('')
 const email = ref('')
 const paymentMethod = ref<'cash' | 'card' | 'aba'>('cash')
+const toggleCard = () => {
+  paymentMethod.value = paymentMethod.value === 'card' ? 'cash' : 'card'
+}
+
 
 // snackbar
 const showSnack = ref(false)
@@ -230,6 +243,7 @@ const goHome = () => {
 .checkout-page {
   background: #f6f7fb;
   min-height: 100vh;
+  margin-top: 50px;
 }
 
 .container {
@@ -242,6 +256,7 @@ const goHome = () => {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .back-btn {
@@ -312,7 +327,7 @@ const goHome = () => {
 }
 
 .field input {
-  width: 100%;
+  width: 96%;
   padding: 10px;
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -391,6 +406,24 @@ const goHome = () => {
   padding: 10px;
   border-radius: 999px;
   cursor: pointer;
+}
+.card-form {
+  margin-top: 12px;
+  border-radius: 14px;
+}
+
+.card-form .field label {
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+}
+
+.card-form input {
+  width: 96%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
 }
 
 /* responsive */
