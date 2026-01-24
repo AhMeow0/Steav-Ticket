@@ -1,16 +1,20 @@
-import { IsString, IsNotEmpty, IsNumber, Min, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CreateTicketDto {
-
   @IsString()
   @IsNotEmpty()
-  scheduleId: string;
+  passengerName: string;
+
+  @IsNumber()
+  seatNumber: number;
 
   @IsNumber()
   @Min(1)
-  seatNumber: number;
+  price: number;
 
-  @IsOptional()
   @IsString()
-  promoCode?: string;
+  destination: string;
+
+  @IsString()
+  departureTime: string;
 }

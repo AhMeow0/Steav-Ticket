@@ -1,18 +1,37 @@
-import { Controller, Get, Post, Body, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { UseGuards } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
+import { CheckoutTicketsDto } from './dto/checkout-tickets.dto';
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role?: string;
+};
+
+type AuthenticatedRequest = ExpressRequest & { user: JwtPayload };
 
 @Controller('tickets')
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
+  @UseGuards(AuthGuard)
+  @Post('checkout')
+  async checkout(
+    @Body() dto: CheckoutTicketsDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user.sub;
+    return this.ticketsService.checkout(dto, userId);
+  }
+
   //@UseGuards(AuthGuard)
   @Post()
   async protectedCreate(
     @Body() createTicketDto: CreateTicketDto,
-    @Req() req,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user.sub;
     return this.ticketsService.create(createTicketDto, userId);
@@ -20,7 +39,7 @@ export class TicketsController {
 
   //@UseGuards(AuthGuard)
   @Get('my-tickets')
-  async findMyTickets(@Req() req) {
+  async findMyTickets(@Req() req: AuthenticatedRequest) {
     const userId = req.user.sub;
     return this.ticketsService.findMyTickets(userId);
   }

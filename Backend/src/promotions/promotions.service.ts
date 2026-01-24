@@ -10,7 +10,7 @@ import { error } from 'console';
 export class PromotionService {
   constructor(
     @InjectModel(Promotion.name)
-    private promotionModel: Model<Promotion>
+    private promotionModel: Model<Promotion>,
   ) {}
 
   async create(dto: CreatePromotionDto): Promise<Promotion> {

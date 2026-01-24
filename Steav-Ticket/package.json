@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "clean": "rm -rf dist coverage test-results playwright-report",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/"
   },

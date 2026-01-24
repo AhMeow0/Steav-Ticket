@@ -105,6 +105,18 @@ import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
 
+type Trip = {
+  id: number
+  company: string
+  type: string
+  seats: number
+  departTime: string
+  arriveTime: string
+  duration: string
+  price: number
+  logo: string
+}
+
 const router = useRouter()
 const route = useRoute()
 
@@ -157,7 +169,7 @@ const fakeSearch = () => {
 }
 
 // ✅ go to seat selecting page and pass needed data
-const viewSeats = (trip: any) => {
+const viewSeats = (trip: Trip) => {
   router.push({
     path: '/seat-select',
     query: {
@@ -175,7 +187,7 @@ const viewSeats = (trip: any) => {
 }
 
 // Dummy data for UI
-const trips = ref([
+const trips = ref<Trip[]>([
   {
     id: 1,
     company: 'Ekreach Express',

@@ -1,30 +1,29 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
-import { Route } from "../../routes/schema/route.schema";
-import { Bus } from "../../buses/schema/bus.schema"
-import { Promotion } from "../../promotions/schema/promotion.schema";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+
+export type ScheduleDocument = HydratedDocument<Schedule>;
 
 @Schema()
-export class schedule{
-    @Prop({type: Types.ObjectId, ref: 'Route', required: true})
+export class Schedule {
+    @Prop({ type: Types.ObjectId, ref: 'Route', required: true })
     routeId: Types.ObjectId;
 
-    @Prop({type: Types.ObjectId, ref: 'Bus', required: true})
+    @Prop({ type: Types.ObjectId, ref: 'Bus', required: true })
     busId: Types.ObjectId;
 
-    @Prop({type: Types.ObjectId, ref: 'Promotion', required: true})
-    promotionId: Types.ObjectId;
+    @Prop({ type: Types.ObjectId, ref: 'Promotion', required: false })
+    promotionId?: Types.ObjectId;
 
-    @Prop({require: true})
-    departureDate: Date
+    @Prop({ required: true })
+    departureDate: Date;
 
-    @Prop({required: true})
-    departureTime: String
+    @Prop({ required: true })
+    departureTime: string;
 
-    @Prop({required: true})
-    price: number
+    @Prop({ required: true })
+    price: number;
 
-    @Prop({ enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' })
-    status: 'ACTIVE' | 'INACTIVE';
+    @Prop({ default: 'ACTIVE' })
+    status: string;
 }
-export const scheduleSchema = SchemaFactory.createForClass(schedule);
+export const ScheduleSchema = SchemaFactory.createForClass(Schedule);

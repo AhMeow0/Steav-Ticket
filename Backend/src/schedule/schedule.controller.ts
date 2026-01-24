@@ -1,42 +1,35 @@
-import { Body, Controller, UseGuards,Post, Put, Delete, Get, Param } from "@nestjs/common";
-import { ScheduleService } from "./schedule.service";
-import { AuthGuard } from "@nestjs/passport";
-import { RolesGuard } from "../auth/roles.guard";
-import { CreateScheduleDto } from "./dto/create-schedule.dto";
-import { Roles } from "../auth/roles.decorator";
-import { UpdateScheduleDto } from "./dto/update-schedule.dto";
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { ScheduleService } from './schedule.service';
+import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { UpdateScheduleDto } from './dto/update-schedule.dto';
 
 
 @Controller('schedule')
-export class ScheduleController{
-    constructor (private readonly scheduleService: ScheduleService){}
+export class ScheduleController {
+    constructor(private readonly scheduleService: ScheduleService) {}
 
-    //@UseGuards(AuthGuard, RolesGuard)
-    //@Roles('admin')
     @Post()
-    async create(@Body() createScheduleDto: CreateScheduleDto){
+    async create(@Body() createScheduleDto: CreateScheduleDto) {
         return this.scheduleService.create(createScheduleDto);
     }
+
     @Get()
-    async findAll(){
+    async findAll() {
         return this.scheduleService.findAll();
     }
-    @Get()
-    async findOne(@Param('id') id: string){
+
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
         return this.scheduleService.findOne(id);
     }
 
-    //@UseGuards()
-    //@Roles()
     @Put(':id')
-    update(@Param('id') id: string, @Body() UpdateScheduleDto){
-        return this.scheduleService.update(id, UpdateScheduleDto);
+    update(@Param('id') id: string, @Body() updateScheduleDto: UpdateScheduleDto) {
+        return this.scheduleService.update(id, updateScheduleDto);
     }
 
-    //@UseGuards(AuthGuard, RolesGuard)
-    //@Roles('admin')
     @Delete(':id')
-    remove(@Param('id') id: string){
+    remove(@Param('id') id: string) {
         return this.scheduleService.remove(id);
     }
 }

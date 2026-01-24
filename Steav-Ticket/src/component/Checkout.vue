@@ -144,8 +144,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 import HeadBar from '@/component/HeadBar.vue'
 import Footer from '@/component/Footer.vue'
+
+defineOptions({ name: 'SteavCheckout' })
 
 const route = useRoute()
 const router = useRouter()
@@ -184,13 +187,65 @@ const showSnack = ref(false)
 const total = computed(() => price.value * seatCount.value)
 
 // confirm booking
-const confirmBooking = () => {
+const confirmBooking = async () => {
   if (!name.value || !phone.value || !email.value) {
     alert('Please fill all passenger details')
     return
   }
   if (seatCount.value <= 0) {
     alert('No seat selected')
+    return
+  }
+
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    alert('Please login before booking')
+    router.push('/login')
+    return
+  }
+
+  const seatNums = String(seatNumbers.value)
+    .split(/[^0-9]+/)
+    .map((s) => Number(s))
+    .filter((n) => Number.isFinite(n) && n > 0)
+
+  if (seatNums.length === 0) {
+    alert('No seat selected')
+    return
+  }
+
+  // Backend: create booking(s) and auto-confirm when payment is card/aba
+  try {
+    const res = await fetch(apiUrl('/tickets/checkout'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        passengerName: name.value,
+        seatNumbers: seatNums,
+        price: price.value,
+        destination: toLabel.value,
+        departureTime: journeyISO.value || new Date().toISOString(),
+        paymentMethod: paymentMethod.value,
+      }),
+    })
+
+    if (!res.ok) {
+      let message = 'Payment/booking failed'
+      try {
+        const err = await res.json()
+        if (Array.isArray(err?.message)) message = err.message.join(', ')
+        else if (typeof err?.message === 'string') message = err.message
+      } catch {
+        // ignore JSON parse errors
+      }
+      throw new Error(message)
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    alert(message)
     return
   }
 

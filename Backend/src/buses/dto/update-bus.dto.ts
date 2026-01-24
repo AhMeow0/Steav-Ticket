@@ -5,6 +5,10 @@ export class UpdateBusDto{
 
     @IsString()
     @IsNotEmpty()
+    companyName: string;
+
+    @IsString()
+    @IsNotEmpty()
     busPlate: string;
 
     @IsString()
