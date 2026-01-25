@@ -1,10 +1,7 @@
-import { IsIn, IsString } from 'class-validator';
-
-export const BOOKING_STATUSES = ['BOOKED', 'CONFIRMED', 'CANCELLED'] as const;
-export type BookingStatus = (typeof BOOKING_STATUSES)[number];
+import { IsEnum } from 'class-validator';
+import { BookingStatus } from '../../booking/schemas/booking.schema';
 
 export class UpdateBookingStatusDto {
-  @IsString()
-  @IsIn(BOOKING_STATUSES)
+  @IsEnum(BookingStatus)
   status: BookingStatus;
 }

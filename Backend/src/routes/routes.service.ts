@@ -9,6 +9,7 @@ import {
   TicketPrice,
   type TicketPriceDocument,
 } from '../ticket-prices/schema/ticket-price.schema';
+import { SeatsService } from '../seats/seats.service';
 
 export type BulkPriceUpdateResult = {
   matched: number;
@@ -29,6 +30,8 @@ export class RoutesService {
 
     @InjectModel(TicketPrice.name)
     private ticketPriceModel: Model<TicketPriceDocument>,
+
+    private readonly seatsService: SeatsService,
   ) {}
 
   // 1. Create a new Route (Admin)
@@ -179,47 +182,58 @@ export class RoutesService {
       .exec();
   }
   async getSeatsForTrip(tripId: string) {
-  const route = await this.routeModel
-    .findById(tripId)
-    .lean();
+    const route = await this.routeModel.findById(tripId).lean();
 
-  if (!route) {
-    throw new Error("Route not found");
-  }
-
-  const totalSeats = route.totalSeats ?? 40;
-
-  // Seat layout A1, B1, C1, D1, A2...
-  const seatLetters = ["A", "B", "C", "D"];
-  const seats: string[] = [];
-  const rows = Math.ceil(totalSeats / 4);
-
-  for (let row = 1; row <= rows; row++) {
-    for (const letter of seatLetters) {
-      seats.push(`${letter}${row}`);
+    if (!route) {
+      throw new Error('Route not found');
     }
+
+    const tripIdStr = String(route._id);
+    const totalSeats = route.totalSeats ?? 40;
+
+    // Seat layout A1, B1, C1, D1, A2... (trim to totalSeats)
+    const seatLetters = ['A', 'B', 'C', 'D'];
+    const seats: string[] = [];
+    const rows = Math.ceil(totalSeats / 4);
+
+    for (let row = 1; row <= rows; row++) {
+      for (const letter of seatLetters) {
+        seats.push(`${letter}${row}`);
+        if (seats.length >= totalSeats) break;
+      }
+      if (seats.length >= totalSeats) break;
+    }
+
+    // Ensure Seat documents exist for this trip.
+    await this.seatsService.upsertTripSeats(tripIdStr, seats);
+
+    // Legacy sync: route.bookedSeats (numeric) -> Seat.SOLD
+    const legacySoldSeatNos = (route.bookedSeats || [])
+      .filter((s) => typeof s === 'number' && s >= 1 && s <= totalSeats)
+      .map((s) => {
+        const row = Math.ceil(s / 4);
+        const index = (s - 1) % 4;
+        return `${seatLetters[index]}${row}`;
+      });
+
+    await this.seatsService.forceMarkSeatsSold(tripIdStr, legacySoldSeatNos);
+
+    // Source of truth: seat collection status
+    const seatDocs = await this.seatsService.getSeatsByTrip(tripIdStr);
+    const bookedSeats = seatDocs
+      .filter((s) => s.status !== 'AVAILABLE')
+      .map((s) => s.seatNo);
+
+    return {
+      tripId: tripIdStr,
+      origin: route.origin,
+      destination: route.destination,
+      company: route.company,
+      price: route.price,
+      totalSeats,
+      bookedSeats,
+      seats,
+    };
   }
-
-  // Convert booked numeric seat numbers → seat labels
-  // Example: bookedSeats = [1, 6] → booked: ["A1","A2"]
-  const bookedSet = new Set(
-    (route.bookedSeats || []).map((s) => {
-      const row = Math.ceil(s / 4);
-      const index = (s - 1) % 4;
-      return `${seatLetters[index]}${row}`;
-    })
-  );
-
-  return {
-    tripId: route._id,
-    origin: route.origin,
-    destination: route.destination,
-    company: route.company,
-    price: route.price,
-    totalSeats,
-    bookedSeats: Array.from(bookedSet),
-    seats,
-  };
-}
 
 }

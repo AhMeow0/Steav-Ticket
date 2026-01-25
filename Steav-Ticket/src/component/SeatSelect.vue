@@ -215,7 +215,7 @@ const returnLabel = computed(() =>
 
 const fromLabel = computed(() => schedule.value?.origin || '—')
 const toLabel = computed(() => schedule.value?.destination || '—')
-const companyLabel = computed(() => schedule.value?.busId?.companyName || '—')
+const companyLabel = computed(() => schedule.value?.company || schedule.value?.busId?.companyName || '—')
 const price = computed(() => schedule.value?.price || 0)
 
 async function fetchSchedule() {
@@ -230,7 +230,7 @@ async function fetchSchedule() {
     schedule.value = data;
     tripId.value = data.tripId;
 
-    // 2️⃣ booked seats list
+    // 2️⃣ booked seats list (backend now includes HELD + SOLD)
     bookedSet.value = new Set(data.bookedSeats);
 
     // 3️⃣ capacity

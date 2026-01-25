@@ -12,6 +12,7 @@ import { User, UserSchema } from '../users/entities/user.entity';
       { name: Ticket.name, schema: TicketSchema },
       { name: Route.name, schema: RouteSchema },
       { name: User.name, schema: UserSchema },
+      { name: 'Booking', schema: require('../booking/schemas/booking.schema').BookingSchema },
     ]),
   ],
   controllers: [AdminController],

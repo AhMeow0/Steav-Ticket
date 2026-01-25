@@ -136,9 +136,10 @@
               <span>USD {{ total }}</span>
             </div>
 
-            <button class="pay-btn" @click="confirmBooking">
-              Confirm & Pay
+            <button class="pay-btn" :disabled="isSubmitting" @click="confirmBooking">
+              {{ isSubmitting ? "Processing…" : "Confirm & Pay" }}
             </button>
+            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
           </div>
         </div>
       </div>
@@ -197,85 +198,222 @@ const cardNumber = ref("");
 const cardExpiry = ref("");
 const cardCvc = ref("");
 
+const isSubmitting = ref(false);
+const errorMessage = ref<string | null>(null);
+
 /* TOTAL */
 const total = computed(() => price.value * seatCount.value);
 
-/* BOOKING + PAYMENT */
-const confirmBooking = async () => {
-  if (!name.value || !phone.value || !email.value) {
-    alert("Please fill all passenger details");
-    return;
+type LocalTicket = {
+  id: string;
+  from: string;
+  to: string;
+  journeyDate: string;
+  returnDate?: string;
+  company: string;
+  seats: string;
+  seatCount: number;
+  price: number;
+  total: number;
+  status: 'ACTIVE' | 'COMPLETED';
+  bookingDate: string;
+};
+
+function saveTicketToLocalStorage(ticket: LocalTicket) {
+  const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as unknown;
+  const list: LocalTicket[] = Array.isArray(raw) ? (raw as LocalTicket[]) : [];
+  const existingIndex = list.findIndex((t) => t && t.id === ticket.id);
+  if (existingIndex >= 0) {
+    list[existingIndex] = { ...list[existingIndex], ...ticket };
+  } else {
+    list.unshift(ticket);
   }
-
-  if (!cardName.value || !cardNumber.value || !cardExpiry.value || !cardCvc.value) {
-    alert("Please fill all card details");
-    return;
-  }
-
-  /* AUTH TOKEN */
-/* AUTH TOKEN (fully compatible) */
-const token =
-  localStorage.getItem("access_token") ||
-  localStorage.getItem("token") ||
-  JSON.parse(localStorage.getItem("user") || "{}").token;
-
-if (!token) {
-  alert("Please login first");
-  router.push("/login");
-  return;
+  localStorage.setItem('tickets', JSON.stringify(list));
 }
 
+function extractApiErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  const message = record.message;
+  if (typeof message === "string") return message;
+  if (Array.isArray(message)) {
+    const parts = message.filter((m): m is string => typeof m === "string");
+    if (parts.length) return parts.join(", ");
+  }
+  const error = record.error;
+  if (typeof error === "string") return error;
+  return null;
+}
 
-  /* SEATS ARRAY */
+function isValidEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+function normalizeCardNumber(v: string): string {
+  return v.replace(/\s+/g, "");
+}
+
+function isValidExpiry(v: string): boolean {
+  // MM/YY
+  if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(v)) return false;
+  const parts = v.split("/");
+  if (parts.length !== 2) return false;
+  const mm = Number(parts[0]);
+  const yy = Number(parts[1]);
+  if (!Number.isFinite(mm) || !Number.isFinite(yy)) return false;
+  const fullYear = 2000 + yy;
+  const now = new Date();
+  const endOfMonth = new Date(fullYear, mm, 0, 23, 59, 59, 999);
+  return endOfMonth >= now;
+}
+
+/* BOOKING + PAYMENT */
+const confirmBooking = async () => {
+  if (isSubmitting.value) return;
+  errorMessage.value = null;
+
+  if (!tripId.value) {
+    errorMessage.value = "Missing trip info. Please go back and select a trip again.";
+    return;
+  }
+
+  if (!seatNumbers.value || seatCount.value <= 0) {
+    errorMessage.value = "Please select at least one seat.";
+    return;
+  }
+
+  if (!name.value || !phone.value || !email.value) {
+    errorMessage.value = "Please fill all passenger details.";
+    return;
+  }
+  if (!isValidEmail(email.value)) {
+    errorMessage.value = "Please enter a valid email.";
+    return;
+  }
+
+  const cleanCard = normalizeCardNumber(cardNumber.value);
+  if (!cardName.value || !cleanCard || !cardExpiry.value || !cardCvc.value) {
+    errorMessage.value = "Please fill all card details.";
+    return;
+  }
+  if (!/^\d{12,19}$/.test(cleanCard)) {
+    errorMessage.value = "Card number looks invalid.";
+    return;
+  }
+  if (!isValidExpiry(cardExpiry.value)) {
+    errorMessage.value = "Card expiry looks invalid.";
+    return;
+  }
+  if (!/^\d{3,4}$/.test(cardCvc.value)) {
+    errorMessage.value = "CVV looks invalid.";
+    return;
+  }
+
+  if (total.value <= 0) {
+    errorMessage.value = "Total price is invalid. Please re-check your trip price.";
+    return;
+  }
+
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    JSON.parse(localStorage.getItem("user") || "{}").token;
+
+  if (!token) {
+    errorMessage.value = "Please login first.";
+    router.push("/login");
+    return;
+  }
+
   const seatsArray = seatNumbers.value
     ? (seatNumbers.value as string)
         .split(",")
         .map((s: string) => s.trim())
+        .filter(Boolean)
     : [];
 
-  /* 1️⃣ HOLD SEATS */
-  const holdRes = await fetch(apiUrl("/bookings/hold"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      tripId: tripId.value,
-      seatNos: seatsArray,
-      totalPrice: total.value,
-    }),
-  });
-
-const booking = await holdRes.json();
-console.log("HOLD RESPONSE:", booking);
-console.log("STATUS:", holdRes.status);
-console.log("BODY SENT:", {
-  tripId: tripId.value,
-  seatNos: seatsArray,
-  totalPrice: total.value
-});
-
-
-  /* 2️⃣ PAYMENT MOCK */
-  const payRes = await fetch(apiUrl("/payments/mock"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ bookingId: booking._id }),
-  });
-
-  const payment = await payRes.json();
-
-  if (!payment.success) {
-    alert("Payment failed! Try again.");
+  if (seatsArray.length === 0) {
+    errorMessage.value = "Please select at least one seat.";
     return;
   }
 
-  alert("Payment successful! Booking confirmed.");
-  router.push("/");
+  isSubmitting.value = true;
+  try {
+    const holdRes = await fetch(apiUrl("/bookings/hold"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        tripId: tripId.value,
+        seatNos: seatsArray,
+        totalPrice: total.value,
+      }),
+    });
+
+    const booking = await holdRes.json().catch(() => ({}));
+    if (!holdRes.ok) {
+      errorMessage.value =
+        extractApiErrorMessage(booking) ||
+        `Booking failed (HTTP ${holdRes.status}).`;
+      return;
+    }
+
+    if (!booking?._id) {
+      errorMessage.value = "Booking failed: missing booking id from server.";
+      return;
+    }
+
+    const payRes = await fetch(apiUrl("/payments/mock"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ bookingId: booking._id }),
+    });
+
+    const payment = await payRes.json().catch(() => ({}));
+    if (!payRes.ok) {
+      errorMessage.value =
+        extractApiErrorMessage(payment) ||
+        `Payment failed (HTTP ${payRes.status}).`;
+      return;
+    }
+
+    if (!payment?.success) {
+      errorMessage.value = payment?.message || "Payment failed. Please try again.";
+      return;
+    }
+
+    const formattedSeats = String(seatNumbers.value || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(', ');
+
+    // Save to Ticket page (localStorage) - matches TicketBooking.vue fields
+    saveTicketToLocalStorage({
+      id: String(booking._id),
+      from: String(fromLabel.value || ''),
+      to: String(toLabel.value || ''),
+      journeyDate: String(route.query.journeyDate || ''),
+      returnDate: route.query.returnDate ? String(route.query.returnDate) : undefined,
+      company: String(companyLabel.value || ''),
+      seats: formattedSeats,
+      seatCount: Number(seatCount.value || 0),
+      price: Number(price.value || 0),
+      total: Number(total.value || 0),
+      status: 'ACTIVE',
+      bookingDate: new Date().toISOString(),
+    });
+
+    alert("Payment successful! Booking confirmed.");
+    router.push("/booking");
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 
@@ -285,6 +423,12 @@ console.log("BODY SENT:", {
   background: #f6f7fb;
   min-height: 100vh;
   margin-top: 50px;
+}
+
+.error {
+  margin-top: 10px;
+  color: #b42318;
+  font-size: 13px;
 }
 
 .container {

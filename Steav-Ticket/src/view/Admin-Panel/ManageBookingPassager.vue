@@ -48,10 +48,15 @@
 
         <tbody>
           <tr v-for="b in bookings" :key="b._id">
-            <td>{{ b.destination }}</td>
+            <td>{{ b.destination || '-' }}</td>
             <td>{{ b.user?.name ?? b.user?.email ?? b.user?._id }}</td>
-            <td>{{ b.seatNumber }}</td>
-            <td>{{ formatTime(b.departureTime) }}</td>
+            <td>
+              <!-- Handle seatNumbers (array), seatNumber (single), or seatNos (array) -->
+              {{ Array.isArray(b.seatNumbers) && b.seatNumbers.length ? b.seatNumbers.join(', ') :
+                  Array.isArray(b.seatNos) && b.seatNos.length ? b.seatNos.join(', ') :
+                  b.seatNumber || '-' }}
+            </td>
+            <td>{{ formatTime(b.departureTime || b.bookingDate || '-') }}</td>
             <td>{{ b.status }}</td>
             <td>
               <button

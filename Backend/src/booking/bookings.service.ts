@@ -47,6 +47,8 @@ export class BookingsService {
       throw new BadRequestException('Booking not in PENDING state');
     }
 
+    await this.seatsService.markSeatsSold(booking.tripId, booking.seatNos, userId);
+
     booking.status = BookingStatus.PAID;
     await booking.save();
     return booking;
