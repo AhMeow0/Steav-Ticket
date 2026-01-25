@@ -45,8 +45,6 @@
           </div>
         </section>
 
-        <!-- kep -->
-
         <section class="section">
           <h2 class="section-title">Preah Sihanouk</h2>
 

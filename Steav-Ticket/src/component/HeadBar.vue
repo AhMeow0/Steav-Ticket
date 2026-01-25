@@ -2,7 +2,7 @@
   <header class="head-bar" :class="{ scrolled: isScrolled, hidden: isHidden }">
     <div class="header-inner">
       <router-link to="/homepage" class="logo" aria-label="Back to homepage">
-        <span class="logo-text">Steav-Ticket</span>
+        <img src="../assets/img/Logo.png" alt="Steav-Ticket Logo" class="logo-image" />
       </router-link>
 
       <nav class="nav-links" aria-label="Primary navigation">
@@ -13,15 +13,17 @@
       </nav>
 
       <div class="right-actions">
-        <img
-          src="https://flagcdn.com/w40/gb.png"
-          alt="English"
-          class="flag-icon"
-        />
 
         <div v-if="user" class="user-profile">
-          <span class="welcome">Hi, {{ displayName }}</span>
-          <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          <div
+            class="profile-link"
+            @click="goToProfile"
+            style="display:flex;align-items:center;gap:0.6rem;cursor:pointer"
+          >
+            <span class="welcome">Hi, {{ displayName }}</span>
+            <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          </div>
+
           <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
@@ -56,9 +58,16 @@
       <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
 
       <div v-if="user" class="mobile-user">
-        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <div
+          class="mobile-greeting"
+          @click="goToProfile"
+          style="cursor:pointer"
+        >
+          Hi, {{ displayName }}
+        </div>
         <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
+
 
       <div v-else class="mobile-actions">
         <router-link to="/signup" class="ghost-btn" @click="closeMenu"
@@ -78,6 +87,11 @@ import { useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
 
 defineOptions({ name: 'HeadBar' })
+
+function goToProfile() {
+  closeMenu()
+  router.push('/account/profile')
+}
 
 type UserProfile = {
   name?: string
@@ -228,8 +242,11 @@ onUnmounted(() => {
 .head-bar.scrolled .logo-text {
   color: #1a1a1a;
 }
-
-.logo-text::after {
+.logo-image {
+  width: 350px;
+  height: auto;
+}
+/* .logo-text::after {
   content: "";
   position: absolute;
   left: 0;
@@ -239,7 +256,7 @@ onUnmounted(() => {
   background: #f54e75;
   border-radius: 999px;
   transition: width 0.3s ease;
-}
+} */
 
 .logo:hover .logo-text::after {
   width: 100%;
@@ -254,7 +271,7 @@ onUnmounted(() => {
 .nav-link {
   text-decoration: none;
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   color: black;
   position: relative;
   padding: 0.5rem 0;
@@ -318,6 +335,7 @@ onUnmounted(() => {
 .welcome {
   font-weight: 600;
   white-space: nowrap;
+  color: black;
 }
 
 .avatar {
@@ -344,7 +362,7 @@ onUnmounted(() => {
 }
 
 .ghost-btn {
-  color: #ffffff;
+  color: black;
   border-color: rgba(255, 255, 255, 0.6);
   background: transparent;
 }
