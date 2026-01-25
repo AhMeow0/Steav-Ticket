@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type TicketDocument = HydratedDocument<Ticket>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Ticket {
   @Prop({ required: true })
   userId: string;
@@ -28,6 +28,12 @@ export class Ticket {
 
   @Prop({ default: 'BOOKED' })
   status: string;
+
+  @Prop({ required: true, index: true })
+  bookingId: string;
+
+  @Prop({ required: true, index: true })
+  ticketCode: string; // UUID-like string
 }
 
 export const TicketSchema = SchemaFactory.createForClass(Ticket);

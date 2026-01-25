@@ -15,15 +15,10 @@
       <div class="right-actions">
 
         <div v-if="user" class="user-profile">
-          <div
-            class="profile-link"
-            @click="goToProfile"
-            style="display:flex;align-items:center;gap:0.6rem;cursor:pointer"
-          >
-            <span class="welcome">Hi, {{ displayName }}</span>
+          <span class="welcome">Hi, {{ displayName }}</span>
+          <button type="button" class="avatar-btn" aria-label="Open profile" @click="goToProfile">
             <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
-          </div>
-
+          </button>
           <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
@@ -41,7 +36,7 @@
           type="button"
           aria-label="Toggle navigation menu"
           aria-controls="mobile-nav"
-          :aria-expanded="String(isMenuOpen)"
+          :aria-expanded="isMenuOpen"
           @click="toggleMenu"
         >
           <span></span>
@@ -58,13 +53,8 @@
       <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
 
       <div v-if="user" class="mobile-user">
-        <div
-          class="mobile-greeting"
-          @click="goToProfile"
-          style="cursor:pointer"
-        >
-          Hi, {{ displayName }}
-        </div>
+        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <button type="button" class="ghost-btn" @click="goToProfile">My Profile</button>
         <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
 
@@ -88,7 +78,7 @@ import { apiUrl } from '@/lib/api'
 
 defineOptions({ name: 'HeadBar' })
 
-function goToProfile() {
+function goToProfile(){
   closeMenu()
   router.push('/account/profile')
 }
@@ -213,6 +203,25 @@ onUnmounted(() => {
   transform: translateY(-100%);
 }
 
+.avatar-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.avatar-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+}
+
 .header-inner {
   max-width: 1320px;
   margin: 0 auto;
@@ -250,7 +259,7 @@ onUnmounted(() => {
   bottom: 0;
   width: 70%;
   height: 4px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transition: width 0.3s ease;
 }
@@ -286,7 +295,7 @@ onUnmounted(() => {
   bottom: -6px;
   width: 0;
   height: 3px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transform: translateX(-50%);
   transition: width 0.2s ease;
@@ -294,7 +303,7 @@ onUnmounted(() => {
 
 .nav-link:hover,
 .nav-link.router-link-active {
-  color: #f54e75;
+  color: #0f172a;
 }
 
 .nav-link:hover::after,
@@ -332,7 +341,7 @@ onUnmounted(() => {
 .welcome {
   font-weight: 600;
   white-space: nowrap;
-  color: black;
+  color: inherit;
 }
 
 .avatar {
@@ -359,33 +368,41 @@ onUnmounted(() => {
 }
 
 .ghost-btn {
-  color: black;
+  color: #ffffff;
   border-color: rgba(255, 255, 255, 0.6);
   background: transparent;
 }
 
 .head-bar.scrolled .ghost-btn {
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #0f172a;
+  border-color: #0f172a;
 }
 
 .ghost-btn:hover,
 .ghost-btn:focus-visible {
   transform: translateY(-1px);
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.head-bar.scrolled .ghost-btn:hover,
+.head-bar.scrolled .ghost-btn:focus-visible {
+  color: #0f172a;
+  border-color: #0f172a;
+  background: rgba(15, 23, 42, 0.06);
 }
 
 .cta-btn {
-  background: #f54e75;
+  background: #0f172a;
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(245, 78, 117, 0.35);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
 }
 
 .cta-btn:hover,
 .cta-btn:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(245, 78, 117, 0.45);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
 }
 
 .logout-btn {
