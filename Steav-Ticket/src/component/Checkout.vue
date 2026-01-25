@@ -55,12 +55,12 @@
             </div>
             <div class="seat-row">
               <span class="label">Seat numbers</span>
-              <span class="value seats">{{ seatNumbers || '—' }}</span>
+              <span class="value seats">{{ seatNumbers || "—" }}</span>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- RIGHT: Payment -->
         <div class="card">
           <div class="card-title">Passenger details</div>
 
@@ -82,24 +82,43 @@
           <div class="divider"></div>
 
           <div class="card-title">Payment method</div>
-          <div class="payment-methods">
-            <button
-              class="pm"
-              :class="{ active: paymentMethod === 'card' }"
-              @click="toggleCard"
-            >
-              💳 Card
-            </button>
-          </div>
+          <p class="payment-note">Enter your card details below</p>
 
-          <div v-show="paymentMethod === 'card'" class="card-form">
-            <label class="form-label">Card details</label>
+          <!-- Fake Payment Form -->
+          <div class="payment-form">
+            <div class="field">
+              <label>Cardholder Name</label>
+              <input v-model="cardName" placeholder="John Doe" />
+            </div>
 
-            <div class="form-input" id="card-number"></div>
+            <div class="field">
+              <label>Card Number</label>
+              <input
+                v-model="cardNumber"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+              />
+            </div>
 
             <div class="card-row">
-              <div class="form-input small" id="card-expiry"></div>
-              <div class="form-input small" id="card-cvc"></div>
+              <div class="field small">
+                <label>Expiry</label>
+                <input
+                  v-model="cardExpiry"
+                  placeholder="MM/YY"
+                  maxlength="5"
+                />
+              </div>
+
+              <div class="field small">
+                <label>CVV</label>
+                <input
+                  v-model="cardCvc"
+                  placeholder="123"
+                  maxlength="4"
+                  type="password"
+                />
+              </div>
             </div>
           </div>
 
@@ -130,150 +149,136 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { apiUrl } from '@/lib/api'
-import Footer from '@/component/Footer.vue'
-import { loadStripe } from '@stripe/stripe-js'
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { apiUrl } from "@/lib/api";
+import Footer from "@/component/Footer.vue";
 
-defineOptions({ name: 'CheckoutPage' })
+defineOptions({ name: "CheckoutPage" });
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-/* DATA */
-const fromLabel = computed(() => (route.query.from as string) || '—')
-const toLabel = computed(() => (route.query.to as string) || '—')
-const companyLabel = computed(() => (route.query.company as string) || '—')
-const price = computed(() => Number(route.query.price || 0))
-const seatCount = computed(() => Number(route.query.seatCount || 0))
-const seatNumbers = computed(() => (route.query.seats as string) || '')
+/* TRIP DATA */
+const fromLabel = computed(() => route.query.from || "—");
+const toLabel = computed(() => route.query.to || "—");
+const companyLabel = computed(() => route.query.company || "—");
+const price = computed(() => Number(route.query.price || 0));
+const seatCount = computed(() => Number(route.query.seatCount || 0));
+const seatNumbers = computed(() => route.query.seats || "");
+const tripId = computed(() => route.query.tripId);
 
-const journeyISO = computed(() => (route.query.journeyDate as string) || '')
-const returnISO = computed(() => (route.query.returnDate as string) || '')
-
+/* DATES */
 const formatDate = (iso: string) => {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-  return `${d.getDate()} ${m[d.getMonth()]}, ${d.getFullYear()}`
-}
-
-const journeyLabel = computed(() => formatDate(journeyISO.value))
-const returnLabel = computed(() =>
-  returnISO.value ? formatDate(returnISO.value) : '—'
-)
-
-/* FORM */
-const name = ref('')
-const phone = ref('')
-const email = ref('')
-const paymentMethod = ref<'cash' | 'card'>('cash')
-const showSnack = ref(false)
-
-const toggleCard = () => {
-  paymentMethod.value = paymentMethod.value === 'card' ? 'cash' : 'card'
-}
-
-const total = computed(() => price.value * seatCount.value)
-
-/* ======================
-   STRIPE (ONLY ADDITION)
-====================== */
-let stripe: any
-let cardNumber: any
-let cardExpiry: any
-let cardCvc: any
-
-onMounted(async () => {
-  stripe = await loadStripe('pk_test_YOUR_PUBLIC_KEY')
-
-  const elements = stripe.elements()
-
-  const style = {
-    base: {
-      font: '16px Arial, sans-serif',
-      fontSize: '15px',
-    },
-    invalid: {
-      color: '#e91e63',
-      iconColor: '#e91e63',
-    },
-  }
-
-  cardNumber = elements.create('cardNumber', { style })
-  cardExpiry = elements.create('cardExpiry', { style })
-  cardCvc = elements.create('cardCvc', { style })
-
-  cardNumber.mount('#card-number')
-  cardExpiry.mount('#card-expiry')
-  cardCvc.mount('#card-cvc')
-})
-
-
-const confirmBooking = async () => {
-  if (!name.value || !phone.value || !email.value) {
-    alert('Please fill all passenger details');
-    return;
-  }
-
-  if (seatCount.value <= 0) {
-    alert('No seat selected');
-    return;
-  }
-
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-  const seatsArray = seatNumbers.value
-    ? seatNumbers.value.split(",").map(s => s.trim())
-    : [];
-
-  if (!route.query.scheduleId) {
-    alert("Error: scheduleId missing from URL");
-    return;
-  }
-
-  // CARD PAYMENT
-  if (paymentMethod.value === "card") {
-
-    const res = await fetch(apiUrl("/payments/intent"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: user._id,
-        scheduleId: route.query.scheduleId,
-        seats: seatsArray,
-      }),
-    });
-
-    const { clientSecret } = await res.json();
-
-    const { error } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: cardNumber,
-        billing_details: {
-          name: name.value,
-          email: email.value,
-        },
-      },
-    });
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    alert("Payment successful!");
-    router.push("/");
-    return;
-  }
-
-  // CASH PAYMENT
-  alert("Cash booking saved!");
-  router.push("/");
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
+const journeyLabel = computed(() =>
+  formatDate(route.query.journeyDate as string)
+);
+const returnLabel = computed(() =>
+  route.query.returnDate ? formatDate(route.query.returnDate as string) : "—"
+);
+
+/* USER INPUTS */
+const name = ref("");
+const phone = ref("");
+const email = ref("");
+
+/* CARD */
+const cardName = ref("");
+const cardNumber = ref("");
+const cardExpiry = ref("");
+const cardCvc = ref("");
+
+/* TOTAL */
+const total = computed(() => price.value * seatCount.value);
+
+/* BOOKING + PAYMENT */
+const confirmBooking = async () => {
+  if (!name.value || !phone.value || !email.value) {
+    alert("Please fill all passenger details");
+    return;
+  }
+
+  if (!cardName.value || !cardNumber.value || !cardExpiry.value || !cardCvc.value) {
+    alert("Please fill all card details");
+    return;
+  }
+
+  /* AUTH TOKEN */
+/* AUTH TOKEN (fully compatible) */
+const token =
+  localStorage.getItem("access_token") ||
+  localStorage.getItem("token") ||
+  JSON.parse(localStorage.getItem("user") || "{}").token;
+
+if (!token) {
+  alert("Please login first");
+  router.push("/login");
+  return;
+}
+
+
+  /* SEATS ARRAY */
+  const seatsArray = seatNumbers.value
+    ? (seatNumbers.value as string)
+        .split(",")
+        .map((s: string) => s.trim())
+    : [];
+
+  /* 1️⃣ HOLD SEATS */
+  const holdRes = await fetch(apiUrl("/bookings/hold"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      tripId: tripId.value,
+      seatNos: seatsArray,
+      totalPrice: total.value,
+    }),
+  });
+
+const booking = await holdRes.json();
+console.log("HOLD RESPONSE:", booking);
+console.log("STATUS:", holdRes.status);
+console.log("BODY SENT:", {
+  tripId: tripId.value,
+  seatNos: seatsArray,
+  totalPrice: total.value
+});
+
+
+  /* 2️⃣ PAYMENT MOCK */
+  const payRes = await fetch(apiUrl("/payments/mock"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ bookingId: booking._id }),
+  });
+
+  const payment = await payRes.json();
+
+  if (!payment.success) {
+    alert("Payment failed! Try again.");
+    return;
+  }
+
+  alert("Payment successful! Booking confirmed.");
+  router.push("/");
+};
 </script>
+
 
 <style scoped>
 .checkout-page {
@@ -353,11 +358,6 @@ const confirmBooking = async () => {
   border-radius: 12px;
 }
 
-.seat-row {
-  display: flex;
-  justify-content: space-between;
-}
-
 .form .field {
   margin-bottom: 10px;
 }
@@ -369,26 +369,36 @@ const confirmBooking = async () => {
   border: 1px solid #ddd;
 }
 
-.payment-methods {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+/* PAYMENT FORM */
+.payment-form {
+  background: #f7f7fb;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 20px;
 }
 
-.pm {
-  border: 1px solid #ddd;
-  border-radius: 12px;
+.payment-form .field {
+  margin-bottom: 12px;
+}
+
+.payment-form input {
+  width: 100%;
   padding: 10px;
-  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid #ddd;
   background: white;
 }
 
-.pm.active {
-  border-color: #e91e63;
-  color: #e91e63;
-  background: #fff0f6;
+.card-row {
+  display: flex;
+  gap: 10px;
 }
 
+.card-row .field.small input {
+  width: 100%;
+}
+
+/* TOTAL BOX */
 .total-box {
   margin-top: 14px;
 }
@@ -413,65 +423,5 @@ const confirmBooking = async () => {
   border-radius: 999px;
   font-weight: bold;
   cursor: pointer;
-}
-
-/* snackbar */
-.snackbar {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: grid;
-  place-items: center;
-  z-index: 999;
-}
-
-.snack-card {
-  background: white;
-  border-radius: 18px;
-  padding: 24px;
-  width: 300px;
-  text-align: center;
-}
-
-.snack-card button {
-  margin-top: 16px;
-  width: 100%;
-  border: none;
-  background: #e91e63;
-  color: white;
-  padding: 10px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-.form-label {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: white;
-  margin-bottom: 8px;
-}
-
-.card-row {
-  display: flex;
-  gap: 10px;
-}
-
-.form-input.small {
-  flex: 1;
-}
-
-/* responsive */
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

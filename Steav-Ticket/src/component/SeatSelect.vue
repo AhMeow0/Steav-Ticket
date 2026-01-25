@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <!-- top search bar (display values from home selections) -->
+    <!-- top search bar -->
     <div class="container">
       <div class="search-bar">
         <div class="search-item">
@@ -59,7 +59,6 @@
 
     <!-- main content -->
     <div class="container seat-wrap">
-      <!-- Seat card -->
       <div class="seat-card">
         <div class="seat-legend">
           <div class="legend-item">
@@ -77,7 +76,6 @@
         </div>
 
         <div class="seat-grid">
-          <!-- column labels A B  C D like screenshot -->
           <div class="col-labels">
             <span></span>
             <span>A</span>
@@ -87,7 +85,6 @@
             <span>D</span>
           </div>
 
-          <!-- seat rows -->
           <div v-for="row in rows" :key="row" class="seat-row">
 
             <span class="row-num">{{ row }}</span>
@@ -110,10 +107,8 @@
               💺
             </button>
 
-            <!-- aisle -->
             <span class="aisle"></span>
 
-            <!-- right group C/D -->
             <button
               class="seat-btn"
               :class="seatClass(`C${row}`)"
@@ -194,12 +189,13 @@ const returnISO = computed(() => (route.query.returnDate as string) || '')
 const schedule = ref<any>(null)
 const bookedSet = ref<Set<string>>(new Set())
 const capacity = ref<number>(0)
+const tripId = ref("")       // <-- ADDED
 
 // UI seats
 const rows = ref<number[]>([])
 const selectedSeats = ref<string[]>([])
 
-// Format date label
+// Format date
 const formatDate = (iso: string) => {
   if (!iso) return '—'
   const d = new Date(iso)
@@ -211,35 +207,44 @@ const formatDate = (iso: string) => {
   })
 }
 
-// Labels for UI
+// Labels
 const journeyLabel = computed(() => formatDate(journeyISO.value))
-const returnLabel = computed(() => (returnISO.value ? formatDate(returnISO.value) : '—'))
+const returnLabel = computed(() =>
+  returnISO.value ? formatDate(returnISO.value) : '—'
+)
+
 const fromLabel = computed(() => schedule.value?.origin || '—')
 const toLabel = computed(() => schedule.value?.destination || '—')
 const companyLabel = computed(() => schedule.value?.busId?.companyName || '—')
 const price = computed(() => schedule.value?.price || 0)
 
-// Fetch seat data from backend
 async function fetchSchedule() {
   try {
-    const res = await fetch(apiUrl(`/routes/${scheduleId.value}`))
-    if (!res.ok) throw new Error("Failed to load schedule")
+    // 1️⃣ Fetch trip info + seats from backend
+    const res = await fetch(apiUrl(`/routes/${scheduleId.value}/seats`));
+    if (!res.ok) throw new Error("Failed to load route seats");
 
-    const data = await res.json()
-    schedule.value = data
+    const data = await res.json();   // contains seats + bookedSeats + price + company etc.
+    console.log("SEAT DATA:", data);
 
-    // Seats
-    capacity.value = data.busId?.capacity ?? 15
-    bookedSet.value = new Set(data.bookedSeats || [])
+    schedule.value = data;
+    tripId.value = data.tripId;
 
-    // Generate rows based on capacity (4 seats per row: A B aisle C D)
-    const rowsCount = Math.ceil(capacity.value / 4)
-    rows.value = Array.from({ length: rowsCount }, (_, i) => i + 1)
+    // 2️⃣ booked seats list
+    bookedSet.value = new Set(data.bookedSeats);
 
-  } catch (e) {
-    console.error(e)
+    // 3️⃣ capacity
+    capacity.value = data.totalSeats ?? 40;
+
+    // 4️⃣ build rows
+    const rowsCount = Math.ceil(capacity.value / 4);
+    rows.value = Array.from({ length: rowsCount }, (_, i) => i + 1);
+
+  } catch (err) {
+    console.error(err);
   }
 }
+
 
 onMounted(fetchSchedule)
 
@@ -255,7 +260,6 @@ const seatClass = (seat: string) => {
 
 const toggleSeat = (seat: string) => {
   if (isBooked(seat)) return
-
   if (isSelected(seat)) {
     selectedSeats.value = selectedSeats.value.filter((s) => s !== seat)
   } else {
@@ -270,7 +274,7 @@ const checkout = () => {
   router.push({
     path: '/checkout',
     query: {
-      scheduleId: scheduleId.value,
+      tripId: tripId.value,                      // <-- FIXED
       seats: selectedSeats.value.join(','),
       seatCount: selectedSeats.value.length,
       total: total.value,
@@ -284,6 +288,7 @@ const checkout = () => {
   })
 }
 </script>
+
 
 
 <style scoped>

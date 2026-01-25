@@ -26,6 +26,11 @@ export class RoutesController {
   async create(@Body() createRouteDto: CreateRouteDto) {
     return this.routesService.create(createRouteDto);
   }
+  @Get(':id/seats')
+async getSeats(@Param('id') id: string) {
+  return this.routesService.getSeatsForTrip(id);
+}
+
 
   @Get()
   async findAll() {

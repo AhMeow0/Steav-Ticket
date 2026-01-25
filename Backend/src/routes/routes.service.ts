@@ -178,4 +178,48 @@ export class RoutesService {
       })
       .exec();
   }
+  async getSeatsForTrip(tripId: string) {
+  const route = await this.routeModel
+    .findById(tripId)
+    .lean();
+
+  if (!route) {
+    throw new Error("Route not found");
+  }
+
+  const totalSeats = route.totalSeats ?? 40;
+
+  // Seat layout A1, B1, C1, D1, A2...
+  const seatLetters = ["A", "B", "C", "D"];
+  const seats: string[] = [];
+  const rows = Math.ceil(totalSeats / 4);
+
+  for (let row = 1; row <= rows; row++) {
+    for (const letter of seatLetters) {
+      seats.push(`${letter}${row}`);
+    }
+  }
+
+  // Convert booked numeric seat numbers → seat labels
+  // Example: bookedSeats = [1, 6] → booked: ["A1","A2"]
+  const bookedSet = new Set(
+    (route.bookedSeats || []).map((s) => {
+      const row = Math.ceil(s / 4);
+      const index = (s - 1) % 4;
+      return `${seatLetters[index]}${row}`;
+    })
+  );
+
+  return {
+    tripId: route._id,
+    origin: route.origin,
+    destination: route.destination,
+    company: route.company,
+    price: route.price,
+    totalSeats,
+    bookedSeats: Array.from(bookedSet),
+    seats,
+  };
+}
+
 }
