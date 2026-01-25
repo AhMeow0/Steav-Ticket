@@ -19,16 +19,14 @@ export class PaymentsController {
     @Body() body: { scheduleId: string; seats: string[] },
     @Req() req,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.sub;   // <-- FIXED ✔✔✔
     const { scheduleId, seats } = body;
 
-    // 1️⃣ Calculate total amount
     const totalPrice = await this.bookingsService.calculateTotalPrice(
       scheduleId,
       seats,
     );
 
-    // 2️⃣ Create booking with PENDING status
     const booking = await this.bookingsService.holdAndCreateBooking({
       tripId: scheduleId,
       seatNos: seats,
@@ -36,7 +34,6 @@ export class PaymentsController {
       totalPrice,
     });
 
-    // 3️⃣ Create Stripe payment intent
     const clientSecret = await this.paymentsService.createIntent(totalPrice);
 
     return {
@@ -51,7 +48,7 @@ export class PaymentsController {
   @Post('confirm')
   @UseGuards(AuthGuard)
   async confirmPayment(@Body() body: { bookingId: string }, @Req() req) {
-    const userId = req.user.id;
+    const userId = req.user.sub;  // <-- FIXED ✔✔✔
     const { bookingId } = body;
 
     const booking = await this.bookingsService.markPaid(bookingId, userId);
