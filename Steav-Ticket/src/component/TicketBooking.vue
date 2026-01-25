@@ -129,7 +129,7 @@ const tickets = ref<Ticket[]>([])
 const loadTickets = () => {
   const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as Array<Partial<Ticket>>
 
-  // ✅ ensure bookingDate exists even for old saved tickets
+  // ensure bookingDate exists even for old saved tickets
   tickets.value = raw.map((t) => ({
     ...(t as Ticket),
     bookingDate: t.bookingDate ?? new Date().toISOString(),
@@ -146,7 +146,8 @@ const code = (city: string) => {
     'Phnom Penh': 'PP',
     'Siem Reab': 'SR',
     'Battambang': 'BB',
-    'Sihanoukville': 'SHV',
+    'Sihanoukville': 'SHV'
+    ,
   }
   return map[city] || city.slice(0, 2).toUpperCase()
 }

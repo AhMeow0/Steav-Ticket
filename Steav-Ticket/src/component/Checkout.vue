@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
 import Footer from '@/component/Footer.vue'
@@ -141,16 +141,16 @@ defineOptions({ name: 'CheckoutPage' })
 const route = useRoute()
 const router = useRouter()
 
-/* DATA */
-const fromLabel = computed(() => (route.query.from as string) || '—')
-const toLabel = computed(() => (route.query.to as string) || '—')
-const companyLabel = computed(() => (route.query.company as string) || '—')
+/* TRIP DATA */
+const fromLabel = computed(() => route.query.from as string || '—')
+const toLabel = computed(() => route.query.to as string || '—')
+const companyLabel = computed(() => route.query.company as string || '—')
 const price = computed(() => Number(route.query.price || 0))
 const seatCount = computed(() => Number(route.query.seatCount || 0))
-const seatNumbers = computed(() => (route.query.seats as string) || '')
+const seatNumbers = computed(() => route.query.seats as string || '')
 
-const journeyISO = computed(() => (route.query.journeyDate as string) || '')
-const returnISO = computed(() => (route.query.returnDate as string) || '')
+const journeyISO = computed(() => route.query.journeyDate as string || '')
+const returnISO = computed(() => route.query.returnDate as string || '')
 
 const formatDate = (iso: string) => {
   if (!iso) return '—'
@@ -160,16 +160,13 @@ const formatDate = (iso: string) => {
 }
 
 const journeyLabel = computed(() => formatDate(journeyISO.value))
-const returnLabel = computed(() =>
-  returnISO.value ? formatDate(returnISO.value) : '—'
-)
+const returnLabel = computed(() => returnISO.value ? formatDate(returnISO.value) : '—')
 
 /* FORM */
 const name = ref('')
 const phone = ref('')
 const email = ref('')
 const paymentMethod = ref<'cash' | 'card'>('cash')
-const showSnack = ref(false)
 
 const toggleCard = () => {
   paymentMethod.value = paymentMethod.value === 'card' ? 'cash' : 'card'
@@ -177,28 +174,19 @@ const toggleCard = () => {
 
 const total = computed(() => price.value * seatCount.value)
 
-/* ======================
-   STRIPE (ONLY ADDITION)
-====================== */
+/* STRIPE */
 let stripe: any
 let cardNumber: any
 let cardExpiry: any
 let cardCvc: any
 
 onMounted(async () => {
-  stripe = await loadStripe('pk_test_YOUR_PUBLIC_KEY')
+  stripe = await loadStripe("pk_test_51XXXXXXXXXXXX")// FIX THIS
 
   const elements = stripe.elements()
-
   const style = {
-    base: {
-      font: '16px Arial, sans-serif',
-      fontSize: '15px',
-    },
-    invalid: {
-      color: '#e91e63',
-      iconColor: '#e91e63',
-    },
+    base: { fontSize: '15px' },
+    invalid: { color: '#e91e63' },
   }
 
   cardNumber = elements.create('cardNumber', { style })
@@ -210,70 +198,106 @@ onMounted(async () => {
   cardCvc.mount('#card-cvc')
 })
 
-
+/* MAIN PAYMENT FUNCTION */
 const confirmBooking = async () => {
   if (!name.value || !phone.value || !email.value) {
-    alert('Please fill all passenger details');
-    return;
+    alert("Please fill all passenger details")
+    return
   }
 
   if (seatCount.value <= 0) {
-    alert('No seat selected');
-    return;
+    alert("No seat selected")
+    return
   }
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = localStorage.getItem("access_token")
+  if (!token) {
+    alert("You must log in first")
+    return
+  }
 
   const seatsArray = seatNumbers.value
     ? seatNumbers.value.split(",").map(s => s.trim())
-    : [];
+    : []
 
-  if (!route.query.scheduleId) {
-    alert("Error: scheduleId missing from URL");
-    return;
-  }
-
-  // CARD PAYMENT
+  /* 💳 CARD PAYMENT */
   if (paymentMethod.value === "card") {
 
     const res = await fetch(apiUrl("/payments/intent"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        userId: user._id,
-        scheduleId: route.query.scheduleId,
-        seats: seatsArray,
-      }),
-    });
+        scheduleId: route.query.scheduleId,   // ✔ FIXED
+        seats: seatsArray
+      })
+    })
 
-    const { clientSecret } = await res.json();
 
+
+    const { clientSecret, bookingId } = await res.json()
+
+    if (!clientSecret || !bookingId) {
+      alert("Payment creation failed")
+      return
+    }
+
+    // 2. Stripe card confirmation
     const { error } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: cardNumber,
         billing_details: {
           name: name.value,
-          email: email.value,
-        },
-      },
-    });
+          email: email.value
+        }
+      }
+    })
 
     if (error) {
-      alert(error.message);
-      return;
+      alert(error.message)
+      return
     }
 
-    alert("Payment successful!");
-    router.push("/");
-    return;
+    // 3. mark booking paid
+    await fetch(apiUrl("/payments/confirm"), {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ bookingId })
+    })
+
+    // 4. Save ticket to localStorage
+    const stored = JSON.parse(localStorage.getItem("tickets") || "[]")
+
+    stored.push({
+      id: bookingId,
+      from: fromLabel.value,
+      to: toLabel.value,
+      journeyDate: journeyISO.value,
+      returnDate: returnISO.value,
+      company: companyLabel.value,
+      seats: seatNumbers.value,
+      seatCount: seatCount.value,
+      price: price.value,
+      total: total.value,
+      status: "ACTIVE",
+      bookingDate: new Date().toISOString()
+    })
+
+    localStorage.setItem("tickets", JSON.stringify(stored))
+
+    alert("Payment successful!")
+    router.push("/ticket")
+    return
   }
-
-  // CASH PAYMENT
-  alert("Cash booking saved!");
-  router.push("/");
-};
-
+  router.push("/")
+}
 </script>
+
 
 <style scoped>
 .checkout-page {
