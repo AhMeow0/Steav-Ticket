@@ -134,7 +134,13 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
 import Footer from '@/component/Footer.vue'
-import { loadStripe } from '@stripe/stripe-js'
+import {
+  loadStripe,
+  type Stripe,
+  type StripeCardNumberElement,
+  type StripeCardExpiryElement,
+  type StripeCardCvcElement,
+} from '@stripe/stripe-js'
 
 defineOptions({ name: 'CheckoutPage' })
 
@@ -175,13 +181,14 @@ const toggleCard = () => {
 const total = computed(() => price.value * seatCount.value)
 
 /* STRIPE */
-let stripe: any
-let cardNumber: any
-let cardExpiry: any
-let cardCvc: any
+let stripe: Stripe | null = null
+let cardNumber: StripeCardNumberElement | null = null
+let cardExpiry: StripeCardExpiryElement | null = null
+let cardCvc: StripeCardCvcElement | null = null
 
 onMounted(async () => {
   stripe = await loadStripe("pk_test_51XXXXXXXXXXXX")// FIX THIS
+  if (!stripe) return
 
   const elements = stripe.elements()
   const style = {
@@ -222,6 +229,10 @@ const confirmBooking = async () => {
 
   /* 💳 CARD PAYMENT */
   if (paymentMethod.value === "card") {
+    if (!stripe || !cardNumber) {
+      alert("Payment form is not ready yet")
+      return
+    }
 
     const res = await fetch(apiUrl("/payments/intent"), {
       method: "POST",
