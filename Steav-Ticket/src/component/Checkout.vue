@@ -211,29 +211,42 @@ onMounted(async () => {
 })
 
 
-/* CONFIRM BOOKING */
 const confirmBooking = async () => {
   if (!name.value || !phone.value || !email.value) {
-    alert('Please fill all passenger details')
-    return
+    alert('Please fill all passenger details');
+    return;
   }
 
   if (seatCount.value <= 0) {
-    alert('No seat selected')
-    return
+    alert('No seat selected');
+    return;
   }
 
-  if (paymentMethod.value === 'card') {
-    const res = await fetch(apiUrl('/payments/intent'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        seats: seatCount.value,
-        price: price.value,
-      }),
-    })
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    const { clientSecret } = await res.json()
+  const seatsArray = seatNumbers.value
+    ? seatNumbers.value.split(",").map(s => s.trim())
+    : [];
+
+  if (!route.query.scheduleId) {
+    alert("Error: scheduleId missing from URL");
+    return;
+  }
+
+  // CARD PAYMENT
+  if (paymentMethod.value === "card") {
+
+    const res = await fetch(apiUrl("/payments/intent"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: user._id,
+        scheduleId: route.query.scheduleId,
+        seats: seatsArray,
+      }),
+    });
+
+    const { clientSecret } = await res.json();
 
     const { error } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
@@ -243,17 +256,23 @@ const confirmBooking = async () => {
           email: email.value,
         },
       },
-    })
+    });
 
     if (error) {
-      alert(error.message)
-      return
+      alert(error.message);
+      return;
     }
+
+    alert("Payment successful!");
+    router.push("/");
+    return;
   }
 
-}
+  // CASH PAYMENT
+  alert("Cash booking saved!");
+  router.push("/");
+};
 
-const goHome = () => router.push('/')
 </script>
 
 <style scoped>

@@ -122,8 +122,16 @@ async function login() {
 
     localStorage.setItem('access_token', data.access_token)
     localStorage.setItem('isLoggedIn', 'true')
+        const token = data.access_token
+    const payloadBase64 = token.split('.')[1]
+    const decodedJson = atob(payloadBase64)
+    const decoded = JSON.parse(decodedJson)
 
-    router.push('/homepage')
+    if (decoded.role === 'admin') {
+      router.push('/admin/dashboard')
+    } else {
+      router.push('/homepage')
+    }
   } catch (err: unknown) {
     errors.value.general =
       err instanceof Error ? err.message : 'Login failed'

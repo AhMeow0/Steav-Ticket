@@ -178,56 +178,73 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 
 const router = useRouter()
 const route = useRoute()
 
-// From Home (via Booking page query)
-const fromLabel = computed(() => (route.query.from as string) || '—')
-const toLabel = computed(() => (route.query.to as string) || '—')
+// Query from booking page
+const scheduleId = computed(() => route.query.scheduleId as string)
 const journeyISO = computed(() => (route.query.journeyDate as string) || '')
 const returnISO = computed(() => (route.query.returnDate as string) || '')
 
-// Trip info from booking card
-const companyLabel = computed(() => (route.query.company as string) || '—')
-const price = computed(() => Number(route.query.price || 0))
+// Data from backend
+const schedule = ref<any>(null)
+const bookedSet = ref<Set<string>>(new Set())
+const capacity = ref<number>(0)
 
+// UI seats
+const rows = ref<number[]>([])
+const selectedSeats = ref<string[]>([])
+
+// Format date label
 const formatDate = (iso: string) => {
   if (!iso) return '—'
   const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  const day = d.getDate()
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-  return `${day} ${months[d.getMonth()]}, ${d.getFullYear()}`
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
 }
 
+// Labels for UI
 const journeyLabel = computed(() => formatDate(journeyISO.value))
 const returnLabel = computed(() => (returnISO.value ? formatDate(returnISO.value) : '—'))
+const fromLabel = computed(() => schedule.value?.origin || '—')
+const toLabel = computed(() => schedule.value?.destination || '—')
+const companyLabel = computed(() => schedule.value?.busId?.companyName || '—')
+const price = computed(() => schedule.value?.price || 0)
 
-// seat layout
-const rows = [1, 2, 3, 4, 5, 6, 7]
+// Fetch seat data from backend
+async function fetchSchedule() {
+  try {
+    const res = await fetch(apiUrl(`/routes/${scheduleId.value}`))
+    if (!res.ok) throw new Error("Failed to load schedule")
 
-// demo booked seats (red, cannot click)
-const bookedSet = new Set<string>([])
+    const data = await res.json()
+    schedule.value = data
 
-const selectedSeats = ref<string[]>([])
+    // Seats
+    capacity.value = data.busId?.capacity ?? 15
+    bookedSet.value = new Set(data.bookedSeats || [])
 
-const isBooked = (seat: string) => bookedSet.has(seat)
+    // Generate rows based on capacity (4 seats per row: A B aisle C D)
+    const rowsCount = Math.ceil(capacity.value / 4)
+    rows.value = Array.from({ length: rowsCount }, (_, i) => i + 1)
+
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+onMounted(fetchSchedule)
+
+// Helpers
+const isBooked = (seat: string) => bookedSet.value.has(seat)
 const isSelected = (seat: string) => selectedSeats.value.includes(seat)
 
 const seatClass = (seat: string) => {
@@ -238,34 +255,36 @@ const seatClass = (seat: string) => {
 
 const toggleSeat = (seat: string) => {
   if (isBooked(seat)) return
+
   if (isSelected(seat)) {
     selectedSeats.value = selectedSeats.value.filter((s) => s !== seat)
   } else {
-    selectedSeats.value = [...selectedSeats.value, seat]
+    selectedSeats.value.push(seat)
   }
 }
 
-const total = computed(() => price.value * selectedSeats.value.length)
+const total = computed(() => selectedSeats.value.length * price.value)
 
+// Checkout
 const checkout = () => {
   router.push({
     path: '/checkout',
     query: {
+      scheduleId: scheduleId.value,
+      seats: selectedSeats.value.join(','),
+      seatCount: selectedSeats.value.length,
+      total: total.value,
+      price: price.value,
       from: fromLabel.value,
       to: toLabel.value,
       journeyDate: journeyISO.value,
       returnDate: returnISO.value,
-
-      company: companyLabel.value,
-      price: String(price.value),
-
-      seats: selectedSeats.value.join(','), // A1,B2,C3
-      seatCount: String(selectedSeats.value.length),
-      total: String(total.value),
-    },
+      company: companyLabel.value
+    }
   })
 }
 </script>
+
 
 <style scoped>
 .seat-page {

@@ -32,4 +32,5 @@ export class ScheduleController {
     remove(@Param('id') id: string) {
         return this.scheduleService.remove(id);
     }
+    
 }
