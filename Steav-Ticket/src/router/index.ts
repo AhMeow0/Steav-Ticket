@@ -4,10 +4,12 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 // 1. USER SIDE IMPORTS (The Clean UI Pages)
 // ============================================
 import UserHome from '@/view/User-Panel/UserHome.vue'
-import UserBooking from '@/component/UserBooking.vue'
+import UserTicket from '@/component/TicketBooking.vue'
+import Bookseat from '@/component/UserBookseat.vue'
 import UserExplore from '@/component/UserExplore.vue'
 import AboutUs from '@/component/AboutUs.vue'
-
+import SeatSelect from '@/component/SeatSelect.vue'
+import PlaceDetail from '@/component/placeDetail.vue'
 // ============================================
 // 2. AUTH IMPORTS
 // ============================================
@@ -35,6 +37,28 @@ import MethodPay from '@/view/Account-User/MethodPay.vue'
 import Language from '@/view/Account-User/Language.vue'
 import HelpPage from '@/view/Account-User/HelpPage.vue'
 
+type JwtPayload = {
+  sub: string
+  email: string
+  role?: string
+  exp?: number
+}
+
+function parseJwt(token: string): JwtPayload | null {
+  try {
+    const parts = token.split('.')
+    if (parts.length < 2) return null
+    const base64Url = parts[1]
+    if (!base64Url) return null
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const json = atob(padded)
+    return JSON.parse(json) as JwtPayload
+  } catch {
+    return null
+  }
+}
+
 const routes: Array<RouteRecordRaw> = [
   // ============================================
   //  USER ROUTES (Public)
@@ -44,14 +68,31 @@ const routes: Array<RouteRecordRaw> = [
     redirect: '/homepage',
   },
   {
+    path: '/checkout',
+    name: 'checkout',
+    component: () => import('@/component/Checkout.vue'),
+  },
+
+  {
+    path: '/seat-select',
+    name: 'seat-select',
+    component: SeatSelect,
+  },
+
+  {
     path: '/homepage',
     name: 'UserHome',
     component: UserHome,
   },
   {
     path: '/booking',
-    name: 'UserBooking',
-    component: UserBooking,
+    name: 'UserTicket',
+    component: UserTicket,
+  },
+  {
+    path: '/bookseat',
+    name: 'UserBookseat',
+    component: Bookseat,
   },
   {
     path: '/explore',
@@ -75,6 +116,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'LoginPage',
     component: LoginPage,
   },
+
   {
     path: '/signup',
     name: 'SignupPage',
@@ -88,6 +130,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/admin',
     name: 'AdminView',
     component: AdminView,
+    meta: { requiresAdmin: true },
     children: [
       { path: 'dashboard', name: 'Dashboard', component: DashBoard },
       { path: 'manage-bus', name: 'ManageBus', component: ManageBuses },
@@ -116,13 +159,39 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'help', name: 'HelpPage', component: HelpPage },
     ],
   },
+  {
+    path: '/place/:slug',
+    name: 'PlaceDetail',
+    component: PlaceDetail,
+  },
+
 ]
+
 
 const router = createRouter({
   history: createWebHistory('/'),
   routes,
   // This class makes the active link (like "Home" or "Explore") turn Pink automatically
   linkActiveClass: 'active-link',
+})
+
+router.beforeEach((to) => {
+  const needsAdmin = to.matched.some((r) => Boolean(r.meta?.requiresAdmin))
+  if (!needsAdmin) return true
+
+  const token = localStorage.getItem('access_token')
+  if (!token) return { name: 'LoginPage' }
+
+  const payload = parseJwt(token)
+  if (payload?.exp && Date.now() >= payload.exp * 1000) {
+    localStorage.removeItem('access_token')
+    return { name: 'LoginPage' }
+  }
+  if (!payload?.role || payload.role !== 'admin') {
+    return { name: 'UserHome' }
+  }
+
+  return true
 })
 
 export default router

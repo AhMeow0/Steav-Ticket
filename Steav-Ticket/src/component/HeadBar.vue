@@ -1,93 +1,514 @@
 <template>
-  <header class="head-bar">
-    <div class="container header-content">
-      <div class="logo">
-        <h2 class="logo-text">Steav-Ticket</h2>
-      </div>
+  <header class="head-bar" :class="{ scrolled: isScrolled, hidden: isHidden }">
+    <div class="header-inner">
+      <router-link to="/homepage" class="logo" aria-label="Back to homepage">
+        <img src="../assets/img/Logo.png" alt="Steav-Ticket Logo" class="logo-image" />
+      </router-link>
 
-      <nav class="nav-links">
-        <router-link to="/homepage">Home</router-link>
-        <router-link to="/booking">Booking</router-link>
-        <router-link to="/explore">Explore</router-link>
-        <router-link to="/aboutus">About Us</router-link>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <router-link to="/homepage" class="nav-link">Home</router-link>
+        <router-link to="/booking" class="nav-link">Ticket</router-link>
+        <router-link to="/explore" class="nav-link">Explore</router-link>
+        <router-link to="/aboutus" class="nav-link">About Us</router-link>
       </nav>
 
-      <div class="auth-action">
-        <button class="login-btn">
-          Login/Sign up <span class="icon">🎫</span>
+      <div class="right-actions">
+        <img
+          src="https://flagcdn.com/w40/gb.png"
+          alt="English"
+          class="flag-icon"
+        />
+
+        <div v-if="user" class="user-profile">
+          <span class="welcome">Hi, {{ displayName }}</span>
+          <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          <button class="ghost-btn logout-btn" @click="logout">Logout</button>
+        </div>
+
+        <div v-else class="auth-buttons">
+          <router-link to="/signup" class="ghost-btn signup-btn"
+            >Sign Up</router-link
+          >
+          <router-link to="/login" class="cta-btn login-btn"
+            >Log In</router-link
+          >
+        </div>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label="Toggle navigation menu"
+          aria-controls="mobile-nav"
+          :aria-expanded="String(isMenuOpen)"
+          @click="toggleMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
+      </div>
+    </div>
+
+    <div id="mobile-nav" class="mobile-nav" :class="{ open: isMenuOpen }">
+      <router-link to="/homepage" @click="closeMenu">Home</router-link>
+      <router-link to="/booking" @click="closeMenu">Ticket</router-link>
+      <router-link to="/explore" @click="closeMenu">Explore</router-link>
+      <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
+
+      <div v-if="user" class="mobile-user">
+        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <button class="ghost-btn logout-btn" @click="logout">Logout</button>
+      </div>
+
+      <div v-else class="mobile-actions">
+        <router-link to="/signup" class="ghost-btn" @click="closeMenu"
+          >Sign Up</router-link
+        >
+        <router-link to="/login" class="cta-btn" @click="closeMenu"
+          >Log In</router-link
+        >
       </div>
     </div>
   </header>
 </template>
 
+<script setup lang="ts">
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
+
+defineOptions({ name: 'HeadBar' })
+
+type UserProfile = {
+  name?: string
+  email?: string
+}
+
+const router = useRouter()
+const user = ref<UserProfile | null>(null)
+const isHidden = ref(false)
+const isScrolled = ref(false)
+const isMenuOpen = ref(false)
+
+const displayName = computed(() => {
+  if (!user.value) return ''
+  return user.value.name || user.value.email?.split('@')[0] || 'there'
+})
+
+let lastScrollY = 0
+let ticking = false
+
+function updateScrollState() {
+  const current = window.scrollY
+  isHidden.value = current > lastScrollY && current > 140
+  isScrolled.value = current > 24
+  lastScrollY = current
+  ticking = false
+}
+
+function onScroll() {
+  if (!ticking) {
+    window.requestAnimationFrame(updateScrollState)
+    ticking = true
+  }
+}
+
+function closeMenu() {
+  isMenuOpen.value = false
+}
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+function onResize() {
+  if (window.innerWidth > 920 && isMenuOpen.value) {
+    closeMenu()
+  }
+}
+
+async function fetchProfile() {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    user.value = null
+    return
+  }
+
+  try {
+    const response = await fetch(apiUrl('/auth/profile'), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (response.ok) {
+      user.value = (await response.json()) as UserProfile
+      return
+    }
+
+    localStorage.removeItem('access_token')
+    user.value = null
+  } catch (error) {
+    console.error('Profile fetch failed', error)
+  }
+}
+
+function logout() {
+  localStorage.removeItem('access_token')
+  user.value = null
+  closeMenu()
+  router.push('/login')
+}
+
+onMounted(async () => {
+  await nextTick()
+  lastScrollY = window.scrollY
+  updateScrollState()
+
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('resize', onResize)
+
+  await fetchProfile()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('resize', onResize)
+})
+</script>
+
 <style scoped>
-/* Google Font Import (put this in index.html ideally, but works here for now) */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap");
 
 .head-bar {
-  background-color: white;
-  padding: 1.2rem 0;
-  font-family: 'Poppins', sans-serif;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Subtle shadow for depth */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1200;
+  background: transparent;
+  transition: transform 0.35s ease, background 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
-.container {
-  max-width: 1200px;
+.head-bar.scrolled {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+}
+
+.head-bar.hidden {
+  transform: translateY(-100%);
+}
+
+.header-inner {
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 2.5rem;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
+.logo {
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
 }
 
 .logo-text {
+  font-family: "Poppins", sans-serif;
   font-weight: 800;
-  font-size: 1.5rem;
-  margin: 0;
-  color: #222;
+  font-size: 2.8rem;
+  position: relative;
+  padding-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+.head-bar.scrolled .logo-text {
+  color: #1a1a1a;
+}
+.logo-image {
+  width: 350px;
+  height: auto;
+}
+/* .logo-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 70%;
+  height: 4px;
+  background: #f54e75;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+} */
+
+.logo:hover .logo-text::after {
+  width: 100%;
 }
 
 .nav-links {
   display: flex;
-  gap: 3rem;
+  align-items: center;
+  gap: 2.6rem;
 }
 
-.nav-links a {
+.nav-link {
   text-decoration: none;
-  color: #333;
   font-weight: 600;
-  font-size: 0.95rem;
-  transition: color 0.3s;
+  font-size: 1.2rem;
+  color: black;
+  position: relative;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
 }
 
-/* Active State (Pink color for active page) */
-.active-link {
-  color: #F54E75 !important; 
+.head-bar.scrolled .nav-link {
+  color: #2d2d2d;
 }
 
-.nav-links a:hover {
-  color: #F54E75;
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 0;
+  height: 3px;
+  background: #f54e75;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: width 0.2s ease;
 }
 
-.login-btn {
-  background-color: #FDE8EF; /* Light pink background */
-  color: #F54E75; /* Darker pink text */
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
+.nav-link:hover,
+.nav-link.router-link-active {
+  color: #f54e75;
+}
+
+.nav-link:hover::after,
+.nav-link.router-link-active::after {
+  width: 60%;
+}
+
+.right-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: background 0.3s;
+  gap: 1rem;
 }
 
-.login-btn:hover {
-  background-color: #fcd5e1;
+.flag-icon {
+  width: 34px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.auth-buttons,
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.user-profile {
+  color: #ffffff;
+}
+
+.head-bar.scrolled .user-profile {
+  color: #2d2d2d;
+}
+
+.welcome {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.ghost-btn,
+.cta-btn {
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.98rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ghost-btn {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+
+.head-bar.scrolled .ghost-btn {
+  color: #f54e75;
+  border-color: #f54e75;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  transform: translateY(-1px);
+  color: #f54e75;
+  border-color: #f54e75;
+}
+
+.cta-btn {
+  background: #f54e75;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(245, 78, 117, 0.35);
+}
+
+.cta-btn:hover,
+.cta-btn:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(245, 78, 117, 0.45);
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+}
+
+.menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.head-bar.scrolled .menu-toggle {
+  border-color: #e6e6e6;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-toggle span {
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 999px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.head-bar.scrolled .menu-toggle span {
+  background: #2d2d2d;
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobile-nav {
+  display: none;
+  padding: 0 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(224, 224, 224, 0.8);
+}
+
+.mobile-nav.open {
+  display: block;
+}
+
+.mobile-nav a {
+  display: block;
+  padding: 0.85rem 0;
+  font-weight: 600;
+  color: #2d2d2d;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(226, 226, 226, 0.7);
+}
+
+.mobile-nav a:last-of-type {
+  border-bottom: none;
+}
+
+.mobile-actions,
+.mobile-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.mobile-greeting {
+  font-weight: 600;
+  color: #2d2d2d;
+}
+
+@media (max-width: 1100px) {
+  .header-inner {
+    padding: 0 1.8rem;
+  }
+
+  .logo-text {
+    font-size: 2.4rem;
+  }
+
+  .nav-links {
+    gap: 1.8rem;
+  }
+}
+
+@media (max-width: 920px) {
+  .nav-links {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .auth-buttons,
+  .user-profile {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    height: 80px;
+    padding: 0 1.2rem;
+  }
+
+  .logo-text {
+    font-size: 2rem;
+  }
+
+  .flag-icon {
+    width: 30px;
+  }
+}
+
+@media (max-width: 560px) {
+  .logo-text {
+    font-size: 1.8rem;
+  }
 }
 </style>

@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 
 const router = useRouter()
 
@@ -70,41 +71,56 @@ async function login() {
 
   try {
     // 3. The Real Backend Call (CONNECTING DOTS!)
-    // Note: If you added 'api' prefix in Step 1, use 'http://localhost:3000/api/auth/login'
-    const response = await fetch('http://localhost:3000/api/auth/login', {
+    const response = await fetch(apiUrl('/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value,
-        password: password.value
-      })
-    });
+        password: password.value,
+      }),
+    })
 
     // 4. Handle Success or Failure
     if (!response.ok) {
-      throw new Error('Invalid email or password');
+      let message = 'Invalid email or password'
+      try {
+        const err = await response.json()
+        if (typeof err?.message === 'string') message = err.message
+      } catch {
+        // ignore JSON parse errors
+      }
+
+      throw new Error(message)
     }
 
-    const data = await response.json();
+    const data = await response.json()
 
     // 5. SAVE THE TOKEN (Crucial Step!)
-    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('access_token', data.access_token)
 
-    // 6. Redirect to Home
-    alert('Login Successful!');
-    router.push('/homepage');
+    // 6. Redirect based on role
+    let role: string | undefined
+    try {
+      const profileRes = await fetch(apiUrl('/auth/profile'), {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      })
 
-  } catch (err: any) {
-    alert('Login Failed: ' + err.message);
+      if (profileRes.ok) {
+        const profile = await profileRes.json()
+        role = profile?.role
+      }
+    } catch {
+      // If profile fails, fallback to homepage.
+    }
+
+    alert('Login Successful!')
+    router.push(role === 'admin' ? '/admin/dashboard' : '/homepage')
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    alert('Login Failed: ' + message)
   }
-}
-
-function logout() {
-  // 1. Throw away the key
-  localStorage.removeItem('access_token');
-
-  // 2. Kick them out to the Login page
-  window.location.href = '/login';
 }
 </script>
 
@@ -115,10 +131,12 @@ function logout() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 480px;
+  width: 100%;
+  max-width: 480px;
   background: white;
   padding: 40px 50px;
   border-radius: 12px;
@@ -168,6 +186,8 @@ input {
   margin-top: -5px;
   margin-bottom: 15px;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .forgot {
@@ -216,5 +236,15 @@ input {
 .social-row img {
   width: 35px;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 26px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
 </style>

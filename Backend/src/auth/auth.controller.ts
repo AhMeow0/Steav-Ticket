@@ -4,28 +4,41 @@ import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthGuard } from './auth.guard';
 import { UseGuards, Get, Request } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
+import { LoginDto } from './dto/login.dto';
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role?: string;
+};
+
+type AuthenticatedRequest = ExpressRequest & { user: JwtPayload };
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private usersService: UsersService
+    private usersService: UsersService,
   ) {}
 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    // Never trust role from public registration.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { role, ...safeDto } = createUserDto;
+    return this.usersService.create(safeDto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() body: any) { // Use a DTO here for better validation
+  async login(@Body() body: LoginDto) {
     return this.authService.signIn(body.email, body.password);
   }
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Request() req: AuthenticatedRequest) {
     return req.user; // Returns the data inside the token (id, email, role)
   }
 }

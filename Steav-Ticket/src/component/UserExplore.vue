@@ -1,146 +1,189 @@
 <template>
-  <div class="page-wrapper">
+  <div class="page">
+    <!-- If you already show HeadBar/Footer in App.vue, remove these 2 lines -->
     <HeadBar />
-    
-    <div class="container content-area">
-      <h2 class="section-title">Ticket</h2>
-      
-      <div class="ticket-card" v-for="(ticket, index) in currentTickets" :key="'active-'+index">
-        <div class="ticket-info">
-          <div class="route-header">
-            <span class="city-code">{{ ticket.fromCode }}</span>
-            <span class="arrow">➔</span>
-            <span class="city-code">{{ ticket.toCode }}</span>
-          </div>
-          
-          <div class="ticket-details-grid">
-            <div class="detail-item">
-              <span class="label">Booking Date:</span>
-              <span class="value">{{ ticket.bookingDate }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Bus:</span>
-              <span class="value">{{ ticket.busName }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Departure:</span>
-              <span class="value">{{ ticket.departDate }}</span>
-            </div>
-             <div class="detail-item">
-              <span class="label">Time:</span>
-              <span class="value">{{ ticket.departTime }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Seat:</span>
-              <span class="value">{{ ticket.seat }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Price:</span>
-              <span class="value">${{ ticket.price }}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="ticket-qr">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=ExampleTicket" alt="QR Code" />
-        </div>
-      </div>
 
-      <h2 class="section-title">History</h2>
-      
-      <div class="ticket-card history" v-for="(ticket, index) in historyTickets" :key="'hist-'+index">
-        <div class="ticket-info">
-          <div class="route-header">
-             <span class="city-code">{{ ticket.fromCode }}</span>
-            <span class="arrow">➔</span>
-            <span class="city-code">{{ ticket.toCode }}</span>
-          </div>
-           <div class="ticket-details-grid">
-            <div class="detail-item">
-              <span class="label">Booking Date:</span>
-              <span class="value">{{ ticket.bookingDate }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Bus:</span>
-              <span class="value">{{ ticket.busName }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Status:</span>
-              <span class="value status-done">Completed</span>
-            </div>
-             <div class="detail-item">
-              <span class="label">Price:</span>
-              <span class="value">${{ ticket.price }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="ticket-qr faded">
-           <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=HistoryTicket" alt="QR Code" />
-        </div>
-      </div>
+    <main class="explore-page">
+      <div class="container">
+        <!-- Siem Reap -->
+        <section class="section">
+          <h2 class="section-title">Siem Reap</h2>
 
-    </div>
+          <div class="grid">
+            <router-link
+              v-for="place in siemReap"
+              :key="place.slug"
+              class="card"
+              :to="`/place/${place.slug}`"
+            >
+              <div class="image-wrapper">
+                <img :src="place.image" :alt="place.title" />
+                <span class="location">{{ place.location }}</span>
+              </div>
+              <p class="title">{{ place.title }}</p>
+            </router-link>
+          </div>
+        </section>
+
+        <!-- Phnom Penh -->
+        <section class="section">
+          <h2 class="section-title">Phnom Penh</h2>
+
+          <div class="grid">
+            <router-link
+              v-for="place in phnomPenh"
+              :key="place.slug"
+              class="card"
+              :to="`/place/${place.slug}`"
+            >
+              <div class="image-wrapper">
+                <img :src="place.image" :alt="place.title" />
+                <span class="location">{{ place.location }}</span>
+              </div>
+              <p class="title">{{ place.title }}</p>
+            </router-link>
+          </div>
+        </section>
+
+        <!-- kep -->
+
+        <section class="section">
+          <h2 class="section-title">Preah Sihanouk</h2>
+
+          <div class="grid">
+            <router-link
+              v-for="place in preahSihanouk"
+              :key="place.slug"
+              class="card"
+              :to="`/place/${place.slug}`"
+            >
+              <div class="image-wrapper">
+                <img :src="place.image" :alt="place.title" />
+                <span class="location">{{ place.location }}</span>
+              </div>
+              <p class="title">{{ place.title }}</p>
+            </router-link>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import HeadBar from './HeadBar.vue';
-import { ref } from 'vue';
+import { usePlaceStore } from '@/stores/placeDetail'
+import { storeToRefs } from 'pinia'
+import HeadBar from '@/component/HeadBar.vue'
+import Footer from '@/component/Footer.vue'
 
-// Mock Data
-const currentTickets = ref([
-  { fromCode: 'PP', toCode: 'SR', bookingDate: '14 Nov 2023', busName: 'VET Express', departDate: '15 Nov 2023', departTime: '11:00 AM', seat: 'B2', price: '15.00' }
-]);
-
-const historyTickets = ref([
-  { fromCode: 'PP', toCode: 'KP', bookingDate: '22 Oct 2023', busName: 'Larryta', departDate: '23 Oct 2023', departTime: '08:00 AM', seat: 'C1', price: '12.00' }
-]);
+const placeStore = usePlaceStore()
+const { siemReap, phnomPenh, preahSihanouk } = storeToRefs(placeStore)
 </script>
 
+
 <style scoped>
-.page-wrapper { background-color: #f9f9f9; min-height: 100vh; }
-.content-area { padding-top: 2rem; }
-
-.section-title { font-weight: bold; margin-bottom: 1rem; color: #333; }
-
-.ticket-card {
-  background: white;
-  border-radius: 15px;
-  display: flex;
-  justify-content: space-between;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  border-left: 5px solid #E91E63; /* Pink accent */
+.page {
+  min-height: 100vh;
+  background: #fff;
 }
 
-.ticket-info { flex: 1; }
+.explore-page {
+  margin-top: 80px;
+  padding: 28px 0 40px;
+}
 
-.route-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;}
-.city-code { font-size: 1.8rem; }
-.arrow { color: #888; font-size: 1.2rem; }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-.ticket-details-grid {
+.section {
+  margin-bottom: 34px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 10px 0 14px;
+  color: #111;
+}
+
+/* 3 columns like your screenshot */
+.grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
 }
 
-.detail-item { display: flex; flex-direction: column; }
-.label { font-size: 0.8rem; color: #888; font-weight: 600;}
-.value { font-size: 1rem; font-weight: 500; color: #333; }
-
-.ticket-qr {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 2rem;
-  border-left: 1px dashed #ddd;
+.card {
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border-radius: 10px;
+  min-height: 250px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+  transform 0.15s ease,
+  box-shadow 0.15s ease;
 }
 
-.ticket-qr img { width: 100px; height: 100px; }
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
 
-/* History Style Variation */
-.history { opacity: 0.8; border-left: 5px solid #888; }
-.status-done { color: green; }
+.image-wrapper {
+  position: relative;
+  height: 200px;
+  background: #eee;
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* location label bottom of image */
+.location {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+}
+
+.title {
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .image-wrapper {
+    height: 160px;
+  }
+}
 </style>

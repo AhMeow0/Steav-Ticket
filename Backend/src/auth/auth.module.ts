@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller';
     UsersModule, // <--- Required to check passwords
     JwtModule.register({
       global: true,
-      secret: 'MY_SECRET_KEY_123',
+      secret: process.env.JWT_SECRET ?? 'MY_SECRET_KEY_123',
       signOptions: { expiresIn: '1d' },
     }),
   ],

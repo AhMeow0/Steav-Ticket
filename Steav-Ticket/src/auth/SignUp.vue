@@ -55,6 +55,10 @@
         <!-- Sign Up button -->
         <button class="auth-btn" type="submit">Sign Up</button>
 
+        <p v-if="errors.general" class="error" style="text-align: center; margin-top: 10px">
+          {{ errors.general }}
+        </p>
+
         <!-- Switch to Login -->
         <p class="switch">
           Already have an account?
@@ -67,6 +71,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
+
+const router = useRouter()
 
 const username = ref('')
 const email = ref('')
@@ -83,6 +91,7 @@ const errors = ref({
   password: '',
   confirmPassword: '',
   agree: '',
+  general: '',
 })
 
 function validateEmail(value: string) {
@@ -94,13 +103,14 @@ function isStrongPassword(value: string) {
   return value.length >= 8
 }
 
-function submitForm() {
+async function submitForm() {
   errors.value = {
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
     agree: '',
+    general: '',
   }
 
   if (!username.value) {
@@ -128,7 +138,35 @@ function submitForm() {
   const hasErrors = Object.values(errors.value).some((e) => e !== '')
 
   if (!hasErrors) {
-    alert('Account created successfully!')
+    try {
+      const response = await fetch(apiUrl('/auth/register'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: username.value,
+          email: email.value,
+          password: password.value,
+        }),
+      })
+
+      if (!response.ok) {
+        let message = 'Registration failed'
+        try {
+          const err = await response.json()
+          if (Array.isArray(err?.message)) message = err.message.join(', ')
+          else if (typeof err?.message === 'string') message = err.message
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(message)
+      }
+
+      alert('Account created successfully!')
+      router.push('/login')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      errors.value.general = message
+    }
   }
 }
 </script>
@@ -140,10 +178,12 @@ function submitForm() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   background: white;
   padding: 25px 50px;
   border-radius: 12px;
@@ -232,5 +272,19 @@ input {
   font-size: 10px;
   margin-top: -4px;
   margin-bottom: 10px;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 22px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
 }
 </style>
