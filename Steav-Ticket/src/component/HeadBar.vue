@@ -41,7 +41,7 @@
           type="button"
           aria-label="Toggle navigation menu"
           aria-controls="mobile-nav"
-          :aria-expanded="String(isMenuOpen)"
+          :aria-expanded="isMenuOpen"
           @click="toggleMenu"
         >
           <span></span>
