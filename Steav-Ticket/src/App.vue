@@ -37,9 +37,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 50px;
+  padding: 15px 16px;
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -68,5 +70,11 @@ body {
   border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .links a {
+    margin: 0 10px;
+  }
 }
 </style>

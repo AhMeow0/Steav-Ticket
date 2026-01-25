@@ -133,11 +133,12 @@ async function login() {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Inter', system-ui, sans-serif;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 420px;
+  width: 100%;
+  max-width: 480px;
   background: white;
   padding: 60px 80px;
   border-radius: 20px;
@@ -224,15 +225,8 @@ input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  margin: 12px 0 18px;
-}
-
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #666;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .forgot {
@@ -307,5 +301,15 @@ input:focus {
 
 .center {
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 26px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
 </style>

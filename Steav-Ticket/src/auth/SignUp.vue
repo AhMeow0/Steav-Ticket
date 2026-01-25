@@ -170,11 +170,12 @@ async function submitForm() {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Inter', system-ui, sans-serif;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 420px;
+  width: 100%;
+  max-width: 500px;
   background: white;
   padding: 36px 40px;
   border-radius: 20px;
@@ -314,5 +315,19 @@ input:focus {
 
 .center {
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 22px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
 }
 </style>

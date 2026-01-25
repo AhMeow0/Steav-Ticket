@@ -174,10 +174,12 @@ function resetPassword() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 24px 16px;
 }
 
 .auth-container {
-  width: 480px;
+  width: 100%;
+  max-width: 480px;
   background: white;
   padding: 40px 50px;
   border-radius: 12px;
@@ -244,5 +246,15 @@ input {
 
 .login-link:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 26px 18px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
 </style>
