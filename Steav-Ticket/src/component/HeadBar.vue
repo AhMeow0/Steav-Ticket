@@ -21,7 +21,9 @@
 
         <div v-if="user" class="user-profile">
           <span class="welcome">Hi, {{ displayName }}</span>
-          <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          <router-link to="/account/profile" class="avatar-link" aria-label="Open profile">
+            <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          </router-link>
           <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
@@ -57,6 +59,7 @@
 
       <div v-if="user" class="mobile-user">
         <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <router-link to="/account/profile" class="ghost-btn" @click="closeMenu">My Profile</router-link>
         <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
 
@@ -199,6 +202,11 @@ onUnmounted(() => {
   transform: translateY(-100%);
 }
 
+.avatar-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
 .header-inner {
   max-width: 1320px;
   margin: 0 auto;
@@ -236,7 +244,7 @@ onUnmounted(() => {
   bottom: 0;
   width: 70%;
   height: 4px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transition: width 0.3s ease;
 }
@@ -272,7 +280,7 @@ onUnmounted(() => {
   bottom: -6px;
   width: 0;
   height: 3px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transform: translateX(-50%);
   transition: width 0.2s ease;
@@ -280,7 +288,7 @@ onUnmounted(() => {
 
 .nav-link:hover,
 .nav-link.router-link-active {
-  color: #f54e75;
+  color: #0f172a;
 }
 
 .nav-link:hover::after,
@@ -350,27 +358,27 @@ onUnmounted(() => {
 }
 
 .head-bar.scrolled .ghost-btn {
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #0f172a;
+  border-color: #0f172a;
 }
 
 .ghost-btn:hover,
 .ghost-btn:focus-visible {
   transform: translateY(-1px);
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #0f172a;
+  border-color: #0f172a;
 }
 
 .cta-btn {
-  background: #f54e75;
+  background: #0f172a;
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(245, 78, 117, 0.35);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
 }
 
 .cta-btn:hover,
 .cta-btn:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(245, 78, 117, 0.45);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
 }
 
 .logout-btn {

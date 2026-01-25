@@ -133,6 +133,7 @@ function handleSubscribe() {
   font-size: 2.4rem;
   font-weight: 800;
   margin: 0 0 1.2rem;
+  /* background: linear-gradient(90deg, #e2e8f0, #94a3b8); */
   background: linear-gradient(90deg, #ef3768, #ff6b8a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -174,7 +175,7 @@ function handleSubscribe() {
 
 .newsletter-form input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(239, 55, 104, 0.3);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.35);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -195,9 +196,9 @@ function handleSubscribe() {
 }
 
 .subscribe-btn:hover {
-  background: #d32f5e;
+  background: #ef3768;
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(239, 55, 104, 0.4);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.45);
 }
 
 /* Links Grid */
@@ -241,7 +242,7 @@ function handleSubscribe() {
 
 .footer-column a:hover,
 .contact-list li:hover {
-  color: #ef3768;
+  color: #e2e8f0;
 }
 
 .contact-list .contact-icon {
@@ -285,8 +286,8 @@ function handleSubscribe() {
 }
 
 .social-link:hover {
-  background: #ef3768;
-  border-color: #ef3768;
+  background: #334155;
+  border-color: #334155;
   color: white;
   transform: translateY(-3px);
 }
