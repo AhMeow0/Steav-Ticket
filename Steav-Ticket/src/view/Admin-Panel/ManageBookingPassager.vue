@@ -237,6 +237,7 @@ function applyFilter() {
   void fetchBookings()
 }
 
+
 onMounted(() => {
   void fetchRoutes()
   void fetchBookings()
