@@ -1,9 +1,13 @@
 <template>
   <div class="profile-page">
+
     <div class="sidebar">
+          <button class="back-home" @click="goHome">← Back to Home</button>
       <div class="profile-header">
         <div class="avatar">
+          
           <img src="../../assets/img/avatar.png" alt="User Avatar" />
+          
         </div>
         <!-- <p class="profile-status">{{ isEditing ? 'Editing Profile' : 'View Mode' }}</p> -->
         <a href="#">{{ isEditing ? 'Cancel' : 'Edit' }}</a>
@@ -152,6 +156,9 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const isEditing = ref(false)
 const showLogoutModal = ref(false)
+const goHome = () => {
+  router.push('/')
+}
 
 const formData = ref({
   firstName: 'Steav',
@@ -188,6 +195,21 @@ const handleLogout = () => {
   display: flex;
   height: 99vh;
   background-color: #000;
+}
+.back-home {
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.back-home:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .sidebar {

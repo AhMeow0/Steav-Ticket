@@ -5,6 +5,10 @@ export class CreateBusDto{
 
     @IsString()
     @IsNotEmpty()
+    companyName: string;
+
+    @IsString()
+    @IsNotEmpty()
     busPlate: string;
 
     @IsString()

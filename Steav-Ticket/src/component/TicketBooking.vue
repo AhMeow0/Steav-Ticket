@@ -121,18 +121,18 @@ type Ticket = {
   price: number
   total: number
   status: 'ACTIVE' | 'COMPLETED'
-  bookingDate: string // we will ensure it exists
+  bookingDate: string
 }
 
 const tickets = ref<Ticket[]>([])
 
 const loadTickets = () => {
-  const raw = JSON.parse(localStorage.getItem('tickets') || '[]')
+  const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as Array<Partial<Ticket>>
 
   // ✅ ensure bookingDate exists even for old saved tickets
-  tickets.value = raw.map((t: any) => ({
-    ...t,
-    bookingDate: t.bookingDate || new Date().toISOString(),
+  tickets.value = raw.map((t) => ({
+    ...(t as Ticket),
+    bookingDate: t.bookingDate ?? new Date().toISOString(),
   }))
 }
 
@@ -145,9 +145,8 @@ const code = (city: string) => {
   const map: Record<string, string> = {
     'Phnom Penh': 'PP',
     'Siem Reab': 'SR',
-    Battambang: 'BB',
-    'Sihanuk villige': 'SHV',
-    'Poi pet': 'PP',
+    'Battambang': 'BB',
+    'Sihanoukville': 'SHV',
   }
   return map[city] || city.slice(0, 2).toUpperCase()
 }
@@ -181,14 +180,20 @@ const qrUrl = (data: string) =>
 .page-wrapper {
   background-color: #f9f9f9;
   min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
 }
 
+
 .content-area {
-  background-color: #e0ddde;
+  background-color: white;
   padding-top: 5rem;
   padding-bottom: 5rem;
-  padding-left: 3rem;
+  padding-left: 175px;
   padding-right: 3rem;
+  flex: 1;
+  margin-top: 50px;
 }
 
 .section-title {
@@ -213,7 +218,7 @@ const qrUrl = (data: string) =>
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   padding: 20px 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 4px 10px rgba(0, 0, 0, 0.05);
   border-left: 5px solid #e91e63;
 }
 

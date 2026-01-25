@@ -1,7 +1,5 @@
 <template>
   <div class="checkout-page">
-    <HeadBar />
-
     <div class="container">
       <!-- Header -->
       <div class="top">
@@ -62,22 +60,22 @@
           </div>
         </div>
 
-        <!-- RIGHT: Passenger + Payment -->
+        <!-- RIGHT -->
         <div class="card">
           <div class="card-title">Passenger details</div>
 
           <div class="form">
             <div class="field">
               <label>Full name</label>
-              <input v-model="name" type="text" placeholder="Your name" />
+              <input v-model="name" />
             </div>
             <div class="field">
               <label>Phone</label>
-              <input v-model="phone" type="text" placeholder="012 345 678" />
+              <input v-model="phone" />
             </div>
             <div class="field">
               <label>Email</label>
-              <input v-model="email" type="email" placeholder="you@example.com" />
+              <input v-model="email" />
             </div>
           </div>
 
@@ -87,25 +85,22 @@
           <div class="payment-methods">
             <button
               class="pm"
-              :class="{ active: paymentMethod === 'cash' }"
-              @click="paymentMethod = 'cash'"
-            >
-              💵 Cash
-            </button>
-            <button
-              class="pm"
               :class="{ active: paymentMethod === 'card' }"
-              @click="paymentMethod = 'card'"
+              @click="toggleCard"
             >
               💳 Card
             </button>
-            <button
-              class="pm"
-              :class="{ active: paymentMethod === 'aba' }"
-              @click="paymentMethod = 'aba'"
-            >
-              📱 ABA
-            </button>
+          </div>
+
+          <div v-show="paymentMethod === 'card'" class="card-form">
+            <label class="form-label">Card details</label>
+
+            <div class="form-input" id="card-number"></div>
+
+            <div class="card-row">
+              <div class="form-input small" id="card-expiry"></div>
+              <div class="form-input small" id="card-cvc"></div>
+            </div>
           </div>
 
           <div class="total-box">
@@ -122,18 +117,11 @@
               <span>USD {{ total }}</span>
             </div>
 
-            <button class="pay-btn" @click="confirmBooking">Confirm & Pay</button>
+            <button class="pay-btn" @click="confirmBooking">
+              Confirm & Pay
+            </button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- ✅ SUCCESS SNACKBAR -->
-    <div v-if="showSnack" class="snackbar">
-      <div class="snack-card">
-        <h4>Payment Successful 🎉</h4>
-        <p>Your ticket has been saved.</p>
-        <button @click="goHome">OK</button>
       </div>
     </div>
 
@@ -142,15 +130,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import HeadBar from '@/component/HeadBar.vue'
+import { apiUrl } from '@/lib/api'
 import Footer from '@/component/Footer.vue'
+import { loadStripe } from '@stripe/stripe-js'
+
+defineOptions({ name: 'CheckoutPage' })
 
 const route = useRoute()
 const router = useRouter()
 
-// data from seat page
+/* DATA */
 const fromLabel = computed(() => (route.query.from as string) || '—')
 const toLabel = computed(() => (route.query.to as string) || '—')
 const companyLabel = computed(() => (route.query.company as string) || '—')
@@ -164,70 +155,112 @@ const returnISO = computed(() => (route.query.returnDate as string) || '')
 const formatDate = (iso: string) => {
   if (!iso) return '—'
   const d = new Date(iso)
-  const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   return `${d.getDate()} ${m[d.getMonth()]}, ${d.getFullYear()}`
 }
 
 const journeyLabel = computed(() => formatDate(journeyISO.value))
-const returnLabel = computed(() => (returnISO.value ? formatDate(returnISO.value) : '—'))
+const returnLabel = computed(() =>
+  returnISO.value ? formatDate(returnISO.value) : '—'
+)
 
-// passenger form
+/* FORM */
 const name = ref('')
 const phone = ref('')
 const email = ref('')
-const paymentMethod = ref<'cash' | 'card' | 'aba'>('cash')
-
-// snackbar
+const paymentMethod = ref<'cash' | 'card'>('cash')
 const showSnack = ref(false)
 
-// total
+const toggleCard = () => {
+  paymentMethod.value = paymentMethod.value === 'card' ? 'cash' : 'card'
+}
+
 const total = computed(() => price.value * seatCount.value)
 
-// confirm booking
-const confirmBooking = () => {
+/* ======================
+   STRIPE (ONLY ADDITION)
+====================== */
+let stripe: any
+let cardNumber: any
+let cardExpiry: any
+let cardCvc: any
+
+onMounted(async () => {
+  stripe = await loadStripe('pk_test_YOUR_PUBLIC_KEY')
+
+  const elements = stripe.elements()
+
+  const style = {
+    base: {
+      font: '16px Arial, sans-serif',
+      fontSize: '15px',
+    },
+    invalid: {
+      color: '#e91e63',
+      iconColor: '#e91e63',
+    },
+  }
+
+  cardNumber = elements.create('cardNumber', { style })
+  cardExpiry = elements.create('cardExpiry', { style })
+  cardCvc = elements.create('cardCvc', { style })
+
+  cardNumber.mount('#card-number')
+  cardExpiry.mount('#card-expiry')
+  cardCvc.mount('#card-cvc')
+})
+
+
+/* CONFIRM BOOKING */
+const confirmBooking = async () => {
   if (!name.value || !phone.value || !email.value) {
     alert('Please fill all passenger details')
     return
   }
+
   if (seatCount.value <= 0) {
     alert('No seat selected')
     return
   }
 
-  // save ticket to localStorage
-  const ticket = {
-    id: Date.now(),
-    from: fromLabel.value,
-    to: toLabel.value,
-    journeyDate: journeyISO.value,
-    returnDate: returnISO.value,
-    company: companyLabel.value,
-    seats: seatNumbers.value,
-    seatCount: seatCount.value,
-    price: price.value,
-    total: total.value,
-    status: 'ACTIVE',
+  if (paymentMethod.value === 'card') {
+    const res = await fetch(apiUrl('/payments/intent'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        seats: seatCount.value,
+        price: price.value,
+      }),
+    })
+
+    const { clientSecret } = await res.json()
+
+    const { error } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardNumber,
+        billing_details: {
+          name: name.value,
+          email: email.value,
+        },
+      },
+    })
+
+    if (error) {
+      alert(error.message)
+      return
+    }
   }
 
-  const old = JSON.parse(localStorage.getItem('tickets') || '[]')
-  old.unshift(ticket)
-  localStorage.setItem('tickets', JSON.stringify(old))
-
-  // show snackbar
-  showSnack.value = true
 }
 
-// go home after OK
-const goHome = () => {
-  showSnack.value = false
-  router.push('/')
-}
+const goHome = () => router.push('/')
 </script>
 
 <style scoped>
 .checkout-page {
   background: #f6f7fb;
   min-height: 100vh;
+  margin-top: 50px;
 }
 
 .container {
@@ -240,6 +273,7 @@ const goHome = () => {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .back-btn {
@@ -310,7 +344,7 @@ const goHome = () => {
 }
 
 .field input {
-  width: 100%;
+  width: 96%;
   padding: 10px;
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -389,6 +423,30 @@ const goHome = () => {
   padding: 10px;
   border-radius: 999px;
   cursor: pointer;
+}
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  margin-bottom: 8px;
+}
+
+.card-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-input.small {
+  flex: 1;
 }
 
 /* responsive */

@@ -1,22 +1,26 @@
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { IsDateString, IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class CreateScheduleDto{
-    @IsString()
-    routeId: string
+export class CreateScheduleDto {
+  @IsMongoId()
+  routeId: string;
 
-    @IsString()
-    busId: string
+  @IsMongoId()
+  busId: string;
 
-    @IsString()
-    promotionId: string
+  @IsOptional()
+  @IsMongoId()
+  promotionId?: string;
 
-    @IsDate()
-    departureDate: Date
+  @IsDateString()
+  departureDate: string;
 
-    @IsString()
-    departureTime: string
+  @IsString()
+  departureTime: string;
 
-    @IsNumber()
-    price: number
+  @IsNumber()
+  price: number;
 
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

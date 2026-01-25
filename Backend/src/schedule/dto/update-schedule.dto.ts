@@ -1,22 +1,4 @@
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateScheduleDto } from './create-schedule.dto';
 
-export class UpdateScheduleDto{
-    @IsString()
-    routeId: string
-
-    @IsString()
-    busId: string
-
-    @IsString()
-    promotionId: string
-
-    @IsDate()
-    departureDate: Date
-
-    @IsString()
-    departureTime: string
-
-    @IsNumber()
-    price: number
-
-}
+export class UpdateScheduleDto extends PartialType(CreateScheduleDto) {}

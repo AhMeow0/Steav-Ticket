@@ -8,6 +8,16 @@
       <div class="manage-buses-page__grid">
 
         <div class="manage-buses-page__field">
+          <label class="manage-buses-page__label">Company Name</label>
+          <input
+            class="manage-buses-page__input"
+            type="text"
+            placeholder="Virak Buntham"
+            v-model="companyName"
+          />
+        </div>
+
+        <div class="manage-buses-page__field">
           <label class="manage-buses-page__label">Bus Plate</label>
           <input
             class="manage-buses-page__input"
@@ -58,6 +68,7 @@
         <thead>
           <tr>
             <th>No</th>
+            <th>Company</th>
             <th>Bus Plate</th>
             <th>Bus Type</th>
             <th>Capacity</th>
@@ -68,6 +79,7 @@
         <tbody>
             <tr v-for="(bus, index) in buses" :key="bus._id">
               <td>{{ index + 1 }}</td>
+              <td>{{ bus.companyName }}</td>
               <td>{{ bus.busPlate }}</td>
               <td>{{ bus.busType }}</td>
               <td>{{ bus.capacity }}</td>
@@ -77,7 +89,7 @@
                   class="delete-btn"
                   @click="deleteBus(bus._id)">Delete</button>
               </td>
-              
+
             </tr>
           </tbody>
       </table>
@@ -92,6 +104,7 @@ import { defineComponent } from 'vue';
 
 interface Bus{
   _id: string;
+  companyName: string;
   busPlate: string;
   capacity: number;
   busType: string;
@@ -101,6 +114,7 @@ export default defineComponent({
   name: 'ManageBus',
   data(){
     return{
+      companyName: '' as string,
       busPlate: '' as string,
       capacity: 0,
       busType: '' as string,
@@ -124,6 +138,7 @@ export default defineComponent({
       try{
         if(this.editId){
           await axios.put(`http://localhost:3000/api/buses/${this.editId}`,{
+            companyName: this.companyName,
             busPlate: this.busPlate,
             busType: this.busType,
             capacity: this.capacity,
@@ -133,6 +148,7 @@ export default defineComponent({
         }
         else{
           await axios.post('http://localhost:3000/api/buses',{
+            companyName: this.companyName,
             busPlate: this.busPlate,
             busType: this.busType,
             capacity: this.capacity,
@@ -145,6 +161,7 @@ export default defineComponent({
       }
     },
     async updateBus(bus: Bus){
+      this.companyName = bus.companyName;
       this.busPlate = bus.busPlate;
       this.busType = bus.busType;
       this.capacity = bus.capacity;
@@ -160,6 +177,7 @@ export default defineComponent({
       }
     },
     resetForm(){
+      this.companyName = '';
       this.busPlate = '';
       this.capacity = 0;
       this.busType = '';

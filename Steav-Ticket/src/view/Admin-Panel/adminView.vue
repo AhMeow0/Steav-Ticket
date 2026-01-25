@@ -1,6 +1,5 @@
 <template>
   <div class="body">
-
     <aside class="sidebar">
       <h1 class="sidebar-title">Admin Panel</h1>
 
@@ -11,7 +10,6 @@
           </router-link>
         </li>
       </ul>
-
     </aside>
 
     <div class="line"></div>
@@ -25,16 +23,15 @@ export default {
     return {
       items: [
         { label: 'Dashboard', to: '/admin/dashboard' },
-        { label: 'Manage Routes', to: '/admin/manage-route-schedules' },
-        { label: 'Manage Schedules', to: '/admin/manage-ticket-price' },
-        { label: 'Manage Booking', to: '/admin/manage-booking-passager' },
-        { label: 'Manage Promotion & News', to: '/admin/manage-promotion' },
-        { label: 'Manage Buses', to: '/admin/manage-bus' },
+        { label: 'Routes & Schedules', to: '/admin/manage-route-schedules' },
+        { label: 'Ticket Price', to: '/admin/manage-ticket-price' },
+        { label: 'Booking & Passager', to: '/admin/manage-booking-passager' },
+        { label: 'Promotion & News', to: '/admin/manage-promotion' },
+        { label: 'Buses', to: '/admin/manage-bus' },
       ],
     }
   },
 }
-
 </script>
 
 <style scoped>
@@ -68,7 +65,7 @@ export default {
   font-size: 26px;
   margin-bottom: 20px;
   margin-left: 10px;
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
 }
 

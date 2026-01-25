@@ -94,8 +94,6 @@
         </div>
       </div>
     </div>
-
-    <Footer />
   </div>
 </template>
 
@@ -103,12 +101,23 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeadBar from '@/component/HeadBar.vue'
-import Footer from '@/component/Footer.vue'
+
+type Trip = {
+  id: number
+  company: string
+  type: string
+  seats: number
+  departTime: string
+  arriveTime: string
+  duration: string
+  price: number
+  logo: string
+}
 
 const router = useRouter()
 const route = useRoute()
 
-// ✅ get values from Home page (query)
+//  get values from Home page (query)
 const from = computed(() => (route.query.from as string) || '')
 const to = computed(() => (route.query.to as string) || '')
 const journeyDate = ref((route.query.journeyDate as string) || '')
@@ -157,7 +166,7 @@ const fakeSearch = () => {
 }
 
 // ✅ go to seat selecting page and pass needed data
-const viewSeats = (trip: any) => {
+const viewSeats = (trip: Trip) => {
   router.push({
     path: '/seat-select',
     query: {
@@ -175,7 +184,7 @@ const viewSeats = (trip: any) => {
 }
 
 // Dummy data for UI
-const trips = ref([
+const trips = ref<Trip[]>([
   {
     id: 1,
     company: 'Ekreach Express',
@@ -214,15 +223,16 @@ const trips = ref([
 
 <style scoped>
 .booking-page {
+  margin-top: 80px;
   min-height: 100vh;
   background: #f6f7fb;
   padding-bottom: 30px;
 }
 
 .container {
-  max-width: 980px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 0 18px;
+  padding: 0 25px;
 }
 
 /* mini header */
@@ -232,6 +242,7 @@ const trips = ref([
   gap: 10px;
   padding-top: 14px;
   padding-bottom: 10px;
+  height: 100px;
 }
 
 .back-btn {
@@ -249,7 +260,7 @@ const trips = ref([
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: bold;
   color: #111;
 }
 
@@ -265,6 +276,7 @@ const trips = ref([
   align-items: stretch;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  height: 100px;
 }
 
 .search-item {
@@ -306,6 +318,7 @@ const trips = ref([
   width: 1px;
   background: #eee;
   margin: 10px 0;
+
 }
 
 .clear-btn {
@@ -342,6 +355,7 @@ const trips = ref([
   grid-template-columns: 280px 1fr 160px;
   gap: 12px;
   align-items: center;
+  height: 125px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
 }
 

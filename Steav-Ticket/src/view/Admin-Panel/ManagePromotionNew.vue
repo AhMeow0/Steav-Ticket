@@ -25,13 +25,13 @@
         </div>
 
         <div class="input-group">
-          <label>Start Date</label>
-          <input type="date" v-model="startDate" />
+          <label>Start Date & Time</label>
+          <input type="datetime-local" v-model="startDateLocal" />
         </div>
 
         <div class="input-group">
-          <label>End Date</label>
-          <input type="date" v-model="endDate" />
+          <label>End Date & Time</label>
+          <input type="datetime-local" v-model="endDateLocal" :min="startDateLocal" />
         </div>
       </div>
 
@@ -67,8 +67,8 @@
                 ? item.discountValue + '%'
                 : item.discountValue }}
             </td>
-            <td>{{ item.startDate.slice(0, 10) }}</td>
-            <td>{{ item.endDate.slice(0, 10) }}</td>
+            <td>{{ formatDateTime(item.startDate) }}</td>
+            <td>{{ formatDateTime(item.endDate) }}</td>
             <td>
               <span :class="['status', item.status.toLowerCase()]">
                 {{ item.status }}
@@ -120,17 +120,123 @@ export default defineComponent({
   mounted(){
     this.fetchPromotion();
   },
+  computed: {
+    startDateLocal: {
+      get(): string {
+        return this.toDateTimeLocalValue(this.startDate)
+      },
+      set(value: string) {
+        this.startDate = this.fromDateTimeLocalValue(value)
+      },
+    },
+    endDateLocal: {
+      get(): string {
+        return this.toDateTimeLocalValue(this.endDate)
+      },
+      set(value: string) {
+        this.endDate = this.fromDateTimeLocalValue(value)
+      },
+    },
+  },
+  watch: {
+    startDate(newVal: string) {
+      if (!newVal) return
+
+      const start = new Date(newVal)
+      if (Number.isNaN(start.getTime())) return
+
+      if (!this.endDate) {
+        const end = new Date(start)
+        end.setHours(end.getHours() + 1)
+        this.endDate = this.toOffsetDateTime(end)
+        return
+      }
+
+      const end = new Date(this.endDate)
+      if (Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
+        const next = new Date(start)
+        next.setHours(next.getHours() + 1)
+        this.endDate = this.toOffsetDateTime(next)
+      }
+    },
+  },
   methods:{
+    pad2(n: number): string {
+      return String(n).padStart(2, '0')
+    },
+    offsetString(offsetMinutes: number): string {
+      const sign = offsetMinutes >= 0 ? '+' : '-'
+      const abs = Math.abs(offsetMinutes)
+      const hh = this.pad2(Math.floor(abs / 60))
+      const mm = this.pad2(abs % 60)
+      return `${sign}${hh}:${mm}`
+    },
+    toOffsetDateTime(d: Date): string {
+      const yyyy = d.getFullYear()
+      const MM = this.pad2(d.getMonth() + 1)
+      const dd = this.pad2(d.getDate())
+      const HH = this.pad2(d.getHours())
+      const min = this.pad2(d.getMinutes())
+      const ss = this.pad2(d.getSeconds())
+      const offsetMinutes = -d.getTimezoneOffset()
+      const offset = this.offsetString(offsetMinutes)
+      return `${yyyy}-${MM}-${dd}T${HH}:${min}:${ss}${offset}`
+    },
+    toDateTimeLocalValue(value: string): string {
+      if (!value) return ''
+
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
+        return value.slice(0, 16)
+      }
+
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return ''
+      const yyyy = d.getFullYear()
+      const MM = this.pad2(d.getMonth() + 1)
+      const dd = this.pad2(d.getDate())
+      const HH = this.pad2(d.getHours())
+      const min = this.pad2(d.getMinutes())
+      return `${yyyy}-${MM}-${dd}T${HH}:${min}`
+    },
+    fromDateTimeLocalValue(value: string): string {
+      if (!value) return ''
+      // `datetime-local` has no timezone. Store it with local timezone offset
+      // so it won't shift and accidentally become "outdated".
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return value
+      return this.toOffsetDateTime(d)
+    },
+    formatDateTime(value: string): string {
+      if (!value) return ''
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return value
+      return d.toLocaleString()
+    },
     async fetchPromotion(): Promise<void>{
       try{
         const response = await axios.get<Promotion[]>('http://localhost:3000/api/promotions')
         this.promotions = response.data;
       }catch(error){
-        console.error;
+        console.error('Error fetching promotions', error)
       }
     },
   async createPromotion(): Promise<void> {
-   
+    if (!this.code || !this.startDate || !this.endDate) {
+      alert('Please fill code, start date/time, and end date/time')
+      return
+    }
+
+    const start = new Date(this.startDate)
+    const end = new Date(this.endDate)
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      alert('Invalid date/time')
+      return
+    }
+    if (end.getTime() <= start.getTime()) {
+      alert('End date/time must be after start date/time')
+      return
+    }
+
     try {
       const payload = {
         code: this.code,
@@ -162,8 +268,8 @@ export default defineComponent({
       this.code = promo.code;
       this.discountType = promo.discountType;
       this.discountValue = promo.discountValue;
-      this.startDate = promo.startDate.slice(0, 10);
-      this.endDate = promo.endDate.slice(0, 10);
+      this.startDate = promo.startDate;
+      this.endDate = promo.endDate;
     },
     async deletePromotion(id: string): Promise<void> {
     try {
