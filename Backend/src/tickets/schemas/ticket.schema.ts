@@ -10,12 +10,12 @@ export class Ticket {
 
   @Prop({ required: true })
   passengerName: string;
+  
+  @Prop({ type: [String], required: true })
+  seats: string[];         // <-- FIXED
 
   @Prop({ required: true })
-  seatNumber: number;
-
-  @Prop({ required: true })
-  price: number;
+  price: number; 
 
   @Prop({ required: true })
   destination: string;

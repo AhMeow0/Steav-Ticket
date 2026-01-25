@@ -13,15 +13,17 @@
       </nav>
 
       <div class="right-actions">
-        <img
-          src="https://flagcdn.com/w40/gb.png"
-          alt="English"
-          class="flag-icon"
-        />
 
         <div v-if="user" class="user-profile">
-          <span class="welcome">Hi, {{ displayName }}</span>
-          <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          <div
+            class="profile-link"
+            @click="goToProfile"
+            style="display:flex;align-items:center;gap:0.6rem;cursor:pointer"
+          >
+            <span class="welcome">Hi, {{ displayName }}</span>
+            <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
+          </div>
+
           <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
@@ -56,9 +58,16 @@
       <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
 
       <div v-if="user" class="mobile-user">
-        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <div
+          class="mobile-greeting"
+          @click="goToProfile"
+          style="cursor:pointer"
+        >
+          Hi, {{ displayName }}
+        </div>
         <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
+
 
       <div v-else class="mobile-actions">
         <router-link to="/signup" class="ghost-btn" @click="closeMenu"
@@ -78,6 +87,11 @@ import { useRouter } from 'vue-router'
 import { apiUrl } from '@/lib/api'
 
 defineOptions({ name: 'HeadBar' })
+
+function goToProfile() {
+  closeMenu()
+  router.push('/account/profile')
+}
 
 type UserProfile = {
   name?: string
@@ -321,6 +335,7 @@ onUnmounted(() => {
 .welcome {
   font-weight: 600;
   white-space: nowrap;
+  color: black;
 }
 
 .avatar {
@@ -347,7 +362,7 @@ onUnmounted(() => {
 }
 
 .ghost-btn {
-  color: #ffffff;
+  color: black;
   border-color: rgba(255, 255, 255, 0.6);
   background: transparent;
 }
