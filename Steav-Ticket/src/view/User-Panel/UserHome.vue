@@ -155,6 +155,8 @@ import Footer from '@/component/Footer.vue'
 import Angkor from '@/assets/explore/siem_reab/angkor.png'
 import { storeToRefs } from 'pinia'
 import { usePlaceStore, type Place } from '@/stores/placeDetail'
+import { useRouteStore } from '@/stores/route'
+
 
 const router = useRouter()
 
@@ -182,11 +184,18 @@ const popularPlaces = computed(() =>
     siemReap.value.find(p => p.slug === 'angkor-thom'),
   ].filter((p): p is Place => Boolean(p))
 )
-const fromOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
-const toOptions = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville']
+const routeStore = useRouteStore()
+const { origins, destinations, loading } = storeToRefs(routeStore)
+
+onMounted(() => {
+  routeStore.fetchRoutes()
+  window.addEventListener('click', closeDropdowns)
+})
+const fromOptions = origins
+const toOptions = destinations
 
 const toOptionsFiltered = computed(() =>
-  toOptions.filter(city => city !== from.value)
+  toOptions.value.filter(city => city !== from.value)
 )
 
 const selectFrom = (city: string) => {

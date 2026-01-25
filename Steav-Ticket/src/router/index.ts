@@ -133,6 +133,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAdmin: true },
     children: [
       { path: 'dashboard', name: 'Dashboard', component: DashBoard },
+      { path: 'manage-route', name: 'ManageRoute', component: () => import('@/view/Admin-Panel/ManageRoute.vue')},
       { path: 'manage-bus', name: 'ManageBus', component: ManageBuses },
       { path: 'manage-promotion', name: 'ManagePromotionNew', component: ManagePromotionNew },
       { path: 'manage-ticket-price', name: 'ManageTicketPrice', component: ManageTicketPrice },
@@ -142,6 +143,7 @@ const routes: Array<RouteRecordRaw> = [
         component: ManageBookingPassager,
       },
       { path: 'manage-route-schedules', name: 'ManageRouteSche', component: ManageRouteSche },
+      
     ],
   },
 

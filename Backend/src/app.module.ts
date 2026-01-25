@@ -11,8 +11,15 @@ import { PromotionModule } from './promotions/promotions.modules';
 import { ScheduleModule } from './schedule/schedule.module';
 import { AdminModule } from './admin/admin.module';
 import { TicketPricesModule } from './ticket-prices/ticket-prices.module';
+import { ConfigModule } from '@nestjs/config';
+
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env.example',   // <-- LOAD THIS FILE
+    }),
+
     MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
     TicketsModule,
     RoutesModule,
