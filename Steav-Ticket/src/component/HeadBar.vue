@@ -12,6 +12,25 @@
         <router-link to="/aboutus" class="nav-link">About Us</router-link>
       </nav>
 
+      <div class="notification-wrapper">
+        <button
+          type="button"
+          class="notification-btn"
+          aria-label="Notifications"
+          @click="toggleNotifications"
+        >
+          <span class="bell-icon">🔔</span>
+          <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+        </button>
+
+        <div class="notification-dropdown" v-if="isNotificationOpen">
+          <p v-if="notifications.length === 0" class="empty">No notifications</p>
+          <div v-for="(note, i) in notifications" :key="i" class="notification-item">
+            {{ note }}
+          </div>
+        </div>
+      </div>
+
       <div class="right-actions">
 
         <div v-if="user" class="user-profile">
@@ -93,7 +112,29 @@ const user = ref<UserProfile | null>(null)
 const isHidden = ref(false)
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
+const isNotificationOpen = ref(false)
+const unreadCount = ref() // example
+const notifications = ref<string[]>([
+  
+])
 
+function toggleNotifications() {
+  isNotificationOpen.value = !isNotificationOpen.value
+}
+
+function closeNotifications() {
+  isNotificationOpen.value = false
+}
+
+// Auto-close when clicking outside
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (!target.closest('.notification-wrapper')) {
+      closeNotifications()
+    }
+  })
+})
 const displayName = computed(() => {
   if (!user.value) return ''
   return user.value.name || user.value.email?.split('@')[0] || 'there'
@@ -451,6 +492,68 @@ onUnmounted(() => {
 
 .menu-toggle[aria-expanded="true"] span:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
+}
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.notification-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.bell-icon {
+  font-size: 1.5rem;
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #e11d48; /* red */
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 260px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  padding: 0.8rem;
+  z-index: 2000;
+}
+
+.notification-item {
+  padding: 0.7rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.empty {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
 }
 
 .mobile-nav {
