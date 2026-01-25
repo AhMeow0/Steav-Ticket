@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -12,6 +20,7 @@ type JwtPayload = {
 };
 
 type AuthenticatedRequest = ExpressRequest & { user: JwtPayload };
+type MaybeAuthenticatedRequest = ExpressRequest & { user?: JwtPayload };
 
 @Controller('tickets')
 export class TicketsController {
@@ -39,8 +48,10 @@ export class TicketsController {
 
   //@UseGuards(AuthGuard)
   @Get('my-tickets')
-  async findMyTickets(@Req() req: AuthenticatedRequest) {
-    const userId = req.user.sub;
+  @UseGuards(AuthGuard)
+  async findMyTickets(@Req() req: MaybeAuthenticatedRequest) {
+    const userId = req.user?.sub;
+    if (!userId) throw new UnauthorizedException('Missing user');
     return this.ticketsService.findMyTickets(userId);
   }
 

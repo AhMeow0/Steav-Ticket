@@ -8,9 +8,14 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { BusModule } from './buses/buses.module';
 import { PromotionModule } from './promotions/promotions.modules';
-import { ScheduleModule } from './schedule/schedule.module';
+// import { ScheduleModule } from './schedule/schedule.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
 import { TicketPricesModule } from './ticket-prices/ticket-prices.module';
+import { SeatsModule } from './seats/seats.module';
+import { BookingsModule } from './booking/bookings.module';
+import { PaymentsModule } from './payment/payments.module';
+import { CheckoutModule } from './checkout/checkout.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -27,9 +32,13 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     BusModule,
     PromotionModule,
-    ScheduleModule,
+    ScheduleModule.forRoot(),
     AdminModule,
     TicketPricesModule,
+    SeatsModule,
+    BookingsModule,
+    PaymentsModule,
+    CheckoutModule,
   ],
   controllers: [AppController],
   providers: [AppService],

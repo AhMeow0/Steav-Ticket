@@ -2,7 +2,7 @@
   <header class="head-bar" :class="{ scrolled: isScrolled, hidden: isHidden }">
     <div class="header-inner">
       <router-link to="/homepage" class="logo" aria-label="Back to homepage">
-        <span class="logo-text">Steav-Ticket</span>
+        <img src="../assets/img/Logo.png" alt="Steav-Ticket Logo" class="logo-image" />
       </router-link>
 
       <nav class="nav-links" aria-label="Primary navigation">
@@ -242,8 +242,11 @@ onUnmounted(() => {
 .head-bar.scrolled .logo-text {
   color: #1a1a1a;
 }
-
-.logo-text::after {
+.logo-image {
+  width: 350px;
+  height: auto;
+}
+/* .logo-text::after {
   content: "";
   position: absolute;
   left: 0;
@@ -253,7 +256,7 @@ onUnmounted(() => {
   background: #f54e75;
   border-radius: 999px;
   transition: width 0.3s ease;
-}
+} */
 
 .logo:hover .logo-text::after {
   width: 100%;
@@ -268,7 +271,7 @@ onUnmounted(() => {
 .nav-link {
   text-decoration: none;
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   color: black;
   position: relative;
   padding: 0.5rem 0;
