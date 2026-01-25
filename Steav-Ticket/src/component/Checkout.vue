@@ -181,7 +181,8 @@ let cardExpiry: any
 let cardCvc: any
 
 onMounted(async () => {
-  stripe = await loadStripe("pk_test_51XXXXXXXXXXXX")// FIX THIS
+  stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+
 
   const elements = stripe.elements()
   const style = {
@@ -222,6 +223,7 @@ const confirmBooking = async () => {
 
   /* 💳 CARD PAYMENT */
   if (paymentMethod.value === "card") {
+    console.log("SCHEDULE ID:", route.query.scheduleId)
 
     const res = await fetch(apiUrl("/payments/intent"), {
       method: "POST",
@@ -261,14 +263,19 @@ const confirmBooking = async () => {
     }
 
     // 3. mark booking paid
-    await fetch(apiUrl("/payments/confirm"), {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ bookingId })
-    })
+// 3. mark booking paid
+// 3. mark booking paid
+await fetch(apiUrl("/payments/confirm"), {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer " + token,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ bookingId })
+})
+
+
+
 
     // 4. Save ticket to localStorage
     const stored = JSON.parse(localStorage.getItem("tickets") || "[]")
