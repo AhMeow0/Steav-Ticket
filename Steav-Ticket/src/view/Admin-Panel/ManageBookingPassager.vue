@@ -49,6 +49,7 @@
         <tbody>
           <tr v-for="b in bookings" :key="b._id">
             <td>{{ b.destination || '-' }}</td>
+
             <td>{{ b.user?.name ?? b.user?.email ?? b.user?._id }}</td>
             <td>
               <!-- Handle seatNumbers (array), seatNumber (single), or seatNos (array) -->
@@ -56,24 +57,21 @@
                   Array.isArray(b.seatNos) && b.seatNos.length ? b.seatNos.join(', ') :
                   b.seatNumber || '-' }}
             </td>
-            <td>{{ formatTime(b.departureTime || b.bookingDate || '-') }}</td>
+            <td>{{ b.dateOfJourney ? new Date(b.dateOfJourney).toLocaleDateString() : '-' }}</td>
+
+            <!-- <td>{{ b.destination ?? b.route?.destination ?? b.schedule?.destination ?? '-' }}</td> -->
             <td>{{ b.status }}</td>
-            <td>
-              <button
-                class="action-btn"
-                :disabled="loading"
-                @click="updateStatus(b._id, 'CONFIRMED')"
-              >
+          <td>
+            <template v-if="b.status === 'BOOKED'">
+              <button class="action-btn" :disabled="loading" @click="updateStatus(b._id, 'CONFIRMED')">
                 Confirm
               </button>
-              <button
-                class="action-btn action-btn--secondary"
-                :disabled="loading"
-                @click="updateStatus(b._id, 'CANCELLED')"
-              >
+              <button class="action-btn action-btn--secondary" :disabled="loading" @click="updateStatus(b._id, 'CANCELLED')">
                 Cancel
               </button>
-            </td>
+            </template>
+            <span v-else>{{ b.status }}</span>
+          </td>
           </tr>
 
           <tr v-if="!loading && bookings.length === 0">
@@ -102,12 +100,18 @@ type BookingRow = {
   _id: string
   destination: string
   departureTime: string
-  seatNumber: number
-  passengerName: string
-  status: string
-  price: number
+  // dateOfJourney should be a date string from backend (ex: "2026-01-26")
+  dateOfJourney?: string
+
+  seatNumber?: number
+  seatNumbers?: (number | string)[]
+  seatNos?: (number | string)[]
+
+  status: 'BOOKED' | 'CONFIRMED' | 'CANCELLED'
   user: { _id: string; name?: string; email?: string }
 }
+
+// console.log('booking sample:', data?.[0])
 
 const loading = ref(false)
 const error = ref('')
@@ -167,7 +171,7 @@ async function fetchBookings() {
   try {
     const qs = new URLSearchParams()
     if (selectedDestination.value) qs.set('destination', selectedDestination.value)
-    if (selectedDate.value) qs.set('date', selectedDate.value)
+    if (selectedDate.value) qs.set('dateOfJourney', selectedDate.value)
     if (selectedDepartureTime.value) qs.set('departureTime', selectedDepartureTime.value)
 
     const url = apiUrl(`/admin/bookings${qs.toString() ? `?${qs.toString()}` : ''}`)
@@ -208,8 +212,9 @@ async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
   }
 
   error.value = ''
+  loading.value = true
   try {
-    const response = await fetch(apiUrl(`/admin/bookings/${id}/status`), {
+    const response = await fetch(apiUrl(`/admin/bookings/${id}`), {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -218,16 +223,9 @@ async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
       body: JSON.stringify({ status }),
     })
 
+    const text = await response.text()
     if (!response.ok) {
-      if (response.status === 401) {
-        error.value = 'Unauthorized: please log in again.'
-        return
-      }
-      if (response.status === 403) {
-        error.value = 'Forbidden: your account is not admin.'
-        return
-      }
-      error.value = 'Failed to update status'
+      error.value = `Failed to update status (${response.status}): ${text}`
       return
     }
 
@@ -235,8 +233,56 @@ async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
   } catch (err) {
     console.error(err)
     error.value = 'Network Error'
+  } finally {
+    loading.value = false
   }
 }
+
+
+// async function deleteBooking(id: string) {
+//   const token =
+//     localStorage.getItem('access_token') ||
+//     localStorage.getItem('admin_token') ||
+//     localStorage.getItem('token')
+
+//   if (!token) {
+//     error.value = 'You must be logged in as Admin!'
+//     return
+//   }
+
+//   loading.value = true
+//   error.value = ''
+
+//   try {
+//     // ✅ CHANGE THIS PATH to match your backend controller
+//     const url = apiUrl(`/admin/bookings/${id}`)
+//     console.log('[DELETE]', url)
+
+//     const res = await fetch(url, {
+//       method: 'DELETE',
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     })
+
+//     const text = await res.text()
+//     console.log('[DELETE RES]', res.status, text)
+
+//     if (!res.ok) {
+//       error.value = `Delete failed: ${res.status} - ${text}`
+//       return
+//     }
+
+//     await fetchBookings()
+//   } catch (e) {
+//     console.error(e)
+//     error.value = 'Network Error'
+//   } finally {
+//     loading.value = false
+//   }
+// }
+
+
 
 function applyFilter() {
   void fetchBookings()

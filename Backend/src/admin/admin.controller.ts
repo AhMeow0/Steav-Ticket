@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -39,7 +40,7 @@ export class AdminController {
     });
   }
 
-  @Patch('bookings/:id/status')
+  @Patch('bookings/:id')
   async updateBookingStatus(
     @Param('id') id: string,
     @Body() dto: UpdateBookingStatusDto,

@@ -34,7 +34,7 @@ export class BookingsService {
       tripId,
       seatNos,
       totalPrice,
-      status: BookingStatus.PENDING,
+      status: BookingStatus.BOOKED,
     });
 
     return booking;
@@ -43,8 +43,8 @@ export class BookingsService {
   async markPaid(bookingId: string, userId: string) {
     const booking = await this.bookingModel.findOne({ _id: bookingId, userId });
     if (!booking) throw new NotFoundException('Booking not found');
-    if (booking.status !== BookingStatus.PENDING) {
-      throw new BadRequestException('Booking not in PENDING state');
+    if (booking.status !== BookingStatus.BOOKED) {
+      throw new BadRequestException('Booking not in BOOKED state');
     }
 
     await this.seatsService.markSeatsSold(booking.tripId, booking.seatNos, userId);

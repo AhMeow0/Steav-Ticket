@@ -4,7 +4,7 @@ import { HydratedDocument } from 'mongoose';
 export type BookingDocument = HydratedDocument<Booking>;
 
 export enum BookingStatus {
-  PENDING = 'PENDING',
+  BOOKED = 'BOOKED',
   PAID = 'PAID',
   CANCELLED = 'CANCELLED',
 }
@@ -20,7 +20,7 @@ export class Booking {
   @Prop({ type: [String], required: true })
   seatNos: string[];
 
-  @Prop({ required: true, enum: BookingStatus, default: BookingStatus.PENDING })
+  @Prop({ required: true, enum: BookingStatus, default: BookingStatus.BOOKED })
   status: BookingStatus;
 
   @Prop({ default: 0 })

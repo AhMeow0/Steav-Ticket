@@ -1,34 +1,19 @@
-// Lean types for admin aggregation (for listBookings)
-type TicketLean = {
-  _id: string;
-  userId: string;
-  passengerName?: string;
-  seats?: string[];
-  seatNumber?: string;
-  price?: number;
-  status: string;
-  createdAt?: string | Date;
-};
-type BookingLean = {
-  _id: string;
-  userId: string;
-  tripId?: string;
-  seatNos?: string[];
-  totalPrice?: number;
-  status: string;
-  createdAt?: string | Date;
-};
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
+
 import { Ticket } from '../tickets/schemas/ticket.schema';
-import { BookingStatus } from '../booking/schemas/booking.schema';
 import { Route } from '../routes/schema/route.schema';
 import { User } from '../users/entities/user.entity';
-// import { BookingStatus } from './dto/update-booking-status.dto';
+import { BookingStatus } from '../booking/schemas/booking.schema';
 
 type Period = 'daily' | 'weekly' | 'all';
 
+type RouteLean = {
+  _id?: unknown;
+  destination?: string;
+  departureTime?: string;
+};
 
 type UserLean = {
   _id: unknown;
@@ -36,116 +21,49 @@ type UserLean = {
   email?: string;
 };
 
+type TicketLean = {
+  _id: unknown;
+  userId?: unknown;
+  seats?: string[];
+  seatNumber?: string;
+  price?: number;
+  status?: string;
+  createdAt?: Date | string;
+  routeId?: RouteLean;
+};
+
+type BookingLean = {
+  _id: unknown;
+  userId?: unknown;
+  seatNos?: string[];
+  totalPrice?: number;
+  status?: string;
+  createdAt?: Date | string;
+  routeId?: RouteLean;
+};
+
 type EarnAggRow = { _id: null; totalEarn: number };
-
-type SeriesRow = {
-  _id: string;
-  bookings: number;
-  earn: number;
-};
-
-type DashboardSeriesPoint = {
-  key: string;
-  label: string;
-  bookings: number;
-  earn: number;
-};
-
-type StatusAggRow = {
-  _id: string;
-  count: number;
-};
+type StatusAggRow = { _id: string; count: number };
 
 function utcStartOfHour(d: Date): Date {
   return new Date(
-    Date.UTC(
-      d.getUTCFullYear(),
-      d.getUTCMonth(),
-      d.getUTCDate(),
-      d.getUTCHours(),
-    ),
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours()),
   );
 }
 
 function utcStartOfDay(d: Date): Date {
-  return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
-  );
-}
-
-function seriesRange(period: Period): {
-  startIso: string;
-  endIso: string;
-  bucket: 'hour' | 'day';
-  points: number;
-} {
-  const now = new Date();
-
-  if (period === 'daily') {
-    const end = utcStartOfHour(now);
-    const start = new Date(end);
-    start.setUTCHours(start.getUTCHours() - 23);
-    return {
-      startIso: start.toISOString(),
-      endIso: new Date(end.getTime() + 60 * 60 * 1000).toISOString(),
-      bucket: 'hour',
-      points: 24,
-    };
-  }
-
-  const endDay = utcStartOfDay(now);
-  const end = new Date(endDay);
-  end.setUTCDate(end.getUTCDate() + 1); // inclusive end boundary (tomorrow 00:00Z)
-
-  const points = period === 'weekly' ? 7 : 30;
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - (points - 1));
-
-  return {
-    startIso: start.toISOString(),
-    endIso: end.toISOString(),
-    bucket: 'day',
-    points,
-  };
-}
-
-function buildSeriesKeys(period: Period): { key: string; label: string }[] {
-  const { startIso, bucket, points } = seriesRange(period);
-  const start = new Date(startIso);
-  const keys: { key: string; label: string }[] = [];
-
-  for (let i = 0; i < points; i += 1) {
-    const d = new Date(start);
-    if (bucket === 'hour') {
-      d.setUTCHours(d.getUTCHours() + i);
-      const key = d.toISOString().slice(0, 13); // YYYY-MM-DDTHH
-      const label = `${d.toISOString().slice(11, 13)}:00`;
-      keys.push({ key, label });
-    } else {
-      d.setUTCDate(d.getUTCDate() + i);
-      const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
-      const label = key;
-      keys.push({ key, label });
-    }
-  }
-
-  return keys;
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 function periodRange(period: Period): { startIso?: string; endIso?: string } {
   if (period === 'all') return {};
 
   const now = new Date();
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const end = new Date(start);
 
-  if (period === 'daily') {
-    end.setUTCDate(end.getUTCDate() + 1);
-  } else {
-    end.setUTCDate(end.getUTCDate() + 7);
-  }
+  if (period === 'daily') end.setUTCDate(end.getUTCDate() + 1);
+  else end.setUTCDate(end.getUTCDate() + 7);
 
   return { startIso: start.toISOString(), endIso: end.toISOString() };
 }
@@ -159,6 +77,7 @@ export class AdminService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
+  /* ===================== DASHBOARD (for AdminController) ===================== */
   async getDashboard(periodRaw?: string) {
     const period: Period =
       periodRaw === 'daily' || periodRaw === 'weekly' || periodRaw === 'all'
@@ -167,199 +86,172 @@ export class AdminService {
 
     const { startIso, endIso } = periodRange(period);
 
-    const departureTimeFilter =
+    // Here: we count/aggregate using Ticket model (as in your old code).
+    // If you want dashboard based on Bookings too, we can extend later.
+    const timeFilter =
       startIso && endIso
-        ? { departureTime: { $gte: startIso, $lt: endIso } }
+        ? { createdAt: { $gte: startIso, $lt: endIso } }
         : {};
 
-    // Get all tickets in the period
-    const [totalTrips, tickets, earnAgg, statusAgg] = await Promise.all([
-      this.routeModel.countDocuments(departureTimeFilter).exec(),
-      this.ticketModel.find(departureTimeFilter).lean().exec(),
+    const [totalTrips, totalTickets, earnAgg, statusAgg] = await Promise.all([
+      this.routeModel.countDocuments({}).exec(),
+      this.ticketModel.countDocuments(timeFilter).exec(),
       this.ticketModel
         .aggregate<EarnAggRow>([
-          { $match: departureTimeFilter },
+          { $match: timeFilter },
           { $group: { _id: null, totalEarn: { $sum: '$price' } } },
         ])
         .exec(),
       this.ticketModel
         .aggregate<StatusAggRow>([
-          { $match: departureTimeFilter },
+          { $match: timeFilter },
           { $group: { _id: '$status', count: { $sum: 1 } } },
         ])
         .exec(),
     ]);
 
-    // Sum all seats from tickets (seats array or seatNumber fallback)
-    let totalBookSeat = 0;
-    for (const t of tickets) {
-      if (Array.isArray(t.seats)) {
-        totalBookSeat += t.seats.length;
-     } else if (Array.isArray((t as any).seats) && (t as any).seats.length > 0) {
-      const seats = (t as any).seats as string[];
-      // use seats here
-    }
-
-    }
-
-    const totalEarn = earnAgg.length > 0 ? earnAgg[0].totalEarn : 0;
-
-    const {
-      startIso: seriesStartIso,
-      endIso: seriesEndIso,
-      bucket,
-    } = seriesRange(period);
-    const seriesKeys = buildSeriesKeys(period);
-
-    const seriesMatch = {
-      $and: [
-        { departureTime: { $gte: seriesStartIso, $lt: seriesEndIso } },
-        { departureTime: { $regex: '^\\d{4}-\\d{2}-\\d{2}T' } },
-      ],
-    };
-
-    const keyExpr =
-      bucket === 'hour'
-        ? { $substrBytes: ['$departureTime', 0, 13] }
-        : { $substrBytes: ['$departureTime', 0, 10] };
-
-    const seriesAgg = await this.ticketModel
-      .aggregate<SeriesRow>([
-        { $match: seriesMatch },
-        {
-          $group: {
-            _id: keyExpr,
-            bookings: { $sum: 1 },
-            earn: { $sum: '$price' },
-          },
-        },
-      ])
-      .exec();
-
-    const byKey = new Map<string, SeriesRow>();
-    for (const row of seriesAgg) byKey.set(row._id, row);
-
-    const series: DashboardSeriesPoint[] = seriesKeys.map(({ key, label }) => {
-      const row = byKey.get(key);
-      return {
-        key,
-        label,
-        bookings: row?.bookings ?? 0,
-        earn: row?.earn ?? 0,
-      };
-    });
-
-    const allowed = new Set(['BOOKED', 'CONFIRMED', 'CANCELLED']);
-    const statusCounts = new Map<string, number>([
-      ['BOOKED', 0],
-      ['CONFIRMED', 0],
-      ['CANCELLED', 0],
-      ['OTHER', 0],
-    ]);
-    for (const row of statusAgg) {
-      const key = allowed.has(row._id) ? row._id : 'OTHER';
-      statusCounts.set(key, (statusCounts.get(key) ?? 0) + row.count);
-    }
-
-    const statusBreakdown = Array.from(statusCounts.entries())
-      .filter(([, count]) => count > 0)
-      .map(([status, count]) => ({ status, count }));
+    const totalEarn = earnAgg.length ? earnAgg[0].totalEarn : 0;
 
     return {
       period,
       totalTrips,
-      totalBookSeat,
+      totalTickets,
       totalEarn,
-      series,
-      statusBreakdown,
+      statusBreakdown: statusAgg,
     };
   }
 
+  /* ===================== LIST BOOKINGS ===================== */
   async listBookings(params: {
     destination?: string;
-    date?: string;
-    departureTime?: string;
+    date?: string; // YYYY-MM-DD (from frontend)
+    departureTime?: string; // exact departureTime if you want
     status?: string;
   }) {
-    // Build filters for both collections
+    // 1) Build routeFilter FIRST (because destination/departureTime belong to Route)
+    const routeFilter: Record<string, unknown> = {};
+
+    if (params.destination) routeFilter.destination = params.destination;
+
+    // If frontend sends a specific departureTime (full ISO string) use exact match:
+    if (params.departureTime) routeFilter.departureTime = params.departureTime;
+
+    // If frontend sends date=YYYY-MM-DD, match routes whose departureTime starts with that date
+    if (params.date) routeFilter.departureTime = { $regex: `^${params.date}` };
+
+    let routeIds: string[] | undefined = undefined;
+
+    // Only query routes if we actually have a route-related filter
+    if (Object.keys(routeFilter).length > 0) {
+      const routes = await this.routeModel
+        .find(routeFilter)
+        .select({ _id: 1 })
+        .lean<{ _id: unknown }[]>()
+        .exec();
+
+      routeIds = routes.map((r) => String(r._id));
+      // If no routes match, return empty right away
+      if (routeIds.length === 0) return [];
+    }
+
+    // 2) Build ticket/booking filters (status + routeId)
     const ticketFilter: Record<string, unknown> = {};
     const bookingFilter: Record<string, unknown> = {};
-    if (params.destination) ticketFilter.destination = params.destination;
-    if (params.status) ticketFilter.status = params.status;
-    if (params.departureTime) ticketFilter.departureTime = params.departureTime;
-    if (params.date) ticketFilter.departureTime = { $regex: `^${params.date}` };
-    if (params.status) bookingFilter.status = params.status;
-    if (params.date) bookingFilter.createdAt = { $regex: `^${params.date}` };
 
-    // Fetch tickets (confirmed bookings)
-    const tickets = await this.ticketModel.find(ticketFilter).lean<TicketLean[]>().exec();
-    // Fetch bookings (pending/unpaid bookings)
-    const bookings = await this.bookingModel.find(bookingFilter).lean<BookingLean[]>().exec();
+    if (params.status) {
+      ticketFilter.status = params.status;
+      bookingFilter.status = params.status;
+    }
 
-    // Collect all userIds
-    const userIds = Array.from(new Set([
-      ...tickets.map((t) => t.userId),
-      ...bookings.map((b) => b.userId),
-    ].filter((id) => id && id !== 'undefined' && isValidObjectId(id))));
+    if (routeIds) {
+      ticketFilter.routeId = { $in: routeIds };
+      bookingFilter.routeId = { $in: routeIds };
+    }
+
+    // 3) Fetch with populate(routeId) so destination/departureTime are available
+    const [tickets, bookings] = await Promise.all([
+      this.ticketModel
+        .find(ticketFilter)
+        .populate('routeId', 'destination departureTime')
+        .lean<TicketLean[]>()
+        .exec(),
+      this.bookingModel
+        .find(bookingFilter)
+        .populate('routeId', 'destination departureTime')
+        .lean<BookingLean[]>()
+        .exec(),
+    ]);
+
+    // 4) Collect userIds
+    const userIds = Array.from(
+      new Set(
+        [...tickets, ...bookings]
+          .map((x: any) => x.userId)
+          .filter((id) => id && isValidObjectId(id)),
+      ),
+    );
 
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
       .select({ name: 1, email: 1 })
       .lean<UserLean[]>()
       .exec();
+
     const userById = new Map<string, UserLean>(users.map((u) => [String(u._id), u]));
 
-    // Normalize tickets
-    const ticketResults = tickets.map((t) => {
+    // 5) Normalize tickets
+    const ticketResults = tickets.map((t: any) => {
+      const route = t.routeId as RouteLean | undefined;
       const user = userById.get(String(t.userId));
+
       return {
         _id: String(t._id),
         type: 'TICKET',
-        passengerName: t.passengerName || '-',
-        seatNumbers: t.seats || (t.seatNumber ? [t.seatNumber] : []),
+        seatNumbers: t.seats ?? (t.seatNumber ? [t.seatNumber] : []),
         price: t.price ?? 0,
         status: t.status,
-        bookingDate: t.createdAt ? new Date(t.createdAt).toISOString() : '-',
+        destination: route?.destination ?? '-',
+        dateOfJourney: route?.departureTime ?? '-',
         user: user
           ? { _id: String(user._id), name: user.name, email: user.email }
           : { _id: String(t.userId) },
       };
     });
 
-    // Normalize bookings (only those not PAID, to avoid duplication)
-    const bookingResults = bookings
-      .filter((b: BookingLean) => b.status !== 'CANCELLED')
-      .map((b: BookingLean) => {
-        const user = userById.get(String(b.userId));
-        return {
-          _id: String(b._id),
-          type: 'BOOKING',
-          passengerName: user?.name || user?.email || '-',
-          seatNumbers: b.seatNos || [],
-          price: b.totalPrice ?? 0,
-          status: b.status === 'PAID' ? 'CONFIRMED' : b.status,
-          bookingDate: b.createdAt ? new Date(b.createdAt).toISOString() : '-',
-          user: user
-            ? { _id: String(user._id), name: user.name, email: user.email }
-            : { _id: String(b.userId) },
-        };
-      });
+    // 6) Normalize bookings
+    const bookingResults = bookings.map((b: any) => {
+      const route = b.routeId as RouteLean | undefined;
+      const user = userById.get(String(b.userId));
 
-    // Combine and sort by creation (descending)
-    const allResults = [...ticketResults, ...bookingResults].sort((a, b) => {
-      // Use bookingDate for sorting if available, else fallback to _id
-      const dateA = a.bookingDate || a._id;
-      const dateB = b.bookingDate || b._id;
-      return dateB.localeCompare(dateA);
+      return {
+        _id: String(b._id),
+        type: 'BOOKING',
+        seatNumbers: b.seatNos ?? [],
+        price: b.totalPrice ?? 0,
+        status: b.status,
+        destination: route?.destination ?? '-',
+        dateOfJourney: route?.departureTime ?? '-',
+        user: user
+          ? { _id: String(user._id), name: user.name, email: user.email }
+          : { _id: String(b.userId) },
+      };
     });
-    return allResults;
+
+    // 7) Combine & sort newest first
+    return [...ticketResults, ...bookingResults].sort((a, b) =>
+      b._id.localeCompare(a._id),
+    );
   }
 
+  /* ===================== UPDATE BOOKING STATUS ===================== */
   async updateBookingStatus(id: string, status: BookingStatus) {
-    const updated = await this.ticketModel
+    // bookingModel is Model<any> so typings can be weird; force to single doc safely
+    const updatedAny = await this.bookingModel
       .findByIdAndUpdate(id, { status }, { new: true })
-      .lean<TicketLean | null>()
+      .lean()
       .exec();
+
+    const updated = Array.isArray(updatedAny) ? updatedAny[0] : updatedAny;
 
     if (!updated) throw new NotFoundException('Booking not found');
 
