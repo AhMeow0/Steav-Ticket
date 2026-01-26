@@ -12,18 +12,32 @@
         <router-link to="/aboutus" class="nav-link">About Us</router-link>
       </nav>
 
+      <div class="notification-wrapper">
+        <button
+          type="button"
+          class="notification-btn"
+          aria-label="Notifications"
+          @click="toggleNotifications"
+        >
+          <span class="bell-icon">🔔</span>
+          <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+        </button>
+
+        <div class="notification-dropdown" v-if="isNotificationOpen">
+          <p v-if="notifications.length === 0" class="empty">No notifications</p>
+          <div v-for="(note, i) in notifications" :key="i" class="notification-item">
+            {{ note }}
+          </div>
+        </div>
+      </div>
+
       <div class="right-actions">
 
         <div v-if="user" class="user-profile">
-          <div
-            class="profile-link"
-            @click="goToProfile"
-            style="display:flex;align-items:center;gap:0.6rem;cursor:pointer"
-          >
-            <span class="welcome">Hi, {{ displayName }}</span>
+          <span class="welcome">Hi, {{ displayName }}</span>
+          <button type="button" class="avatar-btn" aria-label="Open profile" @click="goToProfile">
             <img src="../assets/img/avatar.png" alt="Profile" class="avatar" />
-          </div>
-
+          </button>
           <button class="ghost-btn logout-btn" @click="logout">Logout</button>
         </div>
 
@@ -58,13 +72,8 @@
       <router-link to="/aboutus" @click="closeMenu">About Us</router-link>
 
       <div v-if="user" class="mobile-user">
-        <div
-          class="mobile-greeting"
-          @click="goToProfile"
-          style="cursor:pointer"
-        >
-          Hi, {{ displayName }}
-        </div>
+        <div class="mobile-greeting">Hi, {{ displayName }}</div>
+        <button type="button" class="ghost-btn" @click="goToProfile">My Profile</button>
         <button class="ghost-btn logout-btn" @click="logout">Logout</button>
       </div>
 
@@ -88,7 +97,7 @@ import { apiUrl } from '@/lib/api'
 
 defineOptions({ name: 'HeadBar' })
 
-function goToProfile() {
+function goToProfile(){
   closeMenu()
   router.push('/account/profile')
 }
@@ -103,7 +112,29 @@ const user = ref<UserProfile | null>(null)
 const isHidden = ref(false)
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
+const isNotificationOpen = ref(false)
+const unreadCount = ref() // example
+const notifications = ref<string[]>([
+  
+])
 
+function toggleNotifications() {
+  isNotificationOpen.value = !isNotificationOpen.value
+}
+
+function closeNotifications() {
+  isNotificationOpen.value = false
+}
+
+// Auto-close when clicking outside
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (!target.closest('.notification-wrapper')) {
+      closeNotifications()
+    }
+  })
+})
 const displayName = computed(() => {
   if (!user.value) return ''
   return user.value.name || user.value.email?.split('@')[0] || 'there'
@@ -213,6 +244,25 @@ onUnmounted(() => {
   transform: translateY(-100%);
 }
 
+.avatar-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.avatar-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+}
+
 .header-inner {
   max-width: 1320px;
   margin: 0 auto;
@@ -253,7 +303,7 @@ onUnmounted(() => {
   bottom: 0;
   width: 70%;
   height: 4px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transition: width 0.3s ease;
 } */
@@ -289,7 +339,7 @@ onUnmounted(() => {
   bottom: -6px;
   width: 0;
   height: 3px;
-  background: #f54e75;
+  background: #0f172a;
   border-radius: 999px;
   transform: translateX(-50%);
   transition: width 0.2s ease;
@@ -297,7 +347,7 @@ onUnmounted(() => {
 
 .nav-link:hover,
 .nav-link.router-link-active {
-  color: #f54e75;
+  color: #0f172a;
 }
 
 .nav-link:hover::after,
@@ -335,7 +385,7 @@ onUnmounted(() => {
 .welcome {
   font-weight: 600;
   white-space: nowrap;
-  color: black;
+  color: inherit;
 }
 
 .avatar {
@@ -362,33 +412,41 @@ onUnmounted(() => {
 }
 
 .ghost-btn {
-  color: black;
+  color: #ffffff;
   border-color: rgba(255, 255, 255, 0.6);
   background: transparent;
 }
 
 .head-bar.scrolled .ghost-btn {
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #0f172a;
+  border-color: #0f172a;
 }
 
 .ghost-btn:hover,
 .ghost-btn:focus-visible {
   transform: translateY(-1px);
-  color: #f54e75;
-  border-color: #f54e75;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.head-bar.scrolled .ghost-btn:hover,
+.head-bar.scrolled .ghost-btn:focus-visible {
+  color: #0f172a;
+  border-color: #0f172a;
+  background: rgba(15, 23, 42, 0.06);
 }
 
 .cta-btn {
-  background: #f54e75;
+  background: #0f172a;
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(245, 78, 117, 0.35);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
 }
 
 .cta-btn:hover,
 .cta-btn:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(245, 78, 117, 0.45);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
 }
 
 .logout-btn {
@@ -437,6 +495,68 @@ onUnmounted(() => {
 
 .menu-toggle[aria-expanded="true"] span:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
+}
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.notification-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.bell-icon {
+  font-size: 1.5rem;
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #e11d48; /* red */
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 260px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  padding: 0.8rem;
+  z-index: 2000;
+}
+
+.notification-item {
+  padding: 0.7rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.empty {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
 }
 
 .mobile-nav {

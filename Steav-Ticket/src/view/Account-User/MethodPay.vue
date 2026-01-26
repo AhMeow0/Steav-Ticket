@@ -2,6 +2,7 @@
   <div class="profile-page">
     <div class="sidebar">
       <div class="profile-header">
+        <router-link to="/homepage" class="back-home" aria-label="Back to homepage">← Back to Home</router-link>
         <div class="avatar">
           <img src="../../assets/img/avatar.png" alt="User Avatar" />
         </div>
@@ -11,19 +12,19 @@
       </div>
 
       <nav class="menu">
-        <router-link to="/account/profile" class="menu-item">
+        <router-link to="/account/profile" class="menu-item" exact-active-class="active">
           <span class="icon">👤</span>
           <span>Personal Information</span>
         </router-link>
-        <router-link to="/account/methodpay" class="menu-item" active-class="active">
+        <router-link to="/account/methodpay" class="menu-item" exact-active-class="active">
           <span class="icon">💳</span>
           <span>Payments</span>
         </router-link>
-        <router-link to="/account/language" class="menu-item">
+        <router-link to="/account/language" class="menu-item" exact-active-class="active">
           <span class="icon">Aa</span>
           <span>Language</span>
         </router-link>
-        <router-link to="/account/help" class="menu-item">
+        <router-link to="/account/help" class="menu-item" exact-active-class="active">
           <span class="icon">❓</span>
           <span>Help</span>
         </router-link>
@@ -113,7 +114,7 @@ const handleLogout = () => {
 
 .sidebar {
   width: 305px;
-  background: linear-gradient(180deg, #ff6b9d 0%, #ff5e8f 100%);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   padding: 40px 20px;
   color: white;
   margin-left: -5px;
@@ -128,6 +129,50 @@ const handleLogout = () => {
 .profile-header {
   text-align: center;
   margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.back-home {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.back-home:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.back-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 16px;
+  line-height: 1;
 }
 
 .avatar {
@@ -155,45 +200,90 @@ const handleLogout = () => {
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 15px 20px;
-  background: transparent;
-  border: none;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: white;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.3s;
+  border-radius: 14px;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   text-align: left;
+  text-decoration: none;
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
 
 .menu-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+}
+
+.menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .menu-item .icon {
-  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.menu-item.logout {
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.menu-item.logout:hover {
+  background: rgba(0, 0, 0, 0.32);
 }
 
 .content {
   flex: 1;
   background-color: white;
   padding: 60px 80px;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
 .page-title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 700;
   margin-bottom: 40px;
   color: #000;
@@ -266,7 +356,7 @@ const handleLogout = () => {
 }
 
 .payment-name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #333;
 }
@@ -339,12 +429,12 @@ const handleLogout = () => {
 }
 
 .logout-btn {
-  background: linear-gradient(90deg, #ff6b9d 0%, #ff5e8f 100%);
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
   color: white;
 }
 
 .logout-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
 }
 </style>
