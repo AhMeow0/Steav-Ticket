@@ -2,9 +2,10 @@
   <div class="booking-page">
     <HeadBar />
 
-    <!-- mini header (back + route) -->
+    <!-- mini header -->
     <div class="mini-header container">
       <button class="back-btn" @click="goBack">←</button>
+
       <div class="route-title">
         <span class="city">{{ fromLabel }}</span>
         <span class="arrow">→</span>
@@ -12,7 +13,7 @@
       </div>
     </div>
 
-    <!-- Search Bar (display values coming from home) -->
+    <!-- Search Bar -->
     <div class="container">
       <div class="search-bar">
         <div class="search-item">
@@ -43,30 +44,23 @@
           </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="search-item">
-          <div class="icon">📅</div>
-          <div class="text">
-            <div class="label">Date of Return</div>
-            <div class="value">{{ returnLabel }}</div>
-          </div>
-        </div>
-
-        <button class="clear-btn" title="Clear Dates" @click="clearDates">✕</button>
-        <button class="search-btn" title="Search" @click="fakeSearch">🔍</button>
+        <button class="search-btn" @click="fetchTrips">🔍</button>
       </div>
     </div>
 
     <!-- Results -->
     <div class="container results">
-      <div v-for="trip in trips" :key="trip.id" class="trip-card">
+      <div v-if="formattedTrips.length === 0" class="no-results">
+        No trips found.
+      </div>
+
+      <div v-for="trip in formattedTrips" :key="trip.id" class="trip-card">
         <div class="trip-left">
-          <img class="logo" :src="trip.logo" alt="company logo" />
+          <img class="logo" src="https://via.placeholder.com/90x40?text=BUS" />
           <div class="company">
             <div class="name">{{ trip.company }}</div>
-            <div class="type">{{ trip.type }}</div>
-            <div class="seat">{{ trip.seats }} Seat</div>
+            <div class="type">Bus</div>
+            <div class="seat">{{ trip.seats }} Seats</div>
           </div>
         </div>
 
@@ -78,12 +72,12 @@
 
           <div class="line-block">
             <div class="line"></div>
-            <div class="duration">{{ trip.duration }}</div>
+            <div class="duration">—</div>
             <div class="line"></div>
           </div>
 
           <div class="time-block right">
-            <div class="time">{{ trip.arriveTime }}</div>
+            <div class="time">—</div>
             <div class="place">{{ toLabel }}</div>
           </div>
         </div>
@@ -98,77 +92,105 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import HeadBar from '@/component/HeadBar.vue'
+import { computed, ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import HeadBar from "@/component/HeadBar.vue";
 
-type Trip = {
-  id: number
-  company: string
-  type: string
-  seats: number
-  departTime: string
-  arriveTime: string
-  duration: string
-  price: number
-  logo: string
+interface Schedule {
+  _id: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  price?: number;
+  totalSeats?: number;
+  bookedSeats?: number[];
+  busId?: {
+    companyName?: string;
+    busPlate?: string;
+    capacity?: number;
+  };
 }
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-//  get values from Home page (query)
-const from = computed(() => (route.query.from as string) || '')
-const to = computed(() => (route.query.to as string) || '')
-const journeyDate = ref((route.query.journeyDate as string) || '')
-const returnDate = ref((route.query.returnDate as string) || '')
+// Query parameters from home page
+const from = computed(() => (route.query.from as string) || "");
+const to = computed(() => (route.query.to as string) || "");
+const journeyDate = ref((route.query.journeyDate as string) || "");
+const returnDate = ref((route.query.returnDate as string) || "");
 
-const fromLabel = computed(() => from.value || '—')
-const toLabel = computed(() => to.value || '—')
+// Labels
+const fromLabel = computed(() => from.value || "—");
+const toLabel = computed(() => to.value || "—");
 
 const formatDate = (iso: string) => {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  const day = d.getDate()
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-  const month = monthNames[d.getMonth()]
-  const year = d.getFullYear()
-  return `${day} ${month}, ${year}`
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const journeyLabel = computed(() => formatDate(journeyDate.value));
+
+// Raw schedules from backend
+const trips = ref<Schedule[]>([]);
+
+// Format API → UI-friendly trip card
+const formattedTrips = computed(() =>
+  trips.value.map((t) => {
+    const depart = new Date(t.departureTime);
+
+    return {
+      id: t._id,
+      company: t.busId?.companyName || "Unknown Company",
+      busPlate: t.busId?.busPlate || "—",
+      seats: t.totalSeats ?? t.busId?.capacity ?? 0,
+      departTime: depart.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      price: t.price ?? 0,
+      raw: t,
+    };
+  })
+);
+
+// Fetch from API
+async function fetchTrips() {
+  try {
+    const res = await fetch("http://localhost:3000/api/routes")
+    const data: Schedule[] = await res.json()
+
+    const selectedDate = new Date(journeyDate.value).toDateString()
+
+    trips.value = data.filter((s) => {
+      const scheduleDate = new Date(s.departureTime).toDateString()
+      return (
+        s.origin === from.value &&
+        s.destination === to.value &&
+        scheduleDate === selectedDate   
+      )
+    })
+
+  } catch (e) {
+    console.error("Failed to fetch trips", e)
+  }
 }
 
-const journeyLabel = computed(() => formatDate(journeyDate.value))
-const returnLabel = computed(() => (returnDate.value ? formatDate(returnDate.value) : '—'))
 
-const goBack = () => router.back()
+onMounted(fetchTrips);
 
-const clearDates = () => {
-  journeyDate.value = ''
-  returnDate.value = ''
-}
+const goBack = () => router.back();
 
-const fakeSearch = () => {
-  // later you can call API based on from/to/date
-  alert(`Search: ${fromLabel.value} → ${toLabel.value}`)
-}
-
-// ✅ go to seat selecting page and pass needed data
-const viewSeats = (trip: Trip) => {
+// View seats
+const viewSeats = (trip: any) => {
   router.push({
-    path: '/seat-select',
+    path: "/seat-select",
     query: {
       from: from.value,
       to: to.value,
@@ -176,49 +198,14 @@ const viewSeats = (trip: Trip) => {
       returnDate: returnDate.value,
 
       company: trip.company,
+      busPlate: trip.busPlate,
+      seats: trip.seats,
       price: String(trip.price),
       departTime: trip.departTime,
-      arriveTime: trip.arriveTime,
+      scheduleId: trip.id,
     },
-  })
-}
-
-// Dummy data for UI
-const trips = ref<Trip[]>([
-  {
-    id: 1,
-    company: 'Ekreach Express',
-    type: 'Minivan',
-    seats: 15,
-    departTime: '6:00',
-    arriveTime: '9:00',
-    duration: '3h',
-    price: 8,
-    logo: 'https://via.placeholder.com/90x40?text=BUS',
-  },
-  {
-    id: 2,
-    company: 'VET Express',
-    type: 'Minivan',
-    seats: 15,
-    departTime: '6:30',
-    arriveTime: '9:30',
-    duration: '3h',
-    price: 7,
-    logo: 'https://via.placeholder.com/90x40?text=VET',
-  },
-  {
-    id: 3,
-    company: 'Kimseng Express',
-    type: 'Minivan',
-    seats: 15,
-    departTime: '6:40',
-    arriveTime: '9:40',
-    duration: '3h',
-    price: 8,
-    logo: 'https://via.placeholder.com/90x40?text=KMS',
-  },
-])
+  });
+};
 </script>
 
 <style scoped>

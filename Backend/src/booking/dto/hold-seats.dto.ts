@@ -1,4 +1,5 @@
-import { IsArray, IsString, ArrayMinSize } from 'class-validator';
+import { IsArray, IsString, ArrayMinSize, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class HoldSeatsDto {
   @IsString()
@@ -8,4 +9,8 @@ export class HoldSeatsDto {
   @ArrayMinSize(1)
   @IsString({ each: true })
   seatNos: string[];
+
+  @Type(() => Number)
+  @IsNumber()
+  totalPrice: number;
 }

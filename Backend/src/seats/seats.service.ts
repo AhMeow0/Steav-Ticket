@@ -7,6 +7,52 @@ import { Seat, SeatDocument, SeatStatus } from './schemas/seat.schema';
 export class SeatsService {
   constructor(@InjectModel(Seat.name) private seatModel: Model<SeatDocument>) {}
 
+  async upsertTripSeats(tripId: string, seatNos: string[]) {
+    const uniqueSeatNos = Array.from(new Set(seatNos.filter(Boolean)));
+    if (uniqueSeatNos.length === 0) return;
+
+    try {
+      await this.seatModel.bulkWrite(
+        uniqueSeatNos.map((seatNo) => ({
+          updateOne: {
+            filter: { tripId, seatNo },
+            update: {
+              $setOnInsert: {
+                tripId,
+                seatNo,
+                status: SeatStatus.AVAILABLE,
+                holdByUserId: null,
+                holdUntil: null,
+              },
+            },
+            upsert: true,
+          },
+        })),
+        { ordered: false },
+      );
+    } catch (e: any) {
+      // Ignore duplicate key errors from races.
+      const msg = typeof e?.message === 'string' ? e.message : '';
+      if (!msg.includes('E11000')) throw e;
+    }
+  }
+
+  async forceMarkSeatsSold(tripId: string, seatNos: string[]) {
+    const uniqueSeatNos = Array.from(new Set(seatNos.filter(Boolean)));
+    if (uniqueSeatNos.length === 0) return;
+
+    await this.seatModel.updateMany(
+      { tripId, seatNo: { $in: uniqueSeatNos } },
+      {
+        $set: {
+          status: SeatStatus.SOLD,
+          holdByUserId: null,
+          holdUntil: null,
+        },
+      },
+    );
+  }
+
   async getSeatsByTrip(tripId: string) {
     return this.seatModel.find({ tripId }).sort({ seatNo: 1 }).lean();
   }
@@ -20,13 +66,24 @@ export class SeatsService {
     const { tripId, seatNos, userId } = params;
     const holdMinutes = params.minutes ?? 10;
     const holdUntil = new Date(Date.now() + holdMinutes * 60 * 1000);
+    const now = new Date();
+
+    // Ensure requested seats exist in DB (first-time trips / legacy data).
+    await this.upsertTripSeats(tripId, seatNos);
 
     // Only hold seats that are AVAILABLE
     const res = await this.seatModel.updateMany(
       {
         tripId,
         seatNo: { $in: seatNos },
-        status: SeatStatus.AVAILABLE,
+        $or: [
+          { status: SeatStatus.AVAILABLE },
+          {
+            status: SeatStatus.HELD,
+            holdByUserId: userId,
+            holdUntil: { $gt: now },
+          },
+        ],
       },
       {
         $set: { status: SeatStatus.HELD, holdByUserId: userId, holdUntil },

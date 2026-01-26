@@ -3,6 +3,7 @@ import { PaymentsService } from './payments.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { BookingsService } from '../booking/bookings.service';
 import type { Request } from 'express';
+import { MockPaymentDto } from './dto/mock-payment.dto';
 
 type AuthedRequest = Request & { user: { sub: string } };
 
@@ -16,7 +17,7 @@ export class PaymentsController {
   @Post('mock')
   @UseGuards(AuthGuard)
   async mockPay(
-    @Body() body: { bookingId: string },
+    @Body() body: MockPaymentDto,
     @Req() req: AuthedRequest,
   ) {
     const userId = req.user.sub;

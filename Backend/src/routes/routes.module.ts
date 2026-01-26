@@ -5,6 +5,7 @@ import { RoutesController } from './routes.controller';
 import { Route, RouteSchema } from './schema/route.schema';
 import { Bus, BusSchema } from '../buses/schema/bus.schema';
 import { TicketPricesModule } from '../ticket-prices/ticket-prices.module';
+import { SeatsModule } from '../seats/seats.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TicketPricesModule } from '../ticket-prices/ticket-prices.module';
       { name: Bus.name, schema: BusSchema },
     ]),
     TicketPricesModule,
+    SeatsModule,
   ],
   controllers: [RoutesController],
   providers: [RoutesService],

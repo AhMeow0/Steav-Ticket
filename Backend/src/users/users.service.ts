@@ -68,4 +68,32 @@ export class UsersService {
   async remove(id: string): Promise<UserDocument | null> {
     return this.userModel.findByIdAndDelete(id).exec();
   }
+  async seedAdmin() {
+    const email = String(process.env.ADMIN_EMAIL || '');
+    const password = String(process.env.ADMIN_PASSWORD || '');
+    const name = String(process.env.ADMIN_NAME || '');
+
+    if (!email || !password || !name) {
+      console.warn('Admin environment variables missing. Skipping admin seeding.');
+      return;
+    }
+
+    const exists = await this.userModel.findOne({ email });
+    if (exists) {
+      console.log('Admin user already exists. Skipping seeding.');
+      return;
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await this.userModel.create({
+      name,
+      email,
+      password: hashed,
+      role: 'admin',
+    });
+
+    console.log('Admin user created!');
+  }
+
 }

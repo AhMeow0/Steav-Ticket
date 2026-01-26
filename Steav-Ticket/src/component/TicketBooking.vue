@@ -105,9 +105,11 @@
 </template>
 
 <script setup lang="ts">
+
 import Footer from '@/component/Footer.vue'
 import HeadBar from '@/component/HeadBar.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { apiUrl } from '@/lib/api'
 
 type Ticket = {
   id: number | string
@@ -120,25 +122,68 @@ type Ticket = {
   seatCount: number
   price: number
   total: number
-  status: 'ACTIVE' | 'COMPLETED'
+  status: 'ACTIVE' | 'COMPLETED' | 'PENDING'
   bookingDate: string
 }
 
 const tickets = ref<Ticket[]>([])
 
-const loadTickets = () => {
-  const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as Array<Partial<Ticket>>
+async function fetchUserBookings() {
+  try {
+    const token =
+      localStorage.getItem('access_token') ||
+      localStorage.getItem('token') ||
+      JSON.parse(localStorage.getItem('user') || '{}').token;
+    if (!token) return;
+    const res = await fetch(apiUrl('/bookings/my'), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const bookings = await res.json();
+    // Map backend bookings to Ticket type (pending bookings)
+    const mapped = Array.isArray(bookings)
+      ? bookings.filter((b) => b.status === 'PENDING').map((b) => ({
+          id: b._id,
+          from: b.origin || '-',
+          to: b.destination || '-',
+          journeyDate: b.departureTime || b.bookingDate || '-',
+          company: b.company || '-',
+          seats: Array.isArray(b.seatNos) ? b.seatNos.join(', ') : '-',
+          seatCount: Array.isArray(b.seatNos) ? b.seatNos.length : 0,
+          price: b.totalPrice ?? 0,
+          total: b.totalPrice ?? 0,
+          status: 'PENDING',
+          bookingDate: b.createdAt || new Date().toISOString(),
+        }))
+      : [];
+    return mapped;
+  } catch (e) {
+    return [];
+  }
+}
 
-  // ✅ ensure bookingDate exists even for old saved tickets
-  tickets.value = raw.map((t) => ({
+const loadTickets = async () => {
+  const raw = JSON.parse(localStorage.getItem('tickets') || '[]') as Array<Partial<Ticket>>
+  // ensure bookingDate exists even for old saved tickets
+  const localTickets = raw.map((t) => ({
     ...(t as Ticket),
     bookingDate: t.bookingDate ?? new Date().toISOString(),
   }))
+  // Fetch pending bookings from backend
+  const pending = await fetchUserBookings();
+  // Merge, avoid duplicates by id
+  const all = [...(pending || []), ...localTickets];
+  const seen = new Set();
+  tickets.value = all.filter((t) => {
+    if (seen.has(t.id)) return false;
+    seen.add(t.id);
+    return true;
+  });
 }
 
-loadTickets()
+onMounted(loadTickets)
 
-const currentTickets = computed(() => tickets.value.filter((t) => t.status === 'ACTIVE'))
+const currentTickets = computed(() => tickets.value.filter((t) => t.status === 'ACTIVE' || t.status === 'PENDING'))
 const historyTickets = computed(() => tickets.value.filter((t) => t.status === 'COMPLETED'))
 
 const code = (city: string) => {

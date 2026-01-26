@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <!-- top search bar (display values from home selections) -->
+    <!-- top search bar -->
     <div class="container">
       <div class="search-bar">
         <div class="search-item">
@@ -59,7 +59,6 @@
 
     <!-- main content -->
     <div class="container seat-wrap">
-      <!-- Seat card -->
       <div class="seat-card">
         <div class="seat-legend">
           <div class="legend-item">
@@ -77,7 +76,6 @@
         </div>
 
         <div class="seat-grid">
-          <!-- column labels A B  C D like screenshot -->
           <div class="col-labels">
             <span></span>
             <span>A</span>
@@ -87,7 +85,6 @@
             <span>D</span>
           </div>
 
-          <!-- seat rows -->
           <div v-for="row in rows" :key="row" class="seat-row">
 
             <span class="row-num">{{ row }}</span>
@@ -110,10 +107,8 @@
               💺
             </button>
 
-            <!-- aisle -->
             <span class="aisle"></span>
 
-            <!-- right group C/D -->
             <button
               class="seat-btn"
               :class="seatClass(`C${row}`)"
@@ -178,56 +173,83 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiUrl } from '@/lib/api'
 
 const router = useRouter()
 const route = useRoute()
 
-// From Home (via Booking page query)
-const fromLabel = computed(() => (route.query.from as string) || '—')
-const toLabel = computed(() => (route.query.to as string) || '—')
+// Query from booking page
+const scheduleId = computed(() => route.query.scheduleId as string)
 const journeyISO = computed(() => (route.query.journeyDate as string) || '')
 const returnISO = computed(() => (route.query.returnDate as string) || '')
 
-// Trip info from booking card
-const companyLabel = computed(() => (route.query.company as string) || '—')
-const price = computed(() => Number(route.query.price || 0))
+// Data from backend
+const schedule = ref<any>(null)
+const bookedSet = ref<Set<string>>(new Set())
+const capacity = ref<number>(0)
+const tripId = ref("")       // <-- ADDED
 
+// UI seats
+const rows = ref<number[]>([])
+const selectedSeats = ref<string[]>([])
+
+// Format date
 const formatDate = (iso: string) => {
   if (!iso) return '—'
   const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  const day = d.getDate()
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-  return `${day} ${months[d.getMonth()]}, ${d.getFullYear()}`
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
 }
 
+// Labels
 const journeyLabel = computed(() => formatDate(journeyISO.value))
-const returnLabel = computed(() => (returnISO.value ? formatDate(returnISO.value) : '—'))
+const returnLabel = computed(() =>
+  returnISO.value ? formatDate(returnISO.value) : '—'
+)
 
-// seat layout
-const rows = [1, 2, 3, 4, 5, 6, 7]
+const fromLabel = computed(() => schedule.value?.origin || '—')
+const toLabel = computed(() => schedule.value?.destination || '—')
+const companyLabel = computed(() => schedule.value?.company || schedule.value?.busId?.companyName || '—')
+const price = computed(() => schedule.value?.price || 0)
 
-// demo booked seats (red, cannot click)
-const bookedSet = new Set<string>([])
+async function fetchSchedule() {
+  try {
+    // 1️⃣ Fetch trip info + seats from backend
+    const res = await fetch(apiUrl(`/routes/${scheduleId.value}/seats`));
+    if (!res.ok) throw new Error("Failed to load route seats");
 
-const selectedSeats = ref<string[]>([])
+    const data = await res.json();   // contains seats + bookedSeats + price + company etc.
+    console.log("SEAT DATA:", data);
 
-const isBooked = (seat: string) => bookedSet.has(seat)
+    schedule.value = data;
+    tripId.value = data.tripId;
+
+    // 2️⃣ booked seats list (backend now includes HELD + SOLD)
+    bookedSet.value = new Set(data.bookedSeats);
+
+    // 3️⃣ capacity
+    capacity.value = data.totalSeats ?? 40;
+
+    // 4️⃣ build rows
+    const rowsCount = Math.ceil(capacity.value / 4);
+    rows.value = Array.from({ length: rowsCount }, (_, i) => i + 1);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+onMounted(fetchSchedule)
+
+// Helpers
+const isBooked = (seat: string) => bookedSet.value.has(seat)
 const isSelected = (seat: string) => selectedSeats.value.includes(seat)
 
 const seatClass = (seat: string) => {
@@ -241,31 +263,33 @@ const toggleSeat = (seat: string) => {
   if (isSelected(seat)) {
     selectedSeats.value = selectedSeats.value.filter((s) => s !== seat)
   } else {
-    selectedSeats.value = [...selectedSeats.value, seat]
+    selectedSeats.value.push(seat)
   }
 }
 
-const total = computed(() => price.value * selectedSeats.value.length)
+const total = computed(() => selectedSeats.value.length * price.value)
 
+// Checkout
 const checkout = () => {
   router.push({
     path: '/checkout',
     query: {
+      tripId: tripId.value,                      // <-- FIXED
+      seats: selectedSeats.value.join(','),
+      seatCount: selectedSeats.value.length,
+      total: total.value,
+      price: price.value,
       from: fromLabel.value,
       to: toLabel.value,
       journeyDate: journeyISO.value,
       returnDate: returnISO.value,
-
-      company: companyLabel.value,
-      price: String(price.value),
-
-      seats: selectedSeats.value.join(','), // A1,B2,C3
-      seatCount: String(selectedSeats.value.length),
-      total: String(total.value),
-    },
+      company: companyLabel.value
+    }
   })
 }
 </script>
+
+
 
 <style scoped>
 .seat-page {

@@ -16,8 +16,15 @@ import { SeatsModule } from './seats/seats.module';
 import { BookingsModule } from './booking/bookings.module';
 import { PaymentsModule } from './payment/payments.module';
 import { CheckoutModule } from './checkout/checkout.module';
+import { ConfigModule } from '@nestjs/config';
+
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env.example',   // <-- LOAD THIS FILE
+    }),
+
     MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
     TicketsModule,
     RoutesModule,

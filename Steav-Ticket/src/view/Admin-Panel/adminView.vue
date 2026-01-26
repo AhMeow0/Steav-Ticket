@@ -5,10 +5,25 @@
 
       <ul class="menu">
         <li v-for="(item, index) in items" :key="index">
-          <router-link class="nav-link" active-class="active" :to="item.to">
+          <router-link
+            v-if="item.to"
+            class="nav-link"
+            active-class="active"
+            :to="item.to"
+          >
             <span>{{ item.label }}</span>
           </router-link>
-        </li>
+
+          <button
+            v-else
+            class="nav-link logout-button"
+            style="background:none;border:none;width:100%;text-align:left;cursor:pointer;"
+            @click="logout"
+          >
+        <span>{{ item.label }}</span>
+  </button>
+</li>
+
       </ul>
     </aside>
 
@@ -18,21 +33,34 @@
 </template>
 
 <script lang="ts">
+import { useRouter } from 'vue-router'
+
 export default {
-  data() {
-    return {
-      items: [
-        { label: 'Dashboard', to: '/admin/dashboard' },
-        { label: 'Routes & Schedules', to: '/admin/manage-route-schedules' },
-        { label: 'Ticket Price', to: '/admin/manage-ticket-price' },
-        { label: 'Booking & Passager', to: '/admin/manage-booking-passager' },
-        { label: 'Promotion & News', to: '/admin/manage-promotion' },
-        { label: 'Buses', to: '/admin/manage-bus' },
-      ],
+  setup() {
+    const router = useRouter()
+
+    function logout() {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('isLoggedIn')
+
+      router.push('/login')
     }
-  },
+
+    const items = [
+      { label: 'Dashboard', to: '/admin/dashboard' },
+      { label: 'Routes & Schedules', to: '/admin/manage-route-schedules' },
+      { label: 'Ticket Price', to: '/admin/manage-ticket-price' },
+      { label: 'Booking & Passager', to: '/admin/manage-booking-passager' },
+      { label: 'Promotion & News', to: '/admin/manage-promotion' },
+      { label: 'Buses', to: '/admin/manage-bus' },
+      { label: 'Logout', to: null }, 
+    ]
+
+    return { items, logout }
+  }
 }
 </script>
+
 
 <style scoped>
 * {
@@ -111,4 +139,15 @@ export default {
   flex: 1;
   padding: 30px;
 }
+.logout-button {
+  color: #f87171 !important;
+  font-weight: 600;
+}
+
+.logout-button:hover {
+  background: #7f1d1d !important;
+  color: white !important;
+  transform: scale(1.03);
+}
+
 </style>

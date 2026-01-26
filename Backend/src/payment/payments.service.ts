@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class PaymentsService {
   // mock payment: 90% success, 10% fail
   mockPay(amount: number) {
-    const ok = Math.random() < 0.9;
+    const ok = true; // 💯 Always succeed
     return {
       success: ok,
       transactionId: ok ? `TX-${Date.now()}` : null,
@@ -12,4 +12,5 @@ export class PaymentsService {
       amount,
     };
   }
+
 }

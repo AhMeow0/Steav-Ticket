@@ -1,23 +1,34 @@
+// Lean types for admin aggregation (for listBookings)
+type TicketLean = {
+  _id: string;
+  userId: string;
+  passengerName?: string;
+  seats?: string[];
+  seatNumber?: string;
+  price?: number;
+  status: string;
+  createdAt?: string | Date;
+};
+type BookingLean = {
+  _id: string;
+  userId: string;
+  tripId?: string;
+  seatNos?: string[];
+  totalPrice?: number;
+  status: string;
+  createdAt?: string | Date;
+};
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
 import { Ticket } from '../tickets/schemas/ticket.schema';
+import { BookingStatus } from '../booking/schemas/booking.schema';
 import { Route } from '../routes/schema/route.schema';
 import { User } from '../users/entities/user.entity';
-import { BookingStatus } from './dto/update-booking-status.dto';
+// import { BookingStatus } from './dto/update-booking-status.dto';
 
 type Period = 'daily' | 'weekly' | 'all';
 
-type TicketLean = {
-  _id: unknown;
-  userId: string;
-  passengerName: string;
-  seatNumber: number;
-  price: number;
-  destination: string;
-  departureTime: string;
-  status: string;
-};
 
 type UserLean = {
   _id: unknown;
@@ -143,6 +154,7 @@ function periodRange(period: Period): { startIso?: string; endIso?: string } {
 export class AdminService {
   constructor(
     @InjectModel(Ticket.name) private readonly ticketModel: Model<Ticket>,
+    @InjectModel('Booking') private readonly bookingModel: Model<any>,
     @InjectModel(Route.name) private readonly routeModel: Model<Route>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
@@ -160,9 +172,10 @@ export class AdminService {
         ? { departureTime: { $gte: startIso, $lt: endIso } }
         : {};
 
-    const [totalTrips, totalBookings, earnAgg, statusAgg] = await Promise.all([
+    // Get all tickets in the period
+    const [totalTrips, tickets, earnAgg, statusAgg] = await Promise.all([
       this.routeModel.countDocuments(departureTimeFilter).exec(),
-      this.ticketModel.countDocuments(departureTimeFilter).exec(),
+      this.ticketModel.find(departureTimeFilter).lean().exec(),
       this.ticketModel
         .aggregate<EarnAggRow>([
           { $match: departureTimeFilter },
@@ -176,6 +189,18 @@ export class AdminService {
         ])
         .exec(),
     ]);
+
+    // Sum all seats from tickets (seats array or seatNumber fallback)
+    let totalBookSeat = 0;
+    for (const t of tickets) {
+      if (Array.isArray(t.seats)) {
+        totalBookSeat += t.seats.length;
+     } else if (Array.isArray((t as any).seats) && (t as any).seats.length > 0) {
+      const seats = (t as any).seats as string[];
+      // use seats here
+    }
+
+    }
 
     const totalEarn = earnAgg.length > 0 ? earnAgg[0].totalEarn : 0;
 
@@ -243,7 +268,7 @@ export class AdminService {
     return {
       period,
       totalTrips,
-      totalBookings,
+      totalBookSeat,
       totalEarn,
       series,
       statusBreakdown,
@@ -256,56 +281,78 @@ export class AdminService {
     departureTime?: string;
     status?: string;
   }) {
-    const filter: Record<string, unknown> = {};
+    // Build filters for both collections
+    const ticketFilter: Record<string, unknown> = {};
+    const bookingFilter: Record<string, unknown> = {};
+    if (params.destination) ticketFilter.destination = params.destination;
+    if (params.status) ticketFilter.status = params.status;
+    if (params.departureTime) ticketFilter.departureTime = params.departureTime;
+    if (params.date) ticketFilter.departureTime = { $regex: `^${params.date}` };
+    if (params.status) bookingFilter.status = params.status;
+    if (params.date) bookingFilter.createdAt = { $regex: `^${params.date}` };
 
-    if (params.destination) filter.destination = params.destination;
-    if (params.status) filter.status = params.status;
+    // Fetch tickets (confirmed bookings)
+    const tickets = await this.ticketModel.find(ticketFilter).lean<TicketLean[]>().exec();
+    // Fetch bookings (pending/unpaid bookings)
+    const bookings = await this.bookingModel.find(bookingFilter).lean<BookingLean[]>().exec();
 
-    if (params.departureTime) {
-      filter.departureTime = params.departureTime;
-    } else if (params.date) {
-      // Expecting YYYY-MM-DD; matches ISO strings like 2026-01-21T...
-      filter.departureTime = { $regex: `^${params.date}` };
-    }
-
-    const tickets = await this.ticketModel
-      .find(filter)
-      .lean<TicketLean[]>()
-      .exec();
-
-    const userIds = Array.from(
-      new Set(
-        tickets
-          .map((t) => (t.userId ? String(t.userId) : ''))
-          .filter((id) => id && id !== 'undefined' && isValidObjectId(id)),
-      ),
-    );
+    // Collect all userIds
+    const userIds = Array.from(new Set([
+      ...tickets.map((t) => t.userId),
+      ...bookings.map((b) => b.userId),
+    ].filter((id) => id && id !== 'undefined' && isValidObjectId(id))));
 
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
       .select({ name: 1, email: 1 })
       .lean<UserLean[]>()
       .exec();
+    const userById = new Map<string, UserLean>(users.map((u) => [String(u._id), u]));
 
-    const userById = new Map<string, UserLean>(
-      users.map((u) => [String(u._id), u]),
-    );
-
-    return tickets.map((t) => {
+    // Normalize tickets
+    const ticketResults = tickets.map((t) => {
       const user = userById.get(String(t.userId));
       return {
         _id: String(t._id),
-        destination: t.destination,
-        departureTime: t.departureTime,
-        seatNumber: t.seatNumber,
-        passengerName: t.passengerName,
+        type: 'TICKET',
+        passengerName: t.passengerName || '-',
+        seatNumbers: t.seats || (t.seatNumber ? [t.seatNumber] : []),
+        price: t.price ?? 0,
         status: t.status,
-        price: t.price,
+        bookingDate: t.createdAt ? new Date(t.createdAt).toISOString() : '-',
         user: user
           ? { _id: String(user._id), name: user.name, email: user.email }
           : { _id: String(t.userId) },
       };
     });
+
+    // Normalize bookings (only those not PAID, to avoid duplication)
+    const bookingResults = bookings
+      .filter((b: BookingLean) => b.status !== 'CANCELLED')
+      .map((b: BookingLean) => {
+        const user = userById.get(String(b.userId));
+        return {
+          _id: String(b._id),
+          type: 'BOOKING',
+          passengerName: user?.name || user?.email || '-',
+          seatNumbers: b.seatNos || [],
+          price: b.totalPrice ?? 0,
+          status: b.status === 'PAID' ? 'CONFIRMED' : b.status,
+          bookingDate: b.createdAt ? new Date(b.createdAt).toISOString() : '-',
+          user: user
+            ? { _id: String(user._id), name: user.name, email: user.email }
+            : { _id: String(b.userId) },
+        };
+      });
+
+    // Combine and sort by creation (descending)
+    const allResults = [...ticketResults, ...bookingResults].sort((a, b) => {
+      // Use bookingDate for sorting if available, else fallback to _id
+      const dateA = a.bookingDate || a._id;
+      const dateB = b.bookingDate || b._id;
+      return dateB.localeCompare(dateA);
+    });
+    return allResults;
   }
 
   async updateBookingStatus(id: string, status: BookingStatus) {
