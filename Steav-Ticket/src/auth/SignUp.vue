@@ -7,38 +7,23 @@
 
       <form class="auth-form">
         <!-- First Name -->
-        <label>First Name</label>
-        <input
-          v-model="firstName"
-          type="text"
-          placeholder="Enter your first name"
-          autocomplete="given-name"
-        />
-        <p v-if="errors.firstName" class="error">{{ errors.firstName }}</p>
-
-        <!-- Last Name -->
-        <label>Last Name</label>
-        <input
-          v-model="lastName"
-          type="text"
-          placeholder="Enter your last name"
-          autocomplete="family-name"
-        />
-        <p v-if="errors.lastName" class="error">{{ errors.lastName }}</p>
+        <label>Name</label>
+        <input v-model="name" type="text" placeholder="Enter your name" />
 
         <!-- Email -->
+        <div class="email-form">
+
         <label>Email Address</label>
-        <input
-          v-model="email"
-          type="email"
-          placeholder="Enter your email"
-          autocomplete="email"
-        />
+          <input
+            v-model="email"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="email">
+        </div>
         <p v-if="errors.email" class="error">{{ errors.email }}</p>
 
-        <!-- Password -->
-        <label>Password</label>
         <div class="password-box">
+          <label>Password</label>
           <input
             :type="showPassword ? 'text' : 'password'"
             v-model="password"
@@ -52,8 +37,9 @@
         <p v-if="errors.password" class="error">{{ errors.password }}</p>
 
         <!-- Confirm Password -->
-        <label>Confirm Password</label>
+
         <div class="password-box">
+          <label>Confirm Password</label>
           <input
             :type="showPasswordConfirm ? 'text' : 'password'"
             v-model="confirmPassword"
@@ -108,8 +94,7 @@ import { apiUrl } from '@/lib/api'
 
 const router = useRouter()
 
-const firstName = ref('')
-const lastName = ref('')
+const name = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -118,8 +103,7 @@ const showPasswordConfirm = ref(false)
 const acceptTerms = ref(false)
 
 const errors = ref({
-  firstName: '',
-  lastName: '',
+  name: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -127,10 +111,9 @@ const errors = ref({
 })
 
 async function signup() {
-  errors.value = { firstName: '', lastName: '', email: '', password: '', confirmPassword: '', general: '' }
+  errors.value = { name: '', email: '', password: '', confirmPassword: '', general: '' }
 
-  if (!firstName.value.trim()) errors.value.firstName = 'First name is required'
-  if (!lastName.value.trim()) errors.value.lastName = 'Last name is required'
+  if (!name.value.trim()) errors.value.name = 'Name is required'
   if (!email.value.trim()) errors.value.email = 'Email is required'
   if (!password.value) errors.value.password = 'Password is required'
   if (password.value !== confirmPassword.value) errors.value.confirmPassword = 'Passwords do not match'
@@ -139,36 +122,31 @@ async function signup() {
   if (Object.values(errors.value).some(err => err)) return
 
   try {
-    const response = await fetch(apiUrl('/auth/signup'), {
+    const response = await fetch(apiUrl('/auth/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        firstName: firstName.value.trim(),
-        lastName: lastName.value.trim(),
+        name: name.value.trim(),
         email: email.value.trim(),
         password: password.value,
       }),
     })
 
     if (!response.ok) {
-      let message = 'Signup failed'
-      try {
-        const err = await response.json()
-        if (typeof err?.message === 'string') message = err.message
-      } catch {}
-      throw new Error(message)
+      const err = await response.json().catch(() => null)
+      throw new Error(err?.message || 'Signup failed')
     }
 
     const data = await response.json()
     localStorage.setItem('access_token', data.access_token)
-    localStorage.setItem('isLoggedIn', 'true')
 
-    router.push('/homepage')
-  } catch (err: unknown) {
+    router.push('/login')
+  } catch (err) {
     errors.value.general =
       err instanceof Error ? err.message : 'Signup failed'
   }
 }
+
 </script>
 
 <style scoped>
@@ -235,7 +213,7 @@ label {
 }
 
 input {
-  width: 100%;
+  width: 95%;
   padding: 16px 20px;
   border: none;
   border-radius: 9999px;
@@ -256,6 +234,7 @@ input::placeholder {
 
 .password-box {
   position: relative;
+  margin-top: 15px;
 }
 
 .toggle {
@@ -328,7 +307,9 @@ input::placeholder {
   font-size: 0.97rem;
   margin: 0 0 36px 0;
 }
-
+.last-name-form{
+  margin-top: 15px;
+}
 .link {
   color: #ed486c;
   font-weight: 700;
@@ -338,7 +319,9 @@ input::placeholder {
 .link:hover {
   text-decoration: underline;
 }
-
+.email-form{
+  margin-top: 15px;
+}
 .or {
   text-align: center;
   color: #9ca3af;

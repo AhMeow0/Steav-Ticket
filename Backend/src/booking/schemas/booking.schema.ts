@@ -25,6 +25,11 @@ export class Booking {
 
   @Prop({ default: 0 })
   totalPrice: number;
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

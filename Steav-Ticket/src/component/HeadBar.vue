@@ -25,9 +25,14 @@
 
         <div class="notification-dropdown" v-if="isNotificationOpen">
           <p v-if="notifications.length === 0" class="empty">No notifications</p>
-          <div v-for="(note, i) in notifications" :key="i" class="notification-item">
-            {{ note }}
-          </div>
+            <div
+              v-for="n in notifications"
+              :key="n._id"
+              class="notification-item"
+            >
+              {{ n.message }}
+            </div>
+
         </div>
       </div>
 
@@ -103,9 +108,12 @@ function goToProfile(){
 }
 
 type UserProfile = {
+  _id?: string
+  id?: string
   name?: string
   email?: string
 }
+
 
 const router = useRouter()
 const user = ref<UserProfile | null>(null)
@@ -113,28 +121,73 @@ const isHidden = ref(false)
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
 const isNotificationOpen = ref(false)
-const unreadCount = ref() // example
-const notifications = ref<string[]>([
-  
-])
+const notifications = ref<{ _id: string, message: string }[]>([]);
+const unreadCount = ref(0)
 
-function toggleNotifications() {
-  isNotificationOpen.value = !isNotificationOpen.value
+import { eventBus } from "@/eventBus";
+import { watch } from "vue";
+
+watch(() => eventBus.refreshNotifications, (refresh) => {
+  if (refresh) {
+    loadNotifications();
+    eventBus.refreshNotifications = false;
+  }
+});
+
+async function loadNotifications() {
+  const token = localStorage.getItem("access_token");
+  if (!token || !user.value) return;
+
+  const userId = user.value._id || user.value?.id;
+  if (!userId) return;
+
+  try {
+    const res = await fetch(apiUrl(`/notifications/${userId}`), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) return;
+
+    const list = await res.json();
+    // Ensure each item is in the correct format
+    notifications.value = list.map((n: { message: string, _id: string }) => ({
+      _id: n._id,
+      message: n.message,
+    }));
+
+    unreadCount.value = list.filter((n: { read: boolean }) => !n.read).length;
+  } catch (err) {
+    console.error("Failed to load notifications:", err);
+  }
 }
+
+
+async function toggleNotifications() {
+  isNotificationOpen.value = !isNotificationOpen.value;
+
+  if (isNotificationOpen.value && unreadCount.value > 0) {
+    await markNotificationsRead();
+  }
+}
+async function markNotificationsRead() {
+  if (!user.value) return;
+  const userId = user.value._id || user.value.id;
+
+  await fetch(apiUrl("/notifications/read"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId }),
+  });
+
+  unreadCount.value = 0;
+}
+
 
 function closeNotifications() {
   isNotificationOpen.value = false
 }
 
 // Auto-close when clicking outside
-onMounted(() => {
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement
-    if (!target.closest('.notification-wrapper')) {
-      closeNotifications()
-    }
-  })
-})
 const displayName = computed(() => {
   if (!user.value) return ''
   return user.value.name || user.value.email?.split('@')[0] || 'there'
@@ -185,7 +238,7 @@ async function fetchProfile() {
     })
 
     if (response.ok) {
-      user.value = (await response.json()) as UserProfile
+      user.value = (await response.json()) as UserProfile;
       return
     }
 
@@ -205,13 +258,22 @@ function logout() {
 
 onMounted(async () => {
   await nextTick()
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (!target.closest('.notification-wrapper')) {
+      closeNotifications()
+    }
+  })
+
   lastScrollY = window.scrollY
   updateScrollState()
 
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onResize)
 
-  await fetchProfile()
+  await fetchProfile()   // load user first
+  await loadNotifications() // then load notifications
 })
 
 onUnmounted(() => {

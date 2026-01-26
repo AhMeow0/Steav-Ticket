@@ -38,7 +38,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req: AuthenticatedRequest) {
-    return req.user; // Returns the data inside the token (id, email, role)
+  async getProfile(@Request() req: AuthenticatedRequest) {
+    return this.usersService.findOne(req.user.sub);
   }
+
 }

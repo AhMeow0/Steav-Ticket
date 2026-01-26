@@ -11,12 +11,14 @@ import {
   BookingDocument,
   BookingStatus,
 } from './schemas/booking.schema';
+import { NotificationsService } from '../notification/noti.service';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
     private readonly seatsService: SeatsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async holdAndCreateBooking(params: {
@@ -51,6 +53,11 @@ export class BookingsService {
 
     booking.status = BookingStatus.PAID;
     await booking.save();
+    await this.notificationsService.create({
+      userId,
+      message: `Your booking for trip ${booking.tripId} is confirmed. Seats: ${booking.seatNos.join(', ')}`,
+      read: false,
+    });
     return booking;
   }
 
@@ -61,4 +68,8 @@ export class BookingsService {
     if (!booking) throw new NotFoundException('Booking not found');
     return booking;
   }
+  async getAllBookingsAdmin() {
+  return this.bookingModel.find().lean();   
+}
+
 }

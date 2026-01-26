@@ -17,12 +17,12 @@ import { BookingsModule } from './booking/bookings.module';
 import { PaymentsModule } from './payment/payments.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { ConfigModule } from '@nestjs/config';
-
+import { NotificationsModule } from './notification/noti.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env.example',   // <-- LOAD THIS FILE
+      envFilePath: '.env',   // <-- LOAD THIS FILE
     }),
 
     MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
@@ -39,6 +39,7 @@ import { ConfigModule } from '@nestjs/config';
     BookingsModule,
     PaymentsModule,
     CheckoutModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

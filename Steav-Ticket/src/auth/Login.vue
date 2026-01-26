@@ -16,9 +16,8 @@
         />
         <p v-if="errors.email" class="error">{{ errors.email }}</p>
 
-        <!-- Password -->
-        <label>Password</label>
         <div class="password-box">
+          <label >Password</label>
           <input
             :type="showPassword ? 'text' : 'password'"
             v-model="password"
@@ -179,7 +178,7 @@ h1 {
 }
 
 .header {
-  height: 48px;
+  height: 60px;
   width: auto;
   vertical-align: middle;
 }
@@ -201,7 +200,7 @@ label {
 }
 
 input {
-  width: 100%;
+  width: 95%;
   padding: 16px 20px;
   border: none;
   border-radius: 9999px;
@@ -218,9 +217,11 @@ input:focus {
 
 .password-box {
   position: relative;
+  margin-top: 20px;
 }
 
 .toggle {
+  margin-top: 15px;
   position: absolute;
   right: 20px;
   top: 50%;
@@ -244,15 +245,23 @@ input:focus {
 .remember {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   color: #4b5563;
 }
 
-.remember input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #ed486c;
-  cursor: pointer;
+input:not([type="checkbox"]) {
+  width: 95%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 9999px;
+  background: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+input:not([type="checkbox"]):focus {
+  outline: none;
+  background: white;
 }
 
 .forgot {

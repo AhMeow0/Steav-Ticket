@@ -154,7 +154,7 @@ import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { apiUrl } from "@/lib/api";
 import Footer from "@/component/Footer.vue";
-
+import { eventBus } from "@/eventBus";
 defineOptions({ name: "CheckoutPage" });
 
 const route = useRoute();
@@ -409,8 +409,12 @@ const confirmBooking = async () => {
       bookingDate: new Date().toISOString(),
     });
 
-    alert("Payment successful! Booking confirmed.");
-    router.push("/booking");
+    if (payment?.success) {
+
+      eventBus.refreshNotifications = true;  // <--- triggers header reload
+      
+      router.push("/booking");
+    }
   } finally {
     isSubmitting.value = false;
   }
@@ -526,7 +530,7 @@ const confirmBooking = async () => {
 }
 
 .payment-form input {
-  width: 100%;
+  width: 95%;
   padding: 10px;
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -539,7 +543,7 @@ const confirmBooking = async () => {
 }
 
 .card-row .field.small input {
-  width: 100%;
+  width: 90%;
 }
 
 /* TOTAL BOX */

@@ -22,6 +22,10 @@ export class NotificationsService {
   }
 
   async markAllRead(userId: string) {
-    return this.notifModel.updateMany({ userId }, { read: true });
+    return this.notifModel.updateMany(
+      { userId, read: false },
+      { $set: { read: true } }
+    );
   }
+
 }

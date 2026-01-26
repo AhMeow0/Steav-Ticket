@@ -30,7 +30,7 @@
         <option value="all">All</option>
       </select>
     </div>
-
+    
     <!-- Chart -->
     <div class="charts-grid">
       <section class="chart-card">
@@ -52,7 +52,7 @@
           </div>
         </div>
       </section>
-
+      
       <section class="chart-card">
         <div class="chart-title">Booking Status</div>
 
