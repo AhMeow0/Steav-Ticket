@@ -7,6 +7,7 @@ import {
   BookingStatus,
 } from '../booking/schemas/booking.schema';
 import { User } from '../users/entities/user.entity';
+import { RouteDocument } from '../routes/schema/route.schema';
 
 type Period = 'daily' | 'weekly' | 'all';
 
@@ -18,6 +19,9 @@ export class AdminService {
 
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
+
+    @InjectModel('Route')
+    private readonly routeModel: Model<RouteDocument>,
   ) {}
 
 // ===================== DASHBOARD =====================
@@ -103,6 +107,7 @@ async getDashboard(periodRaw?: string) {
   };
 }
 // ===================== LIST BOOKINGS =====================
+// ===================== LIST BOOKINGS =====================
 async listBookings(params: {
   destination?: string;
   date?: string;
@@ -111,42 +116,83 @@ async listBookings(params: {
 }) {
   const filter: any = {};
 
-  if (params.status) filter.status = params.status;
-  if (params.date) filter.createdAt = { $regex: `^${params.date}` };
+  // Filter by booking status
+  if (params.status) {
+    filter.status = params.status;
+  }
 
+  // Filter by date (YYYY-MM-DD)
+  if (params.date) {
+    const start = new Date(params.date);
+    const end = new Date(params.date);
+    end.setHours(23, 59, 59, 999);
+
+    filter.createdAt = { $gte: start, $lte: end };
+  }
+
+  // Fetch all bookings first
   const bookings = await this.bookingModel.find(filter).lean();
 
-  // Get all users
-  const userIds = Array.from(
-    new Set(bookings.map(b => b.userId).filter(id => id && isValidObjectId(id)))
-  );
+  if (bookings.length === 0) return [];
+
+  // -------- Fetch Route Info --------
+  const tripIds = [...new Set(bookings.map(b => b.tripId))];
+
+  const routes = await this.routeModel
+    .find({ _id: { $in: tripIds } })
+    .lean();
+
+  const routeMap = new Map(routes.map(r => [String(r._id), r]));
+
+  // -------- Apply route filters --------
+  const filtered = bookings.filter(b => {
+    const r = routeMap.get(String(b.tripId));
+    if (!r) return false;
+
+    if (params.destination && r.destination !== params.destination)
+      return false;
+
+    if (params.departureTime && r.departureTime !== params.departureTime)
+      return false;
+
+    return true;
+  });
+
+  // -------- Fetch Users --------
+  const userIds = [...new Set(filtered.map(b => b.userId))];
 
   const users = await this.userModel
     .find({ _id: { $in: userIds } })
     .select({ name: 1, email: 1 })
     .lean();
 
-  const userById = new Map(users.map(u => [String(u._id), u]));
+  const userMap = new Map(users.map(u => [String(u._id), u]));
 
-  const results = bookings.map(b => {
-    const user = userById.get(String(b.userId));
+  // -------- Build Response --------
+  return filtered.map(b => {
+    const route = routeMap.get(String(b.tripId));
+    const user = userMap.get(String(b.userId));
+
     return {
       _id: String(b._id),
-      type: 'BOOKING',
-      passengerName: user?.name || user?.email || '-',
+
+      // Route fields
+      origin: route?.origin ?? "",
+      destination: route?.destination ?? "",
+      departureTime: route?.departureTime ?? "",
+      routeName: `${route?.origin ?? ""} → ${route?.destination ?? ""}`,
+
+      // Booking fields
       seatNumbers: b.seatNos,
-      price: b.totalPrice ?? 0,
+      price: b.totalPrice || 0,
       status: b.status,
       bookingDate: b.createdAt,
+
+      passengerName: user?.name || user?.email || "-",
       user,
     };
   });
-
-  return results.sort(
-    (a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime()
-  );
 }
-
 
 
   // ===================== UPDATE BOOKING STATUS =====================

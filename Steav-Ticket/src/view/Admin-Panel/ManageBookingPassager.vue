@@ -8,15 +8,10 @@
           <label>Routes</label>
           <select v-model="selectedDestination">
             <option value="">All</option>
-            <option v-for="d in destinations" :key="d" :value="d">{{ d }}</option>
+            <option v-for="r in routeList" :key="r.key" :value="r.key">{{ r.label }}</option>
           </select>
         </div>
-
-        <div class="form-field">
-          <label>Date of Journey</label>
-          <input v-model="selectedDate" type="date" />
-        </div>
-
+        
         <div class="form-field">
           <label>Time</label>
           <select v-model="selectedDepartureTime">
@@ -48,31 +43,23 @@
 
         <tbody>
           <tr v-for="b in bookings" :key="b._id">
-            <td>{{ b.destination || '-' }}</td>
-            <td>{{ b.user?.name ?? b.user?.email ?? b.user?._id }}</td>
+            <td>{{ b.routeName }}</td>
+
+            <td>{{ b.user?.name ?? b.user?.email ?? '-' }}</td>
+
             <td>
-              <!-- Handle seatNumbers (array), seatNumber (single), or seatNos (array) -->
               {{ Array.isArray(b.seatNumbers) && b.seatNumbers.length ? b.seatNumbers.join(', ') :
                   Array.isArray(b.seatNos) && b.seatNos.length ? b.seatNos.join(', ') :
                   b.seatNumber || '-' }}
             </td>
-            <td>{{ formatTime(b.departureTime || b.bookingDate || '-') }}</td>
+
+            <td>{{ formatTime(b.departureTime) }}</td>
+
             <td>{{ b.status }}</td>
+
             <td>
-              <button
-                class="action-btn"
-                :disabled="loading"
-                @click="updateStatus(b._id, 'CONFIRMED')"
-              >
-                Confirm
-              </button>
-              <button
-                class="action-btn action-btn--secondary"
-                :disabled="loading"
-                @click="updateStatus(b._id, 'CANCELLED')"
-              >
-                Cancel
-              </button>
+              <button class="action-btn" @click="updateStatus(b._id, 'CONFIRMED')">Confirm</button>
+              <button class="action-btn action-btn--secondary" @click="updateStatus(b._id, 'CANCELLED')">Cancel</button>
             </td>
           </tr>
 
@@ -92,122 +79,132 @@ import { computed, onMounted, ref } from 'vue'
 import { apiUrl } from '@/lib/api'
 
 type RouteSchedule = {
-  _id: string
-  origin: string
-  destination: string
-  departureTime: string
-}
+  _id: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+};
 
 type BookingRow = {
-  _id: string
-  destination: string
-  departureTime: string
-  seatNumber: number
-  passengerName: string
-  status: string
-  price: number
-  user: { _id: string; name?: string; email?: string }
-}
+  _id: string;
+  origin: string;
+  destination: string;
+  routeName: string;
+  departureTime: string;
+  seatNumbers?: string[];
+  seatNos?: string[];
+  seatNumber?: number;
+  passengerName: string;
+  status: string;
+  price: number;
+  bookingDate?: string;
+  user: { _id: string; name?: string; email?: string };
+};
 
-const loading = ref(false)
-const error = ref('')
+const loading = ref(false);
+const error = ref('');
 
-const routes = ref<RouteSchedule[]>([])
-const bookings = ref<BookingRow[]>([])
+const routes = ref<RouteSchedule[]>([]);
+const bookings = ref<BookingRow[]>([]);
 
-const selectedDestination = ref('')
-const selectedDate = ref('')
-const selectedDepartureTime = ref('')
+const selectedDestination = ref('');
+const selectedDepartureTime = ref('');
 
-const destinations = computed(() => {
-  const set = new Set<string>()
+const routeList = computed(() => {
+  const set = new Map<string, { key: string; label: string }>();
+
   for (const r of routes.value) {
-    if (r.destination) set.add(r.destination)
+    const key = `${r.origin}__${r.destination}`;
+    const label = `${r.origin} → ${r.destination}`;
+
+    if (!set.has(key)) {
+      set.set(key, { key, label });
+    }
   }
-  return Array.from(set).sort((a, b) => a.localeCompare(b))
-})
+
+  return Array.from(set.values());
+});
 
 const departureTimes = computed(() => {
-  const set = new Set<string>()
+  const set = new Set<string>();
+  const [origin, destination] = selectedDestination.value.split('__') ?? [];
+
   const filtered = selectedDestination.value
-    ? routes.value.filter((r) => r.destination === selectedDestination.value)
-    : routes.value
+    ? routes.value.filter(r => r.origin === origin && r.destination === destination)
+    : routes.value;
+
   for (const r of filtered) {
-    if (r.departureTime) set.add(r.departureTime)
+    if (r.departureTime) set.add(r.departureTime);
   }
-  return Array.from(set).sort((a, b) => a.localeCompare(b))
-})
+
+  return Array.from(set).sort();
+});
 
 function formatTime(isoOrString: string) {
-  const d = new Date(isoOrString)
-  if (Number.isNaN(d.getTime())) return isoOrString
-  return d.toLocaleString()
+  const d = new Date(isoOrString);
+  if (isNaN(d.getTime())) return isoOrString;
+  return d.toLocaleString();
 }
 
 async function fetchRoutes() {
   try {
-    const response = await fetch(apiUrl('/routes'))
-    if (!response.ok) throw new Error('Failed to load routes')
-    const data = (await response.json()) as RouteSchedule[]
-    routes.value = Array.isArray(data) ? data : []
+    const response = await fetch(apiUrl('/routes'));
+    if (!response.ok) throw new Error('Failed to load routes');
+    routes.value = await response.json();
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
 }
 
 async function fetchBookings() {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('access_token');
   if (!token) {
-    error.value = 'You must be logged in as Admin!'
-    return
+    error.value = 'You must be logged in as Admin!';
+    return;
   }
 
-  error.value = ''
-  loading.value = true
+  loading.value = true;
+  error.value = '';
+
   try {
-    const qs = new URLSearchParams()
-    if (selectedDestination.value) qs.set('destination', selectedDestination.value)
-    if (selectedDate.value) qs.set('date', selectedDate.value)
-    if (selectedDepartureTime.value) qs.set('departureTime', selectedDepartureTime.value)
+    const qs = new URLSearchParams();
 
-    const url = apiUrl(`/admin/bookings${qs.toString() ? `?${qs.toString()}` : ''}`)
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        error.value = 'Unauthorized: please log in again (token invalid/expired).'
-        return
-      }
-      if (response.status === 403) {
-        error.value = 'Forbidden: your account is not admin.'
-        return
-      }
-      error.value = 'Failed to load bookings'
-      return
+    if (selectedDestination.value) {
+      const [origin, destination] = selectedDestination.value.split('__');
+      qs.set('origin', origin || '');
+      qs.set('destination', destination || '');
     }
 
-    const data = (await response.json()) as BookingRow[]
-    bookings.value = Array.isArray(data) ? data : []
+    if (selectedDepartureTime.value) qs.set('departureTime', selectedDepartureTime.value || '');
+
+    const url = apiUrl(`/admin/bookings${qs.toString() ? `?${qs.toString()}` : ''}`);
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      error.value = 'Failed to load bookings';
+      return;
+    }
+
+    bookings.value = await response.json();
   } catch (err) {
-    console.error(err)
-    error.value = 'Network Error'
+    console.error(err);
+    error.value = 'Network Error';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('access_token');
   if (!token) {
-    error.value = 'You must be logged in as Admin!'
-    return
+    error.value = 'You must be logged in as Admin!';
+    return;
   }
 
-  error.value = ''
+  error.value = '';
   try {
     const response = await fetch(apiUrl(`/admin/bookings/${id}/status`), {
       method: 'PATCH',
@@ -216,37 +213,37 @@ async function updateStatus(id: string, status: 'CONFIRMED' | 'CANCELLED') {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ status }),
-    })
+    });
 
     if (!response.ok) {
       if (response.status === 401) {
-        error.value = 'Unauthorized: please log in again.'
-        return
+        error.value = 'Unauthorized: please log in again.';
+        return;
       }
       if (response.status === 403) {
-        error.value = 'Forbidden: your account is not admin.'
-        return
+        error.value = 'Forbidden: your account is not admin.';
+        return;
       }
-      error.value = 'Failed to update status'
-      return
+      error.value = 'Failed to update status';
+      return;
     }
 
-    await fetchBookings()
+    // Re-fetch bookings to reflect status change
+    await fetchBookings();
   } catch (err) {
-    console.error(err)
-    error.value = 'Network Error'
+    console.error(err);
+    error.value = 'Network Error';
   }
 }
 
 function applyFilter() {
-  void fetchBookings()
+  fetchBookings();
 }
 
-
 onMounted(() => {
-  void fetchRoutes()
-  void fetchBookings()
-})
+  fetchRoutes();
+  fetchBookings();
+});
 </script>
 
 <style scoped>
