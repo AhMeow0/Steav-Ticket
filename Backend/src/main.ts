@@ -18,7 +18,12 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  app.enableCors(
+    {
+      origin: ['https://steavticket.netlify.app/'],
+      credentials: true, 
+    }
+  );
   app.setGlobalPrefix('api');
 
   const usersService = app.get(UsersService);

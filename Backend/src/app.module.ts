@@ -22,7 +22,7 @@ import { NotificationsModule } from './notification/noti.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',   // <-- LOAD THIS FILE
+      envFilePath: '.env.example', // <-- LOAD THIS FILE
     }),
 
     MongooseModule.forRoot('mongodb://localhost:27017/bus-ticket'),
